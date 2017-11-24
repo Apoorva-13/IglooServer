@@ -1,0 +1,237 @@
+scalar DateTime
+
+scalar Json
+
+scalar UUID
+
+type SignupUserPayload {
+    id: ID!
+    token: String!
+}
+
+type AuthenticateUserPayload {
+    id: ID!
+    token: String!
+}
+
+type Mutation{
+    AuthenticateUser(email: String!, password: String!): AuthenticateUserPayload
+    SignupUser(email: String!, password: String!): SignupUserPayload
+    ChangePassword(email: String!, oldPassword: String!, newPassword:String!): AuthenticateUserPayload
+}
+
+type Query {
+    user: User
+    # should implement pagination
+    allDevices: [Device]
+    allValues: [Value]
+    allNotifications: [Notification]
+    allPlotNodes: [PlotNode]
+    allMaps: [Map]
+    allMapPositions: [MapPosition]
+    allColours: [Colour]
+    allFloatValues: [FloatValue]
+    allFloatValues: [FloatValue]
+    allStringValues: [StringValue]
+    allPlotValues: [PlotValue]
+    allBooleanValues: [BooleanValue]
+    allColourValues: [ColourValue]
+    allMapValues: [MapValue]
+}
+
+type User {
+    # Required system field:
+    id: UUID! @isUnique # read-only (managed by Graphcool)
+    # Optional system fields (remove if not needed):
+    createdAt: DateTime! # read-only (managed by Graphcool)
+    updatedAt: DateTime! # read-only (managed by Graphcool)
+    email: String! @isUnique
+    password: String!
+    devices: [Device!]!
+    values: [Value!]!
+}
+
+type Device {
+    # system fields - read-only (managed by Graphcool)
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    deviceType: String # it's the name of the product bought, e.g. Philips Hue
+    customName: String # it's the name given by the user to this device
+    tags: [String!]!
+    values: [Value!]! # all the values to display to the user
+    user: User! # the user owning this device
+}
+
+enum ValueType {
+    BOOL
+    FLOAT
+    PLOT
+    STRING
+    COLOR
+    MAP
+    DATE_TIME
+}
+
+enum ValuePermission {
+    READ_ONLY
+    READ_WRITE
+}
+
+enum ValueRelevance {
+    MAIN
+    NORMAL
+    ADVANCED
+    HIDDEN
+}
+
+type Notification {
+    id: UUID! @isUnique
+    deviceValue: Value!
+    content: String!
+    date: DateTime!
+    visualized: Boolean!
+}
+
+type PlotNode {
+    id: UUID! @isUnique
+    deviceValue: Value!
+    key: DateTime!
+    value: Float!
+}
+
+type Map {
+    id: UUID! @isUnique
+    deviceValue: Value!
+    zoom: Int!
+    position: MapPosition!
+    geoJSON: Json!
+}
+
+type MapPosition {
+    id: UUID! @isUnique
+    latitude: Float!
+    longitude: Float!
+    map: Map!
+}
+
+type Colour {
+    id: UUID! @isUnique
+    deviceValue: Value!
+    rgb: [Int!]!
+}
+
+interface Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+}
+
+type FloatValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: Float
+    precision: Float
+    # [min, max]
+    boundaries: [Float!]
+}
+
+type StringValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: String
+    maxChars: Int # string
+}
+
+type PlotValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: [PlotNode!]!
+}
+
+type BooleanValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: Boolean
+}
+
+type ColourValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: Colour
+}
+
+type MapValue implements Value {
+    # system fields
+    id: UUID! @isUnique
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # owners
+    device: Device!
+    user: User! # the user owning this device}
+    # igloo system fields
+    permission: ValuePermission! @defaultValue(value: READ_WRITE)
+    relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
+    # notifications: [Notification!]!
+    valueDetails: String # Unit of measurement
+    value: Map
+}
