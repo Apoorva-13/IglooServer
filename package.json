@@ -1,7 +1,7 @@
 {
     "name": "igloo-graphql",
     "version": "0.1.0",
-    "description": "",
+    "description": "Backend for the igloo platform",
     "scripts": {
         "start": "nodemon ./server.js --exec babel-node",
         "setupDatabase": "node ./postgresql/setup.js",
@@ -9,13 +9,13 @@
     },
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/hellowitlab/iglooQL"
     },
     "keywords": [],
-    "author": "",
+    "author": "Igloo",
     "license": "MIT",
     "bugs": {
-        "url": ""
+        "url": "https://github.com/hellowitlab/iglooQL/issues"
     },
     "homepage": "",
     "dependencies": {
