@@ -1,26 +1,25 @@
 const Sequelize = require("sequelize")
 const chalk = require("chalk")
 const log = console.log
-const config = require('dotenv').config()
+require("dotenv").config()
 
-if (!config.parsed){
-    throw new Error ("Could not load .env")
+if (!process.env.JWT_SECRET) {
+    throw new Error("Could not load .env")
 }
-const {HOST, DATABASE, USERNAME, PASSWORD} = config.parsed   
+const {HOST, DATABASE, DB_USERNAME, PASSWORD} = process.env
 
 const sequelize = new Sequelize({
-    host:HOST,
-    port:5432,
-    database:DATABASE,
-    username:USERNAME,
-    password:PASSWORD,
+    host: HOST,
+    port: 5432,
+    database: DATABASE,
+    username: DB_USERNAME,
+    password: PASSWORD,
+    ssl: true,
+    dialect: "postgres",
+    dialectOptions: {
         ssl: true,
-        dialect:"postgres",
-        dialectOptions: {
-            ssl: true
-        }
-    }
-)
+    },
+})
 
 const {
     User,

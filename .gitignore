@@ -34,3 +34,6 @@ node_modules
 
 # environment
 .env
+
+# vs code
+.vscode

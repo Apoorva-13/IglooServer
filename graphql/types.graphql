@@ -2,8 +2,6 @@ scalar DateTime
 
 scalar Json
 
-scalar UUID
-
 type SignupUserPayload {
     id: ID!
     token: String!
@@ -14,10 +12,18 @@ type AuthenticateUserPayload {
     token: String!
 }
 
-type Mutation{
+type Mutation {
     AuthenticateUser(email: String!, password: String!): AuthenticateUserPayload
     SignupUser(email: String!, password: String!): SignupUserPayload
-    ChangePassword(email: String!, oldPassword: String!, newPassword:String!): AuthenticateUserPayload
+    ChangePassword(
+        email: String!
+        newPassword: String!
+    ): AuthenticateUserPayload
+    CreateDevice(
+        deviceType: String
+        customName: String
+        tags: [String!]!
+    ): Device
 }
 
 type Query {
@@ -41,19 +47,18 @@ type Query {
 
 type User {
     # Required system field:
-    id: UUID! @isUnique # read-only (managed by Graphcool)
+    id: ID! @isUnique # read-only (managed by Graphcool)
     # Optional system fields (remove if not needed):
     createdAt: DateTime! # read-only (managed by Graphcool)
     updatedAt: DateTime! # read-only (managed by Graphcool)
     email: String! @isUnique
-    password: String!
     devices: [Device!]!
     values: [Value!]!
 }
 
 type Device {
     # system fields - read-only (managed by Graphcool)
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     deviceType: String # it's the name of the product bought, e.g. Philips Hue
@@ -86,7 +91,7 @@ enum ValueRelevance {
 }
 
 type Notification {
-    id: UUID! @isUnique
+    id: ID! @isUnique
     deviceValue: Value!
     content: String!
     date: DateTime!
@@ -94,14 +99,14 @@ type Notification {
 }
 
 type PlotNode {
-    id: UUID! @isUnique
+    id: ID! @isUnique
     deviceValue: Value!
     key: DateTime!
     value: Float!
 }
 
 type Map {
-    id: UUID! @isUnique
+    id: ID! @isUnique
     deviceValue: Value!
     zoom: Int!
     position: MapPosition!
@@ -109,21 +114,21 @@ type Map {
 }
 
 type MapPosition {
-    id: UUID! @isUnique
+    id: ID! @isUnique
     latitude: Float!
     longitude: Float!
     map: Map!
 }
 
 type Colour {
-    id: UUID! @isUnique
+    id: ID! @isUnique
     deviceValue: Value!
     rgb: [Int!]!
 }
 
 interface Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -138,7 +143,7 @@ interface Value {
 
 type FloatValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -157,7 +162,7 @@ type FloatValue implements Value {
 
 type StringValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -174,7 +179,7 @@ type StringValue implements Value {
 
 type PlotValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -190,7 +195,7 @@ type PlotValue implements Value {
 
 type BooleanValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -206,7 +211,7 @@ type BooleanValue implements Value {
 
 type ColourValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
@@ -222,7 +227,7 @@ type ColourValue implements Value {
 
 type MapValue implements Value {
     # system fields
-    id: UUID! @isUnique
+    id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
     # owners
