@@ -126,10 +126,10 @@ const UserResolver = (User, Device, Value) => ({
                             resolve(values)
                         })
                         .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 109"))
+                            log(chalk.red("INTERNAL ERROR - User 110"))
                             log(e)
                             reject(
-                                "109 - An internal error occured, please contact us. The error code is 109"
+                                "110 - An internal error occured, please contact us. The error code is 110"
                             )
                         })
                 }

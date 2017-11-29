@@ -21,7 +21,7 @@ const QueryResolver = Device => ({
                             )
                         } else if (deviceFound.userId !== context.auth.userId) {
                             reject(
-                                "You are not allowed to see details about this device"
+                                "You are not allowed to access details about this device"
                             )
                         } else {
                             const {
