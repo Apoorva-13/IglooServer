@@ -1,6 +1,8 @@
 import {authenticated} from "./resolvers/utilities.js"
 import UserResolver from "./resolvers/User.js"
 import MutationResolver from "./resolvers/Mutation.js"
+import QueryResolver from "./resolvers/Query.js"
+import DeviceResolver from "./resolvers/Device.js"
 import GraphQLToolsTypes from "graphql-tools-types"
 import Sequelize from "sequelize"
 import chalk from "chalk"
@@ -46,7 +48,9 @@ const resolvers = {
     DateTime: GraphQLToolsTypes.Date({name: "DateTime"}),
     Json: GraphQLToolsTypes.JSON({name: "Json"}),
     User: UserResolver(User, Device, Value),
+    Device: DeviceResolver(Device, User, Value),
     Mutation: MutationResolver(User, Device, JWT_SECRET),
+    Query: QueryResolver(Device),
 }
 
 export default resolvers

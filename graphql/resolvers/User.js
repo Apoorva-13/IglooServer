@@ -3,35 +3,6 @@ import chalk from "chalk"
 const log = console.log
 
 const UserResolver = (User, Device, Value) => ({
-    id(root, args, context) {
-        return new Promise(
-            authenticated(context, (resolve, reject) => {
-                if (context.auth.userId !== root.id) {
-                    reject(
-                        "You are not allowed to access details about this user"
-                    )
-                } else {
-                    User.find({where: {id: root.id}})
-                        .then(userFound => {
-                            if (!userFound) {
-                                reject(
-                                    "User doesn't exist. Use `SignupUser` to create one"
-                                )
-                            } else {
-                                resolve(userFound.id)
-                            }
-                        })
-                        .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 105"))
-                            log(e)
-                            reject(
-                                "105 - An internal error occured, please contact us. The error code is 105"
-                            )
-                        })
-                }
-            })
-        )
-    },
     email(root, args, context) {
         return new Promise(
             authenticated(context, (resolve, reject) => {

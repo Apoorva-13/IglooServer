@@ -24,11 +24,13 @@ type Mutation {
         customName: String
         tags: [String!]!
     ): Device
+    #CreateValue
+    #AddDeviceTag
 }
 
 type Query {
     user: User
-    # should implement pagination
+    # should implement pagination and filters
     allDevices: [Device]
     allValues: [Value]
     allNotifications: [Notification]
@@ -37,12 +39,12 @@ type Query {
     allMapPositions: [MapPosition]
     allColours: [Colour]
     allFloatValues: [FloatValue]
-    allFloatValues: [FloatValue]
     allStringValues: [StringValue]
     allPlotValues: [PlotValue]
     allBooleanValues: [BooleanValue]
     allColourValues: [ColourValue]
     allMapValues: [MapValue]
+    device(id: ID!): Device
 }
 
 type User {
