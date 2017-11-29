@@ -2,8 +2,8 @@ import {authenticated} from "./utilities.js"
 import chalk from "chalk"
 const log = console.log
 
-const UserResolver = (User, Device, Value) => ({
-    email(root, args, context) {
+const retrieveUserScalarProp = (User, prop) => {
+    return (root, args, context) => {
         return new Promise(
             authenticated(context, (resolve, reject) => {
                 if (context.auth.userId !== root.id) {
@@ -18,7 +18,7 @@ const UserResolver = (User, Device, Value) => ({
                                     "User doesn't exist. Use `SignupUser` to create one"
                                 )
                             } else {
-                                resolve(userFound.email)
+                                resolve(userFound[prop])
                             }
                         })
                         .catch(e => {
@@ -31,65 +31,12 @@ const UserResolver = (User, Device, Value) => ({
                 }
             })
         )
-    },
-    createdAt(root, args, context) {
-        return new Promise(
-            authenticated(context, (resolve, reject) => {
-                if (context.auth.userId !== root.id) {
-                    reject(
-                        "You are not allowed to access details about this user"
-                    )
-                } else {
-                    User.find({where: {id: root.id}})
-                        .then(userFound => {
-                            if (!userFound) {
-                                reject(
-                                    "User doesn't exist. Use `SignupUser` to create one"
-                                )
-                            } else {
-                                resolve(userFound.createdAt)
-                            }
-                        })
-                        .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 107"))
-                            log(e)
-                            reject(
-                                "107 - An internal error occured, please contact us. The error code is 107"
-                            )
-                        })
-                }
-            })
-        )
-    },
-    updatedAt(root, args, context) {
-        return new Promise(
-            authenticated(context, (resolve, reject) => {
-                if (context.auth.userId !== root.id) {
-                    reject(
-                        "You are not allowed to access details about this user"
-                    )
-                } else {
-                    User.find({where: {id: root.id}})
-                        .then(userFound => {
-                            if (!userFound) {
-                                reject(
-                                    "User doesn't exist. Use `SignupUser` to create one"
-                                )
-                            } else {
-                                resolve(userFound.updatedAt)
-                            }
-                        })
-                        .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 108"))
-                            log(e)
-                            reject(
-                                "108 - An internal error occured, please contact us. The error code is 108"
-                            )
-                        })
-                }
-            })
-        )
-    },
+    }
+}
+const UserResolver = (User, Device, Value) => ({
+    email: retrieveUserScalarProp(User, "email"),
+    createdAt: retrieveUserScalarProp(User, "createdAt"),
+    updatedAt: retrieveUserScalarProp(User, "updatedAt"),
     devices(root, args, context) {
         return new Promise(
             authenticated(context, (resolve, reject) => {
@@ -103,10 +50,10 @@ const UserResolver = (User, Device, Value) => ({
                             resolve(devices)
                         })
                         .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 109"))
+                            log(chalk.red("INTERNAL ERROR - User 107"))
                             log(e)
                             reject(
-                                "109 - An internal error occured, please contact us. The error code is 109"
+                                "109 - An internal error occured, please contact us. The error code is 107"
                             )
                         })
                 }
@@ -126,10 +73,10 @@ const UserResolver = (User, Device, Value) => ({
                             resolve(values)
                         })
                         .catch(e => {
-                            log(chalk.red("INTERNAL ERROR - User 110"))
+                            log(chalk.red("INTERNAL ERROR - User 108"))
                             log(e)
                             reject(
-                                "110 - An internal error occured, please contact us. The error code is 110"
+                                "110 - An internal error occured, please contact us. The error code is 108"
                             )
                         })
                 }
