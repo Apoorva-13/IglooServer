@@ -15,10 +15,7 @@ type AuthenticateUserPayload {
 type Mutation {
     AuthenticateUser(email: String!, password: String!): AuthenticateUserPayload
     SignupUser(email: String!, password: String!): SignupUserPayload
-    ChangePassword(
-        email: String!
-        newPassword: String!
-    ): AuthenticateUserPayload
+    ChangePassword(newPassword: String!): AuthenticateUserPayload
     CreateDevice(
         deviceType: String
         customName: String
