@@ -36,6 +36,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                         reject("Wrong password")
                     }
                 })
+                /* istanbul ignore next */
                 .catch(e => {
                     log(chalk.red("INTERNAL ERROR - AuthenticateUser 103"))
                     log(e)
@@ -73,6 +74,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                         })
                     }
                 })
+                /* istanbul ignore next */
                 .catch(e => {
                     log(chalk.red("INTERNAL ERROR - SignupUser 102"))
                     log(e)
@@ -114,6 +116,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                                 })
                         }
                     })
+                    /* istanbul ignore next */
                     .catch(e => {
                         log(chalk.red("INTERNAL ERROR - ChangePassword 101"))
                         log(e)
@@ -161,6 +164,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                             },
                         })
                     })
+                    /* istanbul ignore next */
                     .catch(e => {
                         log(chalk.red("INTERNAL ERROR - CreateDevice 104"))
                         log(e)
