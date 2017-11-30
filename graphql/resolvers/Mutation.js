@@ -136,11 +136,10 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
     CreateDevice(root, args, context) {
         return new Promise(
             authenticated(context, (resolve, reject) => {
-                const {customName, deviceType, valueIds, tags} = args
+                const {customName, deviceType, tags} = args
                 Device.create({
                     customName,
                     deviceType,
-                    valueIds,
                     tags,
                     userId: context.auth.userId,
                 })

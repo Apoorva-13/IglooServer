@@ -6,6 +6,7 @@ const retrieveUserScalarProp = (User, prop) => {
     return (root, args, context) => {
         return new Promise(
             authenticated(context, (resolve, reject) => {
+                /* istanbul ignore if - this should never be the case, so the error is not reproducible */
                 if (context.auth.userId !== root.id) {
                     reject(
                         "You are not allowed to access details about this user"
@@ -22,8 +23,11 @@ const retrieveUserScalarProp = (User, prop) => {
                             }
                         })
                         .catch(e => {
+                            /* istanbul ignore next */
                             log(chalk.red("INTERNAL ERROR - User 106"))
+                            /* istanbul ignore next */
                             log(e)
+                            /* istanbul ignore next */
                             reject(
                                 "106 - An internal error occured, please contact us. The error code is 106"
                             )
@@ -40,6 +44,7 @@ const UserResolver = (User, Device, Value) => ({
     devices(root, args, context) {
         return new Promise(
             authenticated(context, (resolve, reject) => {
+                /* istanbul ignore if - this should never be the case, so the error is not reproducible */
                 if (context.auth.userId !== root.id) {
                     reject(
                         "You are not allowed to access details about this user"
@@ -50,8 +55,11 @@ const UserResolver = (User, Device, Value) => ({
                             resolve(devices)
                         })
                         .catch(e => {
+                            /* istanbul ignore next */
                             log(chalk.red("INTERNAL ERROR - User 107"))
+                            /* istanbul ignore next */
                             log(e)
+                            /* istanbul ignore next */
                             reject(
                                 "109 - An internal error occured, please contact us. The error code is 107"
                             )
@@ -63,6 +71,7 @@ const UserResolver = (User, Device, Value) => ({
     values(root, args, context) {
         return new Promise(
             authenticated(context, (resolve, reject) => {
+                /* istanbul ignore if - this should never be the case, so the error is not reproducible*/
                 if (context.auth.userId !== root.id) {
                     reject(
                         "You are not allowed to access details about this user"
@@ -73,8 +82,11 @@ const UserResolver = (User, Device, Value) => ({
                             resolve(values)
                         })
                         .catch(e => {
+                            /* istanbul ignore next */
                             log(chalk.red("INTERNAL ERROR - User 108"))
+                            /* istanbul ignore next */
                             log(e)
+                            /* istanbul ignore next */
                             reject(
                                 "110 - An internal error occured, please contact us. The error code is 108"
                             )
