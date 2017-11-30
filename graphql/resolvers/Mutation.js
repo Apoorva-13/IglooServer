@@ -39,7 +39,9 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                 .catch(e => {
                     /* istanbul ignore next */
                     log(chalk.red("INTERNAL ERROR - AuthenticateUser 103"))
+                    /* istanbul ignore next */
                     log(e)
+                    /* istanbul ignore next */
                     reject(
                         "103 - An internal error occured, please contact us. The error code is 103"
                     )
@@ -77,7 +79,9 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                 .catch(e => {
                     /* istanbul ignore next */
                     log(chalk.red("INTERNAL ERROR - SignupUser 102"))
+                    /* istanbul ignore next */
                     log(e)
+                    /* istanbul ignore next */
                     reject(
                         "102 - An internal error occured, please contact us. The error code is 102"
                     )
@@ -119,7 +123,9 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                     .catch(e => {
                         /* istanbul ignore next */
                         log(chalk.red("INTERNAL ERROR - ChangePassword 101"))
+                        /* istanbul ignore next */
                         log(e)
+                        /* istanbul ignore next */
                         reject(
                             "101 - An internal error occured, please contact us. The error code is 101"
                         )
@@ -167,7 +173,9 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                     .catch(e => {
                         /* istanbul ignore next */
                         log(chalk.red("INTERNAL ERROR - CreateDevice 104"))
+                        /* istanbul ignore next */
                         log(e)
+                        /* istanbul ignore next */
                         reject(
                             "104 - An internal error occured, please contact us. The error code is 104"
                         )
