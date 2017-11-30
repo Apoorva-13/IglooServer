@@ -44,7 +44,35 @@ describe("A user", function() {
             })
     })
 
-    it("should not be able to authenticate", done => {
+    it("should not be able to signup if the email is already taken", done => {
+        request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation SignupUser($email: String!, $password: String!) {
+                        SignupUser(email: $email, password: $password) {
+                            id
+                            token
+                        }
+                    }
+                `,
+                variables: {
+                    email: "giorgio@gianni.com",
+                    password: "password",
+                },
+            })
+            .then(res => {
+                const parsedRes = JSON.parse(res.text)
+                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors[0].message).toBe(
+                    "A user with this email already exists"
+                )
+                done()
+            })
+    })
+
+    it("should be able to authenticate", done => {
         request(GraphQLServer)
             .post("/graphql")
             .set("content-type", "application/json")
@@ -66,6 +94,58 @@ describe("A user", function() {
                 expect(parsedRes.data.AuthenticateUser.id).toBeDefined()
                 expect(parsedRes.data.AuthenticateUser.token).toBeDefined()
                 expect(parsedRes.errors).toBeUndefined()
+                done()
+            })
+    })
+
+    it("should not be able to authenticate with an incorrect password", done => {
+        request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation AuthenticateUser($email: String!, $password: String!){
+                    AuthenticateUser(email: $email, password: $password){
+                        id
+                        token
+                    }
+                }`,
+                variables: {
+                    email: "giorgio@gianni.com",
+                    password: "wrongpassword",
+                },
+            })
+            .then(res => {
+                const parsedRes = JSON.parse(res.text)
+                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors[0].message).toBe("Wrong password")
+                done()
+            })
+    })
+
+    it("should not be able to authenticate if the account doesn't exist", done => {
+        request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation AuthenticateUser($email: String!, $password: String!){
+                    AuthenticateUser(email: $email, password: $password){
+                        id
+                        token
+                    }
+                }`,
+                variables: {
+                    email: "inexistent@account.com",
+                    password: "password",
+                },
+            })
+            .then(res => {
+                const parsedRes = JSON.parse(res.text)
+                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors[0].message).toBe(
+                    "User doesn't exist. Use `SignupUser` to create one"
+                )
                 done()
             })
     })
