@@ -1,3 +1,8 @@
+import jwt from "jwt-simple"
+import moment from "moment"
+
+const JWT_EXPIRE_DAYS = 7
+
 const authenticated = (context, callback) =>
     context.auth
         ? callback
@@ -5,6 +10,18 @@ const authenticated = (context, callback) =>
               reject(
                   "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
               )
+
+const generateAuthenticationToken = (userId, JWT_SECRET) =>
+    jwt.encode(
+        {
+            exp: moment()
+                .utc()
+                .add({days: JWT_EXPIRE_DAYS})
+                .unix(),
+            userId,
+        },
+        JWT_SECRET
+    )
 
 const retrieveScalarProp = (Model, prop) => {
     return (root, args, context) => {
@@ -39,5 +56,6 @@ const retrieveScalarProp = (Model, prop) => {
 }
 module.exports = {
     authenticated,
+    generateAuthenticationToken,
     retrieveScalarProp,
 }

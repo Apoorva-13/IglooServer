@@ -5,7 +5,8 @@
     "scripts": {
         "start": "nodemon ./server.js --exec babel-node -e js,graphql,env",
         "setupDatabase": "node ./postgresql/setup.js",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "jest --coverage --runInBand --bail --forceExit",
+        "pretest": "npm run setupDatabase"
     },
     "repository": {
         "type": "git",
@@ -43,7 +44,10 @@
         "babel-preset-react": "^6.5.0",
         "babel-preset-stage-0": "6.5.0",
         "graphql": "^0.11.7",
-        "nodemon": "^1.12.1"
+        "graphql-tester": "^0.0.5",
+        "jest": "^21.2.1",
+        "nodemon": "^1.12.1",
+        "supertest": "^3.0.0"
     },
     "peerDependencies": {
         "graphql": "^0.11.7"

@@ -1,4 +1,4 @@
-import {authenticated} from "./utilities.js"
+import {authenticated, generateAuthenticationToken} from "./utilities.js"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
 import moment from "moment"
@@ -6,19 +6,6 @@ import chalk from "chalk"
 const log = console.log
 
 const SALT_ROUNDS = 10
-const JWT_EXPIRE_DAYS = 7
-
-const generateAuthenticationToken = (userId, JWT_SECRET) =>
-    jwt.encode(
-        {
-            exp: moment()
-                .utc()
-                .add({days: JWT_EXPIRE_DAYS})
-                .unix(),
-            userId: userFound.dataValues.id,
-        },
-        JWT_SECRET
-    )
 
 const MutationResolver = (User, Device, JWT_SECRET) => ({
     // checks if the user exists, if so

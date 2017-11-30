@@ -30,6 +30,7 @@ type Mutation {
 
 type Query {
     user: User
+    device(id: ID!): Device
     # should implement pagination and filters
     allDevices: [Device]
     allValues: [Value]
@@ -44,7 +45,6 @@ type Query {
     allBooleanValues: [BooleanValue]
     allColourValues: [ColourValue]
     allMapValues: [MapValue]
-    device(id: ID!): Device
 }
 
 type User {
