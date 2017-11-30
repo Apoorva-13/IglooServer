@@ -151,10 +151,9 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                             deviceType,
                             customName,
                             userId,
+                            tags,
                         } = newUser.dataValues
-                        const tags = newUser.dataValues.tags
-                            ? newUser.dataValues.tags
-                            : []
+                        // values cannot be set when creating the device
                         const values = []
                         resolve({
                             id,
