@@ -12,45 +12,46 @@ const QueryResolver = Device => ({
     },
     device(root, args, context) {
         return new Promise(
-            authenticated(context, (resolve, reject) => {
-                Device.find({where: {id: args.id}})
-                    .then(deviceFound => {
-                        if (!deviceFound) {
-                            reject("The requested resource does not exist")
-                        } else if (deviceFound.userId !== context.auth.userId) {
-                            reject(
-                                "You are not allowed to access details about this resource"
-                            )
-                        } else {
-                            const {
-                                id,
-                                updatedAt,
-                                createdAt,
-                                customName,
-                                tags,
-                                deviceType,
-                                userId,
-                            } = deviceFound
-                            resolve({
-                                id,
-                                updatedAt,
-                                createdAt,
-                                customName,
-                                tags,
-                                deviceType,
-                                user: {
-                                    id: userId,
-                                },
-                            })
-                        }
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    const deviceFound = await Device.find({
+                        where: {id: args.id},
                     })
-                    .catch(e => {
-                        log(chalk.red("INTERNAL ERROR - Query device 105"))
-                        log(e)
+                    if (!deviceFound) {
+                        reject("The requested resource does not exist")
+                    } else if (deviceFound.userId !== context.auth.userId) {
                         reject(
-                            "105 - An internal error occured, please contact us. The error code is 105"
+                            "You are not allowed to access details about this resource"
                         )
-                    })
+                    } else {
+                        const {
+                            id,
+                            updatedAt,
+                            createdAt,
+                            customName,
+                            tags,
+                            deviceType,
+                            userId,
+                        } = deviceFound
+                        resolve({
+                            id,
+                            updatedAt,
+                            createdAt,
+                            customName,
+                            tags,
+                            deviceType,
+                            user: {
+                                id: userId,
+                            },
+                        })
+                    }
+                } catch (e) {
+                    log(chalk.red("INTERNAL ERROR - Query device 105"))
+                    log(e)
+                    reject(
+                        "105 - An internal error occured, please contact us. The error code is 105"
+                    )
+                }
             })
         )
     },

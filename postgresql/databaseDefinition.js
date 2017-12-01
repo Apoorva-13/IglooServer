@@ -1,6 +1,6 @@
 const Sequelize = require("sequelize")
 
-module.exports = sequelize => {
+const databaseDefinition = sequelize => {
     const ValueType = Sequelize.ENUM(
         "BOOL",
         "FLOAT",
@@ -175,3 +175,5 @@ module.exports = sequelize => {
         ColorValue,
     }
 }
+
+module.exports = databaseDefinition

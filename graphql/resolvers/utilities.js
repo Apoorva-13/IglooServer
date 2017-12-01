@@ -26,33 +26,27 @@ const generateAuthenticationToken = (userId, JWT_SECRET) =>
 const retrieveScalarProp = (Model, prop) => {
     return (root, args, context) => {
         return new Promise(
-            authenticated(context, (resolve, reject) => {
-                Model.find({where: {id: root.id}})
-                    .then(resourceFound => {
-                        if (!resourceFound) {
-                            reject("The requested resource does not exist")
-                        } else if (
-                            resourceFound.userId !== context.auth.userId
-                        ) {
-                            reject(
-                                "You are not allowed to access details about this resource"
-                            )
-                        } else {
-                            resolve(resourceFound[prop])
-                        }
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    const resourceFound = await Model.find({
+                        where: {id: root.id},
                     })
-                    .catch(e => {
-                        /* istanbul ignore next */
-                        log(
-                            chalk.red("INTERNAL ERROR - retrieveScalarProp 109")
-                        )
-                        /* istanbul ignore next */
-                        log(e)
-                        /* istanbul ignore next */
+                    if (!resourceFound) {
+                        reject("The requested resource does not exist")
+                    } else if (resourceFound.userId !== context.auth.userId) {
                         reject(
-                            "109 - An internal error occured, please contact us. The error code is 109"
+                            "You are not allowed to access details about this resource"
                         )
-                    })
+                    } else {
+                        resolve(resourceFound[prop])
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - retrieveScalarProp 109"))
+                    log(e)
+                    reject(
+                        "109 - An internal error occured, please contact us. The error code is 109"
+                    )
+                }
             })
         )
     }

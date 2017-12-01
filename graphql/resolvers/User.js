@@ -43,54 +43,50 @@ const UserResolver = (User, Device, Value) => ({
     updatedAt: retrieveUserScalarProp(User, "updatedAt"),
     devices(root, args, context) {
         return new Promise(
-            authenticated(context, (resolve, reject) => {
-                /* istanbul ignore if - this should never be the case, so the error is not reproducible */
-                if (context.auth.userId !== root.id) {
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+                    if (context.auth.userId !== root.id) {
+                        reject(
+                            "You are not allowed to access details about this user"
+                        )
+                    } else {
+                        const devices = await Device.findAll({
+                            where: {userId: root.id},
+                        })
+                        resolve(devices)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - User 107"))
+                    log(e)
                     reject(
-                        "You are not allowed to access details about this user"
+                        "109 - An internal error occured, please contact us. The error code is 107"
                     )
-                } else {
-                    Device.findAll({where: {userId: root.id}})
-                        .then(devices => {
-                            resolve(devices)
-                        })
-                        .catch(e => {
-                            /* istanbul ignore next */
-                            log(chalk.red("INTERNAL ERROR - User 107"))
-                            /* istanbul ignore next */
-                            log(e)
-                            /* istanbul ignore next */
-                            reject(
-                                "109 - An internal error occured, please contact us. The error code is 107"
-                            )
-                        })
                 }
             })
         )
     },
     values(root, args, context) {
         return new Promise(
-            authenticated(context, (resolve, reject) => {
-                /* istanbul ignore if - this should never be the case, so the error is not reproducible*/
-                if (context.auth.userId !== root.id) {
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    /* istanbul ignore if - this should never be the case, so the error is not reproducible*/
+                    if (context.auth.userId !== root.id) {
+                        reject(
+                            "You are not allowed to access details about this user"
+                        )
+                    } else {
+                        const values = await Value.findAll({
+                            where: {userId: root.id},
+                        })
+                        resolve(values)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - User 108"))
+                    log(e)
                     reject(
-                        "You are not allowed to access details about this user"
+                        "110 - An internal error occured, please contact us. The error code is 108"
                     )
-                } else {
-                    Value.findAll({where: {userId: root.id}})
-                        .then(values => {
-                            resolve(values)
-                        })
-                        .catch(e => {
-                            /* istanbul ignore next */
-                            log(chalk.red("INTERNAL ERROR - User 108"))
-                            /* istanbul ignore next */
-                            log(e)
-                            /* istanbul ignore next */
-                            reject(
-                                "110 - An internal error occured, please contact us. The error code is 108"
-                            )
-                        })
                 }
             })
         )
