@@ -42,10 +42,13 @@ const retrieveScalarProp = (Model, prop) => {
                         }
                     })
                     .catch(e => {
+                        /* istanbul ignore next */
                         log(
                             chalk.red("INTERNAL ERROR - retrieveScalarProp 109")
                         )
+                        /* istanbul ignore next */
                         log(e)
+                        /* istanbul ignore next */
                         reject(
                             "109 - An internal error occured, please contact us. The error code is 109"
                         )

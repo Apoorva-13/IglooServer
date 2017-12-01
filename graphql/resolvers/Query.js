@@ -16,12 +16,10 @@ const QueryResolver = Device => ({
                 Device.find({where: {id: args.id}})
                     .then(deviceFound => {
                         if (!deviceFound) {
-                            reject(
-                                "The device does not exist. Use `CreateDevice` to create one"
-                            )
+                            reject("The requested resource does not exist")
                         } else if (deviceFound.userId !== context.auth.userId) {
                             reject(
-                                "You are not allowed to access details about this device"
+                                "You are not allowed to access details about this resource"
                             )
                         } else {
                             const {

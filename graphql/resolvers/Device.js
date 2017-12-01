@@ -28,8 +28,11 @@ const DeviceResolver = (Device, User, Value) => ({
                         }
                     })
                     .catch(e => {
+                        /* istanbul ignore next */
                         log(chalk.red("INTERNAL ERROR - Device 110"))
+                        /* istanbul ignore next */
                         log(e)
+                        /* istanbul ignore next */
                         reject(
                             "110 - An internal error occured, please contact us. The error code is 110"
                         )
@@ -57,8 +60,11 @@ const DeviceResolver = (Device, User, Value) => ({
                         }
                     })
                     .catch(e => {
+                        /* istanbul ignore next */
                         log(chalk.red("INTERNAL ERROR - Device 111"))
+                        /* istanbul ignore next */
                         log(e)
+                        /* istanbul ignore next */
                         reject(
                             "111 - An internal error occured, please contact us. The error code is 111"
                         )
