@@ -175,11 +175,9 @@ const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
                     const deviceFound = await Device.find({
                         where: {id: args.deviceId},
                     })
-                    /* istanbul ignore next */
                     if (!deviceFound) {
                         reject("The supplied deviceId does not exist")
                     } else if (deviceFound.userId !== context.auth.userId) {
-                        /* istanbul ignore next */
                         reject(
                             "You are not allowed to edit details about this device"
                         )
