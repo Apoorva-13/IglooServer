@@ -15,9 +15,11 @@ const DeviceResolver = (Device, User, Value) => ({
                     const deviceFound = await Device.find({
                         where: {id: root.id},
                     })
+                    /* istanbul ignore next */
                     if (!deviceFound) {
                         reject("The requested resource does not exist")
                     } else if (deviceFound.userId !== context.auth.userId) {
+                        /* istanbul ignore next */
                         reject(
                             "You are not allowed to access details about this resource"
                         )
@@ -44,9 +46,11 @@ const DeviceResolver = (Device, User, Value) => ({
                     const deviceFound = await Device.find({
                         where: {id: root.id},
                     })
+                    /* istanbul ignore next */
                     if (!deviceFound) {
                         reject("The requested resource does not exist")
                     } else if (deviceFound.userId !== context.auth.userId) {
+                        /* istanbul ignore next */
                         reject(
                             "You are not allowed to access details about this resource"
                         )

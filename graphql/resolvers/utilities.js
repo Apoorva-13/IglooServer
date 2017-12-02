@@ -31,9 +31,11 @@ const retrieveScalarProp = (Model, prop) => {
                     const resourceFound = await Model.find({
                         where: {id: root.id},
                     })
+                    /* istanbul ignore next */
                     if (!resourceFound) {
                         reject("The requested resource does not exist")
                     } else if (resourceFound.userId !== context.auth.userId) {
+                        /* istanbul ignore next */
                         reject(
                             "You are not allowed to access details about this resource"
                         )
