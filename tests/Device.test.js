@@ -12,7 +12,7 @@ let self = {}
 
 describe("Device", function() {
     beforeAll(async () => {
-        // creating an account to perform all the operations
+        // creating 2 accounts to perform all the operations
         const res = await request(GraphQLServer)
             .post("/graphql")
             .set("content-type", "application/json")
@@ -31,9 +31,6 @@ describe("Device", function() {
                 },
             })
         const parsedRes = JSON.parse(res.text)
-        expect(parsedRes.data.SignupUser.id).toBeDefined()
-        expect(parsedRes.data.SignupUser.token).toBeDefined()
-        expect(parsedRes.errors).toBeUndefined()
         self.userId = parsedRes.data.SignupUser.id
         self.token = parsedRes.data.SignupUser.token
 
@@ -55,15 +52,12 @@ describe("Device", function() {
                 },
             })
         const parsedRes2 = JSON.parse(res2.text)
-        expect(parsedRes2.data.SignupUser.id).toBeDefined()
-        expect(parsedRes2.data.SignupUser.token).toBeDefined()
-        expect(parsedRes2.errors).toBeUndefined()
         self.userId2 = parsedRes2.data.SignupUser.id
         self.token2 = parsedRes2.data.SignupUser.token
     })
 
-    it("should be able to create a device", done => {
-        request(GraphQLServer)
+    it("should be able to create a device", async done => {
+        const res = await request(GraphQLServer)
             .post("/graphql")
             .set("content-type", "application/json")
             .set("accept", "application/json")
@@ -93,23 +87,21 @@ describe("Device", function() {
                     tags: ["yellow"],
                 },
             })
-            .then(res => {
-                const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeUndefined()
-                expect(parsedRes.data.CreateDevice.id).toBeDefined()
-                expect(parsedRes.data.CreateDevice.updatedAt).toBeDefined()
-                expect(parsedRes.data.CreateDevice.createdAt).toBeDefined()
-                expect(parsedRes.data.CreateDevice.tags).toEqual(["yellow"])
-                expect(parsedRes.data.CreateDevice.values).toEqual([])
-                expect(parsedRes.data.CreateDevice.customName).toBe("Lampada")
-                expect(parsedRes.data.CreateDevice.deviceType).toBe("Lamp")
-                expect(parsedRes.data.CreateDevice.user).toEqual({
-                    id: self.userId,
-                    email: "userTest2@email.com",
-                })
-                self.deviceId = parsedRes.data.CreateDevice.id
-                done()
-            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.CreateDevice.id).toBeDefined()
+        expect(parsedRes.data.CreateDevice.updatedAt).toBeDefined()
+        expect(parsedRes.data.CreateDevice.createdAt).toBeDefined()
+        expect(parsedRes.data.CreateDevice.tags).toEqual(["yellow"])
+        expect(parsedRes.data.CreateDevice.values).toEqual([])
+        expect(parsedRes.data.CreateDevice.customName).toBe("Lampada")
+        expect(parsedRes.data.CreateDevice.deviceType).toBe("Lamp")
+        expect(parsedRes.data.CreateDevice.user).toEqual({
+            id: self.userId,
+            email: "userTest2@email.com",
+        })
+        self.deviceId = parsedRes.data.CreateDevice.id
+        done()
     })
 
     it("should be able to create a device without tags", done => {
@@ -146,9 +138,9 @@ describe("Device", function() {
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
                 expect(parsedRes.errors).toBeUndefined()
-                expect(parsedRes.data.CreateDevice.id).toBeDefined()
-                expect(parsedRes.data.CreateDevice.updatedAt).toBeDefined()
-                expect(parsedRes.data.CreateDevice.createdAt).toBeDefined()
+                expect(parsedRes.data.CreateDevice.id).toBeTruthy()
+                expect(parsedRes.data.CreateDevice.updatedAt).toBeTruthy()
+                expect(parsedRes.data.CreateDevice.createdAt).toBeTruthy()
                 expect(parsedRes.data.CreateDevice.tags).toEqual([])
                 expect(parsedRes.data.CreateDevice.values).toEqual([])
                 expect(parsedRes.data.CreateDevice.customName).toBe("Lampada")
@@ -182,7 +174,7 @@ describe("Device", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
                 )
@@ -220,8 +212,8 @@ describe("Device", function() {
                 const parsedRes = JSON.parse(res.text)
                 expect(parsedRes.errors).toBeUndefined()
                 expect(parsedRes.data.device.id).toBe(self.deviceId)
-                expect(parsedRes.data.device.updatedAt).toBeDefined()
-                expect(parsedRes.data.device.createdAt).toBeDefined()
+                expect(parsedRes.data.device.updatedAt).toBeTruthy()
+                expect(parsedRes.data.device.createdAt).toBeTruthy()
                 expect(parsedRes.data.device.customName).toBe("Lampada")
                 expect(parsedRes.data.device.deviceType).toBe("Lamp")
                 expect(parsedRes.data.device.tags).toEqual(["yellow"])
@@ -274,7 +266,7 @@ describe("Device", function() {
                     },
                 })
             const parsedRes = JSON.parse(res.text)
-            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors).toBeTruthy()
             expect(parsedRes.errors[0].message).toBe(
                 "The requested resource does not exist"
             )
@@ -313,7 +305,7 @@ describe("Device", function() {
                     },
                 })
             const parsedRes = JSON.parse(res.text)
-            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors).toBeTruthy()
             expect(parsedRes.errors[0].message).toBe(
                 "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
             )
@@ -353,7 +345,7 @@ describe("Device", function() {
                     },
                 })
             const parsedRes = JSON.parse(res.text)
-            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors).toBeTruthy()
             expect(parsedRes.errors[0].message).toBe(
                 "You are not allowed to access details about this resource"
             )

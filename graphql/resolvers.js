@@ -50,7 +50,7 @@ const resolvers = {
     Json: GraphQLToolsTypes.JSON({name: "Json"}),
     User: UserResolver(User, Device, Value),
     Device: DeviceResolver(Device, User, Value),
-    Mutation: MutationResolver(User, Device, JWT_SECRET),
+    Mutation: MutationResolver(User, Device, Value, FloatValue, JWT_SECRET),
     Query: QueryResolver(Device),
 }
 

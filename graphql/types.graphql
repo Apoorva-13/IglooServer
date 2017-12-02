@@ -21,7 +21,37 @@ type Mutation {
         customName: String
         tags: [String!]!
     ): Device
-    #CreateValue
+    CreateFloatValue(
+        deviceId: ID!
+        permission: ValuePermission!
+        relevance: ValueRelevance!
+        valueDetails: String
+        value: Float!
+        precision: Float
+        boundaries: [Float!]
+    ): FloatValue
+    CreateStringValue(
+        deviceId: ID!
+        permission: ValuePermission!
+        relevance: ValueRelevance!
+        valueDetails: String
+        value: String!
+        maxChars: Int
+    ): StringValue
+    CreateBooleanValue(
+        deviceId: ID!
+        permission: ValuePermission!
+        relevance: ValueRelevance!
+        valueDetails: String
+        value: Boolean!
+    ): BooleanValue
+    CreateColourValue(
+        deviceId: ID!
+        permission: ValuePermission!
+        relevance: ValueRelevance!
+        valueDetails: String
+        value: [Int!]! #rgb array
+    ): ColourValue
     #AddDeviceTag
 }
 
@@ -132,7 +162,7 @@ interface Value {
     updatedAt: DateTime!
     # owners
     device: Device!
-    user: User! # the user owning this device}
+    user: User! # the user owning this device
     # igloo system fields
     permission: ValuePermission! @defaultValue(value: READ_WRITE)
     relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
@@ -153,7 +183,7 @@ type FloatValue implements Value {
     relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
     # notifications: [Notification!]!
     valueDetails: String # Unit of measurement
-    value: Float
+    value: Float!
     precision: Float
     # [min, max]
     boundaries: [Float!]
@@ -172,7 +202,7 @@ type StringValue implements Value {
     relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
     # notifications: [Notification!]!
     valueDetails: String # Unit of measurement
-    value: String
+    value: String!
     maxChars: Int # string
 }
 
@@ -205,7 +235,7 @@ type BooleanValue implements Value {
     relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
     # notifications: [Notification!]!
     valueDetails: String # Unit of measurement
-    value: Boolean
+    value: Boolean!
 }
 
 type ColourValue implements Value {

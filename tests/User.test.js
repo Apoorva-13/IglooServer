@@ -32,8 +32,8 @@ describe("User", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.data.SignupUser.id).toBeDefined()
-                expect(parsedRes.data.SignupUser.token).toBeDefined()
+                expect(parsedRes.data.SignupUser.id).toBeTruthy()
+                expect(parsedRes.data.SignupUser.token).toBeTruthy()
                 expect(parsedRes.errors).toBeUndefined()
                 self.userId = parsedRes.data.SignupUser.id
                 self.token = parsedRes.data.SignupUser.token
@@ -66,8 +66,8 @@ describe("User", function() {
                 const parsedRes = JSON.parse(res.text)
                 expect(parsedRes.data.user.id).toBe(self.userId)
                 expect(parsedRes.data.user.email).toBe("userTest@email.com")
-                expect(parsedRes.data.user.createdAt).toBeDefined()
-                expect(parsedRes.data.user.updatedAt).toBeDefined()
+                expect(parsedRes.data.user.createdAt).toBeTruthy()
+                expect(parsedRes.data.user.updatedAt).toBeTruthy()
                 expect(parsedRes.data.user.devices).toEqual([])
                 expect(parsedRes.data.user.values).toEqual([])
                 expect(parsedRes.errors).toBeUndefined()
@@ -99,7 +99,7 @@ describe("User", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
                 )
@@ -141,7 +141,7 @@ describe("User", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "User doesn't exist. Use `SignupUser` to create one"
                 )

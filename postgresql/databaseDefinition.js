@@ -69,10 +69,6 @@ const databaseDefinition = sequelize => {
         ...selfId,
         ...otherId("userId", User),
         ...otherId("deviceId", Device),
-        type: {
-            type: ValueType,
-            allowNull: false,
-        },
         valueDetails: {
             type: Sequelize.STRING,
         },

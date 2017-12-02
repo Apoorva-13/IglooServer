@@ -31,8 +31,8 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.data.SignupUser.id).toBeDefined()
-                expect(parsedRes.data.SignupUser.token).toBeDefined()
+                expect(parsedRes.data.SignupUser.id).toBeTruthy()
+                expect(parsedRes.data.SignupUser.token).toBeTruthy()
                 expect(parsedRes.errors).toBeUndefined()
                 self.userId = parsedRes.data.SignupUser.id // adding userid to the test suite object
                 self.token = parsedRes.data.SignupUser.token
@@ -60,7 +60,7 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "A user with this email already exists"
                 )
@@ -87,8 +87,8 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.data.AuthenticateUser.id).toBeDefined()
-                expect(parsedRes.data.AuthenticateUser.token).toBeDefined()
+                expect(parsedRes.data.AuthenticateUser.id).toBeTruthy()
+                expect(parsedRes.data.AuthenticateUser.token).toBeTruthy()
                 expect(parsedRes.errors).toBeUndefined()
                 done()
             })
@@ -113,7 +113,7 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe("Wrong password")
                 done()
             })
@@ -138,7 +138,7 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "User doesn't exist. Use `SignupUser` to create one"
                 )
@@ -166,8 +166,8 @@ describe("Mutation", function() {
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
                 expect(parsedRes.errors).toBeUndefined()
-                expect(parsedRes.data.ChangePassword.id).toBeDefined()
-                expect(parsedRes.data.ChangePassword.token).toBeDefined()
+                expect(parsedRes.data.ChangePassword.id).toBeTruthy()
+                expect(parsedRes.data.ChangePassword.token).toBeTruthy()
                 expect(parsedRes.data.ChangePassword.id).toBe(self.userId)
                 done()
             })
@@ -191,7 +191,7 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
                 )
@@ -227,7 +227,7 @@ describe("Mutation", function() {
             })
             .then(res => {
                 const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
+                expect(parsedRes.errors).toBeTruthy()
                 expect(parsedRes.errors[0].message).toBe(
                     "User doesn't exist. Use `SignupUser` to create one"
                 )

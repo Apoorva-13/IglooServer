@@ -7,7 +7,7 @@ const log = console.log
 
 const SALT_ROUNDS = 10
 
-const MutationResolver = (User, Device, JWT_SECRET) => ({
+const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
     // checks if the user exists, if so
     // compares the given password with the hash
     // and returns an access token
@@ -128,7 +128,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
         return new Promise(
             authenticated(context, async (resolve, reject) => {
                 try {
-                    const newUser = await Device.create({
+                    const newDevice = await Device.create({
                         customName: args.customName,
                         deviceType: args.deviceType,
                         tags: args.tags,
@@ -142,7 +142,7 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                         customName,
                         userId,
                         tags,
-                    } = newUser.dataValues
+                    } = newDevice.dataValues
                     const values = [] // values cannot be set when creating the device so no need to fetch them
                     resolve({
                         id,
@@ -161,6 +161,75 @@ const MutationResolver = (User, Device, JWT_SECRET) => ({
                     log(e)
                     reject(
                         "104 - An internal error occured, please contact us. The error code is 104"
+                    )
+                }
+            })
+        )
+    },
+    CreateFloatValue(root, args, context) {
+        return new Promise(
+            authenticated(context, async (resolve, reject) => {
+                // looks for the device, if the device is owned by the user
+                // creates a Value and a FloatValue in the database and returns
+                try {
+                    const deviceFound = await Device.find({
+                        where: {id: args.deviceId},
+                    })
+                    /* istanbul ignore next */
+                    if (!deviceFound) {
+                        reject("The supplied deviceId does not exist")
+                    } else if (deviceFound.userId !== context.auth.userId) {
+                        /* istanbul ignore next */
+                        reject(
+                            "You are not allowed to edit details about this device"
+                        )
+                    } else {
+                        const {
+                            deviceId,
+                            valueDetails,
+                            permission,
+                            relevance,
+                            value,
+                            precision,
+                            boundaries,
+                        } = args
+                        const newValue = await Value.create({
+                            userId: context.auth.userId,
+                            deviceId,
+                            valueDetails,
+                            permission,
+                            relevance,
+                        })
+                        const newFloatValue = await FloatValue.create({
+                            userId: context.auth.userId,
+                            valueId: newValue.id,
+                            value,
+                            precision,
+                            boundaries,
+                        })
+                        resolve({
+                            id: newFloatValue.id,
+                            createdAt: newFloatValue.createdAt,
+                            updatedAt: newFloatValue.updatedAt,
+                            device: {
+                                id: newValue.deviceId,
+                            },
+                            user: {
+                                id: newValue.userId,
+                            },
+                            permission: newValue.permission,
+                            relevance: newValue.relevance,
+                            valueDetails: newValue.valueDetails,
+                            value: newFloatValue.value,
+                            precision: newFloatValue.precision,
+                            boundaries: newFloatValue.boundaries,
+                        })
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - CreateFloatValue 112"))
+                    log(e)
+                    reject(
+                        "112 - An internal error occured, please contact us. The error code is 112"
                     )
                 }
             })
