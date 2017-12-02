@@ -233,14 +233,28 @@ describe("Device", function() {
             })
     })
 
-    it("should not be able to load a device that doesn't exist", done => {
-        request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .set("Authorization", "Bearer " + self.token)
-            .send({
-                query: `query device($id:ID!){
+    it("should not be able to load a device that doesn't exist", async done => {
+        // try each prop alone, so that each resolver is triggered,
+        // otherwise we would risk of having a prop unprotected that
+        // we do not detect because another prop rejects the request
+        const props = [
+            "id",
+            "updatedAt",
+            "createdAt",
+            "customName",
+            "tags",
+            "deviceType",
+            "values{id}",
+            "user{id}",
+        ]
+        for (let i in props) {
+            const res = await request(GraphQLServer)
+                .post("/graphql")
+                .set("content-type", "application/json")
+                .set("accept", "application/json")
+                .set("Authorization", "Bearer " + self.token)
+                .send({
+                    query: `query device($id:ID!){
                             device(id:$id){
                                 id
                                 updatedAt
@@ -255,18 +269,17 @@ describe("Device", function() {
                             }
                         }
                 `,
-                variables: {
-                    id: "aaf5480f-b804-424d-bec8-3f7b363b5519", // wrong ID
-                },
-            })
-            .then(res => {
-                const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
-                expect(parsedRes.errors[0].message).toBe(
-                    "The requested resource does not exist"
-                )
-                done()
-            })
+                    variables: {
+                        id: "aaf5480f-b804-424d-bec8-3f7b363b5519", // wrong ID
+                    },
+                })
+            const parsedRes = JSON.parse(res.text)
+            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors[0].message).toBe(
+                "The requested resource does not exist"
+            )
+        }
+        done()
     })
 
     it("should not be able to load a device without a token", async done => {
