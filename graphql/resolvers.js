@@ -12,6 +12,7 @@ import moment from "moment"
 const log = console.log
 
 require("dotenv").config()
+/* instanbul ignore if */
 if (!process.env.JWT_SECRET) {
     throw new Error("Could not load .env")
 }

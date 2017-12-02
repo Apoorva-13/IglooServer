@@ -45,7 +45,7 @@ const QueryResolver = Device => ({
                             },
                         })
                     }
-                } catch (e) {
+                } catch (e) /* istanbul ignore next */ {
                     log(chalk.red("INTERNAL ERROR - Query device 105"))
                     log(e)
                     reject(

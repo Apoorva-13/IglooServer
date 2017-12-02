@@ -269,74 +269,82 @@ describe("Device", function() {
             })
     })
 
-    it("should not be able to load a device without a token", done => {
-        request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .send({
-                query: `query device($id:ID!){
+    it("should not be able to load a device without a token", async done => {
+        // try each prop alone, so that each resolver is triggered,
+        // otherwise we would risk of having a prop unprotected that
+        // we do not detect because another prop rejects the request
+        const props = [
+            "id",
+            "updatedAt",
+            "createdAt",
+            "customName",
+            "tags",
+            "deviceType",
+            "values{id}",
+            "user{id}",
+        ]
+        for (let i in props) {
+            const res = await request(GraphQLServer)
+                .post("/graphql")
+                .set("content-type", "application/json")
+                .set("accept", "application/json")
+                .send({
+                    query: `query device($id:ID!){
                             device(id:$id){
-                                id
-                                updatedAt
-                                createdAt
-                                customName
-                                tags
-                                deviceType
-                                user{
-                                    id
-                                    email
-                                }
+                                ${props[i]}
                             }
                         }
                 `,
-                variables: {
-                    id: self.deviceId, // wrong ID
-                },
-            })
-            .then(res => {
-                const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
-                expect(parsedRes.errors[0].message).toBe(
-                    "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
-                )
-                done()
-            })
+                    variables: {
+                        id: self.deviceId, // wrong ID
+                    },
+                })
+            const parsedRes = JSON.parse(res.text)
+            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors[0].message).toBe(
+                "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
+            )
+        }
+        done()
     })
 
-    it("should not be able to load a device owned by someone else", done => {
-        request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .set("Authorization", "Bearer " + self.token) // token of user 1
-            .send({
-                query: `query device($id:ID!){
+    it("should not be able to load a device owned by someone else", async done => {
+        // try each prop alone, so that each resolver is triggered,
+        // otherwise we would risk of having a prop unprotected that
+        // we do not detect because another prop rejects the request
+        const props = [
+            "id",
+            "updatedAt",
+            "createdAt",
+            "customName",
+            "tags",
+            "deviceType",
+            "values{id}",
+            "user{id}",
+        ]
+        for (let i in props) {
+            const res = await request(GraphQLServer)
+                .post("/graphql")
+                .set("content-type", "application/json")
+                .set("accept", "application/json")
+                .set("Authorization", "Bearer " + self.token) // token of user 1
+                .send({
+                    query: `query device($id:ID!){
                             device(id:$id){
-                                id
-                                updatedAt
-                                createdAt
-                                customName
-                                tags
-                                deviceType
-                                user{
-                                    id
-                                    email
-                                }
+                                ${props[i]}
                             }
                         }
                 `,
-                variables: {
-                    id: self.deviceId2, // device owned by user 2
-                },
-            })
-            .then(res => {
-                const parsedRes = JSON.parse(res.text)
-                expect(parsedRes.errors).toBeDefined()
-                expect(parsedRes.errors[0].message).toBe(
-                    "You are not allowed to access details about this resource"
-                )
-                done()
-            })
+                    variables: {
+                        id: self.deviceId2, // device owned by user 2
+                    },
+                })
+            const parsedRes = JSON.parse(res.text)
+            expect(parsedRes.errors).toBeDefined()
+            expect(parsedRes.errors[0].message).toBe(
+                "You are not allowed to access details about this resource"
+            )
+        }
+        done()
     })
 })
