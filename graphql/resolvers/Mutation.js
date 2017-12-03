@@ -191,24 +191,33 @@ const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
                             precision,
                             boundaries,
                         } = args
-                        const newValue = await Value.create({
-                            userId: context.auth.userId,
-                            deviceId,
-                            valueDetails,
-                            permission,
-                            relevance,
-                        })
-                        const newFloatValue = await FloatValue.create({
-                            userId: context.auth.userId,
-                            valueId: newValue.id,
-                            value,
-                            precision,
-                            boundaries,
-                        })
+                        const newValue = await Value.create(
+                            {
+                                userId: context.auth.userId,
+                                deviceId,
+                                valueDetails,
+                                permission,
+                                relevance,
+                                childFloat: {
+                                    userId: context.auth.userId,
+                                    value,
+                                    precision,
+                                    boundaries,
+                                },
+                            },
+                            {
+                                include: [
+                                    {
+                                        model: FloatValue,
+                                        as: "childFloat",
+                                    },
+                                ],
+                            }
+                        )
                         resolve({
-                            id: newFloatValue.id,
-                            createdAt: newFloatValue.createdAt,
-                            updatedAt: newFloatValue.updatedAt,
+                            id: newValue.childFloat.id,
+                            createdAt: newValue.childFloat.createdAt,
+                            updatedAt: newValue.childFloat.updatedAt,
                             device: {
                                 id: newValue.deviceId,
                             },
@@ -218,9 +227,9 @@ const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
                             permission: newValue.permission,
                             relevance: newValue.relevance,
                             valueDetails: newValue.valueDetails,
-                            value: newFloatValue.value,
-                            precision: newFloatValue.precision,
-                            boundaries: newFloatValue.boundaries,
+                            value: newValue.childFloat.value,
+                            precision: newValue.childFloat.precision,
+                            boundaries: newValue.childFloat.boundaries,
                         })
                     }
                 } catch (e) /* istanbul ignore next */ {

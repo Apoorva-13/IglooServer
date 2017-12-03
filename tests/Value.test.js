@@ -152,6 +152,7 @@ describe("Value", function() {
         expect(parsedRes.data.CreateFloatValue.value).toBe(5)
         expect(parsedRes.data.CreateFloatValue.precision).toBe(0.1)
         expect(parsedRes.data.CreateFloatValue.boundaries).toEqual([1, 2])
+        self.valueId = parsedRes.data.CreateFloatValue.id
         done()
     })
 
@@ -213,6 +214,7 @@ describe("Value", function() {
         expect(parsedRes.data.CreateFloatValue.value).toBe(5)
         expect(parsedRes.data.CreateFloatValue.precision).toBeNull()
         expect(parsedRes.data.CreateFloatValue.boundaries).toBeNull()
+        self.valueId2 = parsedRes.data.CreateFloatValue.id
         done()
     })
 
@@ -253,7 +255,7 @@ describe("Value", function() {
         done()
     })
 
-    it("should not be able to create a value under a device tha does not exist", async done => {
+    it("should not be able to create a value under a device that does not exist", async done => {
         const res = await request(GraphQLServer)
             .post("/graphql")
             .set("content-type", "application/json")
@@ -287,6 +289,32 @@ describe("Value", function() {
         expect(parsedRes.errors[0].message).toBe(
             "The supplied deviceId does not exist"
         )
+        done()
+    })
+
+    it("should be listed in a device's values", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `query device($id:ID!){
+                            device(id:$id){
+                                values{
+                                    id
+                                }
+                            }
+                        }
+                `,
+                variables: {
+                    id: self.deviceId,
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.device.values.length).toBe(1)
+        expect(parsedRes.data.device.values[0].id).toBe(self.valueId)
         done()
     })
 })

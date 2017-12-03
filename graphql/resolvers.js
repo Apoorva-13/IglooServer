@@ -49,9 +49,24 @@ const resolvers = {
     DateTime: GraphQLToolsTypes.Date({name: "DateTime"}),
     Json: GraphQLToolsTypes.JSON({name: "Json"}),
     User: UserResolver(User, Device, Value),
-    Device: DeviceResolver(Device, User, Value),
+    Device: DeviceResolver(
+        Device,
+        User,
+        Value,
+        FloatValue,
+        StringValue,
+        PlotValue,
+        PlotNode,
+        MapValue,
+        ColorValue
+    ),
     Mutation: MutationResolver(User, Device, Value, FloatValue, JWT_SECRET),
     Query: QueryResolver(Device),
+    Value: {
+        __resolveType(root, args, context) {
+            return "FloatValue"
+        },
+    },
 }
 
 export default resolvers

@@ -2,7 +2,17 @@ import {authenticated, retrieveScalarProp} from "./utilities.js"
 import chalk from "chalk"
 const log = console.log
 
-const DeviceResolver = (Device, User, Value) => ({
+const DeviceResolver = (
+    Device,
+    User,
+    Value,
+    FloatValue,
+    StringValue,
+    PlotValue,
+    PlotNode,
+    MapValue,
+    ColorValue
+) => ({
     createdAt: retrieveScalarProp(Device, "createdAt"),
     updatedAt: retrieveScalarProp(Device, "updatedAt"),
     deviceType: retrieveScalarProp(Device, "deviceType"),
@@ -26,8 +36,43 @@ const DeviceResolver = (Device, User, Value) => ({
                     } else {
                         const values = await Value.findAll({
                             where: {deviceId: deviceFound.id},
+                            include: [
+                                {
+                                    model: FloatValue,
+                                    required: false,
+                                    as: "childFloat",
+                                },
+                                // {
+                                //     model: StringValue,
+                                //     required: false,
+                                //     as: "childString",
+                                // },
+                            ],
                         })
-                        resolve(values)
+                        resolve(
+                            values.map(value => {
+                                if (value.dataValues.childFloat) {
+                                    return {
+                                        ...value.dataValues,
+                                        ...value.dataValues.childFloat
+                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                        __resolveType: "FloatValue",
+                                    }
+                                    // } else if (values.dataValues.childString) {
+                                    //     return {
+                                    //         ...value.dataValues,
+                                    //         ...value.dataValues.childString
+                                    //             .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                    //         __resolveType: "StringValue",
+                                    //     }
+                                } else {
+                                    return {
+                                        ...value.dataValues,
+                                        __resolveType: null,
+                                    }
+                                }
+                            })
+                        )
                     }
                 } catch (e) /* istanbul ignore next */ {
                     log(chalk.red("INTERNAL ERROR - Device 110"))

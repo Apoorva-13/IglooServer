@@ -83,7 +83,6 @@ const databaseDefinition = sequelize => {
     const BoolValue = sequelize.define("boolValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
         value: {
             type: Sequelize.BOOLEAN,
             allowNull: false,
@@ -92,7 +91,6 @@ const databaseDefinition = sequelize => {
     const FloatValue = sequelize.define("floatValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
         value: {
             type: Sequelize.FLOAT,
             allowNull: false,
@@ -107,7 +105,6 @@ const databaseDefinition = sequelize => {
     const StringValue = sequelize.define("stringValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
         value: {
             type: Sequelize.STRING,
             allowNull: false,
@@ -119,7 +116,6 @@ const databaseDefinition = sequelize => {
     const PlotValue = sequelize.define("plotValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
     })
     const PlotNode = sequelize.define("plotNode", {
         ...selfId,
@@ -137,7 +133,6 @@ const databaseDefinition = sequelize => {
     const MapValue = sequelize.define("mapValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
         latitude: {
             type: Sequelize.FLOAT,
         },
@@ -152,10 +147,28 @@ const databaseDefinition = sequelize => {
     const ColorValue = sequelize.define("colorValue", {
         ...selfId,
         ...otherId("userId", User),
-        ...otherId("valueId", Value),
         value: {
             type: Sequelize.STRING,
         },
+    })
+
+    Value.hasOne(BoolValue, {
+        as: "childBool",
+    })
+    Value.hasOne(FloatValue, {
+        as: "childFloat",
+    })
+    Value.hasOne(StringValue, {
+        as: "childString",
+    })
+    Value.hasOne(PlotValue, {
+        as: "childPlot",
+    })
+    Value.hasOne(MapValue, {
+        as: "childMap",
+    })
+    Value.hasOne(ColorValue, {
+        as: "childColor",
     })
 
     return {
