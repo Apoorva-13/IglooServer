@@ -42,11 +42,11 @@ const DeviceResolver = (
                                     required: false,
                                     as: "childFloat",
                                 },
-                                // {
-                                //     model: StringValue,
-                                //     required: false,
-                                //     as: "childString",
-                                // },
+                                {
+                                    model: StringValue,
+                                    required: false,
+                                    as: "childString",
+                                },
                             ],
                         })
                         resolve(
@@ -58,13 +58,13 @@ const DeviceResolver = (
                                             .dataValues, // childFloat second so that its id, createdAt, ... are selected
                                         __resolveType: "FloatValue",
                                     }
-                                    // } else if (values.dataValues.childString) {
-                                    //     return {
-                                    //         ...value.dataValues,
-                                    //         ...value.dataValues.childString
-                                    //             .dataValues, // childFloat second so that its id, createdAt, ... are selected
-                                    //         __resolveType: "StringValue",
-                                    //     }
+                                } else if (value.dataValues.childString) {
+                                    return {
+                                        ...value.dataValues,
+                                        ...value.dataValues.childString
+                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                        __resolveType: "StringValue",
+                                    }
                                 } else {
                                     return {
                                         ...value.dataValues,

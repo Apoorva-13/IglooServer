@@ -1,4 +1,8 @@
-import {authenticated, generateAuthenticationToken} from "./utilities.js"
+import {
+    authenticated,
+    generateAuthenticationToken,
+    CreateGenericValue,
+} from "./utilities.js"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
 import moment from "moment"
@@ -7,7 +11,14 @@ const log = console.log
 
 const SALT_ROUNDS = 10
 
-const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
+const MutationResolver = (
+    User,
+    Device,
+    Value,
+    FloatValue,
+    StringValue,
+    JWT_SECRET
+) => ({
     // checks if the user exists, if so
     // compares the given password with the hash
     // and returns an access token
@@ -166,82 +177,20 @@ const MutationResolver = (User, Device, Value, FloatValue, JWT_SECRET) => ({
             })
         )
     },
-    CreateFloatValue(root, args, context) {
-        return new Promise(
-            authenticated(context, async (resolve, reject) => {
-                // looks for the device, if the device is owned by the user
-                // creates a Value and a FloatValue in the database and returns
-                try {
-                    const deviceFound = await Device.find({
-                        where: {id: args.deviceId},
-                    })
-                    if (!deviceFound) {
-                        reject("The supplied deviceId does not exist")
-                    } else if (deviceFound.userId !== context.auth.userId) {
-                        reject(
-                            "You are not allowed to edit details about this device"
-                        )
-                    } else {
-                        const {
-                            deviceId,
-                            valueDetails,
-                            permission,
-                            relevance,
-                            value,
-                            precision,
-                            boundaries,
-                        } = args
-                        const newValue = await Value.create(
-                            {
-                                userId: context.auth.userId,
-                                deviceId,
-                                valueDetails,
-                                permission,
-                                relevance,
-                                childFloat: {
-                                    userId: context.auth.userId,
-                                    value,
-                                    precision,
-                                    boundaries,
-                                },
-                            },
-                            {
-                                include: [
-                                    {
-                                        model: FloatValue,
-                                        as: "childFloat",
-                                    },
-                                ],
-                            }
-                        )
-                        resolve({
-                            id: newValue.childFloat.id,
-                            createdAt: newValue.childFloat.createdAt,
-                            updatedAt: newValue.childFloat.updatedAt,
-                            device: {
-                                id: newValue.deviceId,
-                            },
-                            user: {
-                                id: newValue.userId,
-                            },
-                            permission: newValue.permission,
-                            relevance: newValue.relevance,
-                            valueDetails: newValue.valueDetails,
-                            value: newValue.childFloat.value,
-                            precision: newValue.childFloat.precision,
-                            boundaries: newValue.childFloat.boundaries,
-                        })
-                    }
-                } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - CreateFloatValue 112"))
-                    log(e)
-                    reject(
-                        "112 - An internal error occured, please contact us. The error code is 112"
-                    )
-                }
-            })
-        )
-    },
+    CreateFloatValue: CreateGenericValue(
+        Device,
+        Value,
+        ["precision", "boundaries"],
+        "childFloat",
+        FloatValue
+    ),
+    CreateStringValue: CreateGenericValue(
+        Device,
+        Value,
+        ["maxChars"],
+        "childString",
+        StringValue
+    ),
 })
 
 export default MutationResolver

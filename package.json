@@ -5,7 +5,7 @@
     "scripts": {
         "start": "nodemon ./server.js --exec babel-node -e js,graphql,env",
         "setupDatabase": "node ./postgresql/setup.js",
-        "test": "jest --coverage --runInBand --bail --forceExit",
+        "test": "jest --coverage --bail --forceExit",
         "pretest": "npm run setupDatabase",
         "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
     },

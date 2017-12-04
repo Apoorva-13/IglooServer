@@ -60,11 +60,20 @@ const resolvers = {
         MapValue,
         ColorValue
     ),
-    Mutation: MutationResolver(User, Device, Value, FloatValue, JWT_SECRET),
+    Mutation: MutationResolver(
+        User,
+        Device,
+        Value,
+        FloatValue,
+        StringValue,
+        JWT_SECRET
+    ),
     Query: QueryResolver(Device),
     Value: {
         __resolveType(root, args, context) {
-            return "FloatValue"
+            return root.childFloat
+                ? "FloatValue"
+                : root.childString ? "StringValue" : null
         },
     },
 }

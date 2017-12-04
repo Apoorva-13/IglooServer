@@ -85,30 +85,122 @@ describe("Value", function() {
         self.deviceId2 = parsedRes2B.data.CreateDevice.id
     })
 
-    it("should be able to add a FloatValue", async done => {
-        const res = await request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .set("Authorization", "Bearer " + self.token)
-            .send({
-                query: `mutation CreateFloatValue(
+    it("should be able to add Values", async done => {
+        let valueDatas = [
+            {
+                idName: "valueId",
+                mutationName: "CreateFloatValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "Float!",
+                        value: 5,
+                    },
+                    {
+                        name: "precision",
+                        type: "Float",
+                        value: 0.1,
+                    },
+                    {
+                        name: "boundaries",
+                        type: "[Float!]!",
+                        value: [1, 2],
+                    },
+                ],
+                token: self.token,
+                deviceId: self.deviceId,
+                email: "userTest4@email.com",
+            },
+            {
+                idName: "valueId2",
+                mutationName: "CreateFloatValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "Float!",
+                        value: 5,
+                    },
+                ],
+                token: self.token2,
+                deviceId: self.deviceId2,
+                email: "userTest5@email.com",
+            },
+            {
+                idName: "stringValueId",
+                mutationName: "CreateStringValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "String!",
+                        value: "aaaa",
+                    },
+                    {
+                        name: "maxChars",
+                        type: "Int",
+                        value: 10,
+                    },
+                ],
+                token: self.token,
+                deviceId: self.deviceId,
+                email: "userTest4@email.com",
+            },
+            {
+                idName: "stringValueId2",
+                mutationName: "CreateStringValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "String!",
+                        value: "aaaa",
+                    },
+                ],
+                token: self.token2,
+                deviceId: self.deviceId2,
+                email: "userTest5@email.com",
+            },
+        ]
+        for (let i in valueDatas) {
+            const {
+                idName,
+                mutationName,
+                specificProps,
+                token,
+                deviceId,
+                email,
+            } = valueDatas[i]
+            const queryVariables = {
+                deviceId,
+                permission: "READ_WRITE",
+                relevance: "MAIN",
+                valueDetails: "",
+            }
+            for (let i in specificProps) {
+                queryVariables[specificProps[i].name] = specificProps[i].value
+            }
+            // sends a query passing the right specificProps and mutationName
+            const res = await request(GraphQLServer)
+                .post("/graphql")
+                .set("content-type", "application/json")
+                .set("accept", "application/json")
+                .set("Authorization", "Bearer " + token)
+                .send({
+                    query: `mutation ${mutationName}(
                             $deviceId: ID!
                             $permission: ValuePermission!
                             $relevance: ValueRelevance!
                             $valueDetails: String
-                            $value: Float!
-                            $precision: Float
-                            $boundaries: [Float!]
+                            ${specificProps
+                                .map(prop => `$${prop.name}: ${prop.type}`)
+                                .join("\n")}
                         ){
-                            CreateFloatValue(
+                            ${mutationName}(
                                 deviceId: $deviceId,
                                 permission: $permission,
                                 relevance: $relevance,
                                 valueDetails: $valueDetails,
-                                value: $value,
-                                precision: $precision,
-                                boundaries: $boundaries
+                                ${specificProps
+                                    .map(prop => `${prop.name}: $${prop.name}`)
+                                    .join("\n")}
                             ){
                                 id
                                 createdAt
@@ -122,99 +214,30 @@ describe("Value", function() {
                                 permission
                                 relevance
                                 valueDetails
-                                value
-                                precision
-                                boundaries
+                                ${specificProps
+                                    .map(prop => `${prop.name}`)
+                                    .join("\n")}
                             }
                         }`,
-                variables: {
-                    deviceId: self.deviceId,
-                    permission: "READ_WRITE",
-                    relevance: "MAIN",
-                    valueDetails: "",
-                    value: 5,
-                    precision: 0.1,
-                    boundaries: [1, 2],
-                },
-            })
-        const parsedRes = JSON.parse(res.text)
-        expect(parsedRes.errors).toBeUndefined()
-        expect(parsedRes.data.CreateFloatValue.id).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.createdAt).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.updatedAt).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.device.id).toBe(self.deviceId)
-        expect(parsedRes.data.CreateFloatValue.user.email).toBe(
-            "userTest4@email.com"
-        )
-        expect(parsedRes.data.CreateFloatValue.permission).toBe("READ_WRITE")
-        expect(parsedRes.data.CreateFloatValue.relevance).toBe("MAIN")
-        expect(parsedRes.data.CreateFloatValue.valueDetails).toBe("")
-        expect(parsedRes.data.CreateFloatValue.value).toBe(5)
-        expect(parsedRes.data.CreateFloatValue.precision).toBe(0.1)
-        expect(parsedRes.data.CreateFloatValue.boundaries).toEqual([1, 2])
-        self.valueId = parsedRes.data.CreateFloatValue.id
-        done()
-    })
-
-    it("should be able to add a FloatValue without unnecessary parameters", async done => {
-        const res = await request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .set("Authorization", "Bearer " + self.token2)
-            .send({
-                query: `mutation CreateFloatValue(
-                            $deviceId: ID!
-                            $permission: ValuePermission!
-                            $relevance: ValueRelevance!
-                            $value: Float!
-                        ){
-                            CreateFloatValue(
-                                deviceId: $deviceId,
-                                value: $value,
-                                permission:$permission,
-                                relevance:$relevance
-                            ){
-                                id
-                                createdAt
-                                updatedAt
-                                device{
-                                    id
-                                }
-                                user{
-                                    email
-                                }
-                                permission
-                                relevance
-                                valueDetails
-                                value
-                                precision
-                                boundaries
-                            }
-                        }`,
-                variables: {
-                    deviceId: self.deviceId2,
-                    value: 5,
-                    permission: "READ_ONLY",
-                    relevance: "MAIN",
-                },
-            })
-        const parsedRes = JSON.parse(res.text)
-        expect(parsedRes.errors).toBeUndefined()
-        expect(parsedRes.data.CreateFloatValue.id).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.createdAt).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.updatedAt).toBeTruthy()
-        expect(parsedRes.data.CreateFloatValue.device.id).toBe(self.deviceId2)
-        expect(parsedRes.data.CreateFloatValue.user.email).toBe(
-            "userTest5@email.com"
-        )
-        expect(parsedRes.data.CreateFloatValue.permission).toBe("READ_ONLY")
-        expect(parsedRes.data.CreateFloatValue.relevance).toBe("MAIN")
-        expect(parsedRes.data.CreateFloatValue.valueDetails).toBeNull()
-        expect(parsedRes.data.CreateFloatValue.value).toBe(5)
-        expect(parsedRes.data.CreateFloatValue.precision).toBeNull()
-        expect(parsedRes.data.CreateFloatValue.boundaries).toBeNull()
-        self.valueId2 = parsedRes.data.CreateFloatValue.id
+                    variables: queryVariables,
+                })
+            const parsedRes = JSON.parse(res.text)
+            expect(parsedRes.errors).toBeUndefined()
+            expect(parsedRes.data[mutationName].id).toBeTruthy()
+            expect(parsedRes.data[mutationName].createdAt).toBeTruthy()
+            expect(parsedRes.data[mutationName].updatedAt).toBeTruthy()
+            expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
+            expect(parsedRes.data[mutationName].user.email).toBe(email)
+            expect(parsedRes.data[mutationName].permission).toBe("READ_WRITE")
+            expect(parsedRes.data[mutationName].relevance).toBe("MAIN")
+            expect(parsedRes.data[mutationName].valueDetails).toBe("")
+            for (let i in specificProps) {
+                expect(
+                    parsedRes.data[mutationName][specificProps[i].name]
+                ).toEqual(specificProps[i].value)
+            }
+            self[idName] = parsedRes.data[mutationName].id
+        }
         done()
     })
 
@@ -313,7 +336,7 @@ describe("Value", function() {
             })
         const parsedRes = JSON.parse(res.text)
         expect(parsedRes.errors).toBeUndefined()
-        expect(parsedRes.data.device.values.length).toBe(1)
+        expect(parsedRes.data.device.values.length).toBe(2)
         expect(parsedRes.data.device.values[0].id).toBe(self.valueId)
         done()
     })

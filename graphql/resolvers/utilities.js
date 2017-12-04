@@ -1,5 +1,7 @@
 import jwt from "jwt-simple"
 import moment from "moment"
+import chalk from "chalk"
+const log = console.log
 
 const JWT_EXPIRE_DAYS = 7
 
@@ -53,8 +55,106 @@ const retrieveScalarProp = (Model, prop) => {
         )
     }
 }
+
+// generic resolver for CreateXValue mutations
+const CreateGenericValue = (
+    Device,
+    Value,
+    childProps,
+    childName,
+    childModel
+) => {
+    return (root, args, context) => {
+        return new Promise(
+            authenticated(context, async (resolve, reject) => {
+                // looks for the device, if the device is owned by the user
+                // creates a Value in the database and returns
+                try {
+                    const deviceFound = await Device.find({
+                        where: {id: args.deviceId},
+                    })
+                    if (!deviceFound) {
+                        reject("The supplied deviceId does not exist")
+                    } else if (deviceFound.userId !== context.auth.userId) {
+                        reject(
+                            "You are not allowed to edit details about this device"
+                        )
+                    } else {
+                        const {
+                            deviceId,
+                            valueDetails,
+                            permission,
+                            relevance,
+                            value,
+                        } = args
+
+                        const childGeneric = {}
+                        // loads in childGeneric all the required props from args
+                        for (let i in childProps) {
+                            childGeneric[childProps[i]] = args[childProps[i]]
+                        }
+
+                        // creates the value and the associated FloatValue/StringValue/...
+                        const newValue = await Value.create(
+                            {
+                                userId: context.auth.userId,
+                                deviceId,
+                                valueDetails,
+                                permission,
+                                relevance,
+                                [childName]: {
+                                    userId: context.auth.userId,
+                                    value,
+                                    ...childGeneric,
+                                },
+                            },
+                            {
+                                include: [
+                                    {
+                                        model: childModel,
+                                        as: childName,
+                                    },
+                                ],
+                            }
+                        )
+
+                        const resolveObj = {
+                            id: newValue[childName].id,
+                            createdAt: newValue[childName].createdAt,
+                            updatedAt: newValue[childName].updatedAt,
+                            device: {
+                                id: newValue.deviceId,
+                            },
+                            user: {
+                                id: newValue.userId,
+                            },
+                            permission: newValue.permission,
+                            relevance: newValue.relevance,
+                            valueDetails: newValue.valueDetails,
+                            value: newValue[childName].value,
+                        }
+                        // loads in resolveObj all the required props from args
+                        for (let i in childProps) {
+                            resolveObj[childProps[i]] =
+                                newValue[childName][childProps[i]]
+                        }
+
+                        resolve(resolveObj)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - CreateGenericValue 112"))
+                    log(e)
+                    reject(
+                        "112 - An internal error occured, please contact us. The error code is 112"
+                    )
+                }
+            })
+        )
+    }
+}
 module.exports = {
     authenticated,
     generateAuthenticationToken,
     retrieveScalarProp,
+    CreateGenericValue,
 }
