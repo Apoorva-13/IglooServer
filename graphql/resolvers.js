@@ -71,9 +71,7 @@ const resolvers = {
     Query: QueryResolver(Device),
     Value: {
         __resolveType(root, args, context) {
-            return root.childFloat
-                ? "FloatValue"
-                : root.childString ? "StringValue" : null
+            return root.childFloat ? "FloatValue" : "StringValue"
         },
     },
 }

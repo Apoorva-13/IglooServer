@@ -326,6 +326,12 @@ describe("Value", function() {
                             device(id:$id){
                                 values{
                                     id
+                                    ...on FloatValue{
+                                        floatValue: value
+                                    }
+                                    ...on StringValue{
+                                        stringValue: value
+                                    }
                                 }
                             }
                         }
