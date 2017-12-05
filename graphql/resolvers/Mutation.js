@@ -17,6 +17,7 @@ const MutationResolver = (
     Value,
     FloatValue,
     StringValue,
+    BoolValue,
     JWT_SECRET
 ) => ({
     // checks if the user exists, if so
@@ -190,6 +191,13 @@ const MutationResolver = (
         ["maxChars"],
         "childString",
         StringValue
+    ),
+    CreateBooleanValue: CreateGenericValue(
+        Device,
+        Value,
+        [],
+        "childBool",
+        BoolValue
     ),
 })
 

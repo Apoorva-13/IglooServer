@@ -6,6 +6,7 @@ const DeviceResolver = (
     Device,
     User,
     Value,
+    BoolValue,
     FloatValue,
     StringValue,
     PlotValue,
@@ -47,6 +48,11 @@ const DeviceResolver = (
                                     required: false,
                                     as: "childString",
                                 },
+                                {
+                                    model: BoolValue,
+                                    required: false,
+                                    as: "childBool",
+                                },
                             ],
                         })
                         resolve(
@@ -64,6 +70,13 @@ const DeviceResolver = (
                                         ...value.dataValues.childString
                                             .dataValues, // childFloat second so that its id, createdAt, ... are selected
                                         __resolveType: "StringValue",
+                                    }
+                                } else if (value.dataValues.childBool) {
+                                    return {
+                                        ...value.dataValues,
+                                        ...value.dataValues.childBool
+                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                        __resolveType: "BooleanValue",
                                     }
                                 } else {
                                     return {

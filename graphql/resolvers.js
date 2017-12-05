@@ -53,6 +53,7 @@ const resolvers = {
         Device,
         User,
         Value,
+        BoolValue,
         FloatValue,
         StringValue,
         PlotValue,
@@ -66,12 +67,15 @@ const resolvers = {
         Value,
         FloatValue,
         StringValue,
+        BoolValue,
         JWT_SECRET
     ),
     Query: QueryResolver(Device),
     Value: {
         __resolveType(root, args, context) {
-            return root.childFloat ? "FloatValue" : "StringValue"
+            return root.childFloat
+                ? "FloatValue"
+                : root.childString ? "StringValue" : "BooleanValue"
         },
     },
 }
