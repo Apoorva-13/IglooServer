@@ -48,7 +48,15 @@ const {
 const resolvers = {
     DateTime: GraphQLToolsTypes.Date({name: "DateTime"}),
     Json: GraphQLToolsTypes.JSON({name: "Json"}),
-    User: UserResolver(User, Device, Value),
+    User: UserResolver(
+        User,
+        Device,
+        Value,
+        FloatValue,
+        StringValue,
+        BoolValue,
+        ColourValue
+    ),
     Device: DeviceResolver(
         Device,
         User,
@@ -71,7 +79,14 @@ const resolvers = {
         ColourValue,
         JWT_SECRET
     ),
-    Query: QueryResolver(Device),
+    Query: QueryResolver(
+        Device,
+        Value,
+        FloatValue,
+        StringValue,
+        BoolValue,
+        ColourValue
+    ),
     Value: {
         __resolveType(root, args, context) {
             return root.childFloat

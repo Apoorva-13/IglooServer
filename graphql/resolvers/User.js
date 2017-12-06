@@ -37,7 +37,15 @@ const retrieveUserScalarProp = (User, prop) => {
         )
     }
 }
-const UserResolver = (User, Device, Value) => ({
+const UserResolver = (
+    User,
+    Device,
+    Value,
+    FloatValue,
+    StringValue,
+    BoolValue,
+    ColourValue
+) => ({
     email: retrieveUserScalarProp(User, "email"),
     createdAt: retrieveUserScalarProp(User, "createdAt"),
     updatedAt: retrieveUserScalarProp(User, "updatedAt"),
@@ -78,8 +86,69 @@ const UserResolver = (User, Device, Value) => ({
                     } else {
                         const values = await Value.findAll({
                             where: {userId: root.id},
+                            include: [
+                                {
+                                    model: FloatValue,
+                                    required: false,
+                                    as: "childFloat",
+                                },
+                                {
+                                    model: StringValue,
+                                    required: false,
+                                    as: "childString",
+                                },
+                                {
+                                    model: BoolValue,
+                                    required: false,
+                                    as: "childBool",
+                                },
+                                {
+                                    model: ColourValue,
+                                    required: false,
+                                    as: "childColour",
+                                },
+                            ],
                         })
-                        resolve(values)
+                        resolve(
+                            values.map(value => {
+                                if (value.dataValues.childFloat) {
+                                    return {
+                                        ...value.dataValues.childFloat
+                                            .dataValues,
+                                        ...value.dataValues,
+                                        __resolveType: "FloatValue",
+                                    }
+                                } else if (value.dataValues.childString) {
+                                    return {
+                                        ...value.dataValues.childString
+                                            .dataValues,
+                                        ...value.dataValues,
+                                        __resolveType: "StringValue",
+                                    }
+                                } else if (value.dataValues.childBool) {
+                                    return {
+                                        ...value.dataValues.childBool
+                                            .dataValues,
+                                        ...value.dataValues,
+                                        __resolveType: "BooleanValue",
+                                    }
+                                } else if (value.dataValues.childColour) {
+                                    return {
+                                        ...value.dataValues.childColour
+                                            .dataValues,
+                                        ...value.dataValues,
+                                        __resolveType: "ColourValue",
+                                    }
+                                } else {
+                                    // should never happen
+                                    /* istanbul ignore next */
+                                    return {
+                                        ...value.dataValues,
+                                        __resolveType: null,
+                                    }
+                                }
+                            })
+                        )
                     }
                 } catch (e) /* istanbul ignore next */ {
                     log(chalk.red("INTERNAL ERROR - User 108"))

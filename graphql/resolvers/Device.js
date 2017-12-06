@@ -64,30 +64,30 @@ const DeviceResolver = (
                             values.map(value => {
                                 if (value.dataValues.childFloat) {
                                     return {
-                                        ...value.dataValues,
                                         ...value.dataValues.childFloat
-                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                            .dataValues,
+                                        ...value.dataValues,
                                         __resolveType: "FloatValue",
                                     }
                                 } else if (value.dataValues.childString) {
                                     return {
-                                        ...value.dataValues,
                                         ...value.dataValues.childString
                                             .dataValues,
+                                        ...value.dataValues,
                                         __resolveType: "StringValue",
                                     }
                                 } else if (value.dataValues.childBool) {
                                     return {
-                                        ...value.dataValues,
                                         ...value.dataValues.childBool
                                             .dataValues,
+                                        ...value.dataValues,
                                         __resolveType: "BooleanValue",
                                     }
                                 } else if (value.dataValues.childColour) {
                                     return {
-                                        ...value.dataValues,
                                         ...value.dataValues.childColour
                                             .dataValues,
+                                        ...value.dataValues,
                                         __resolveType: "ColourValue",
                                     }
                                 } else {

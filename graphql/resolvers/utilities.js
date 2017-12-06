@@ -119,7 +119,7 @@ const CreateGenericValue = (
                         )
 
                         const resolveObj = {
-                            id: newValue[childName].id,
+                            id: newValue.id,
                             createdAt: newValue[childName].createdAt,
                             updatedAt: newValue[childName].updatedAt,
                             device: {

@@ -425,27 +425,233 @@ describe("Value", function() {
         const idMap = parsedRes.data.device.values.map(el => el.id)
 
         for (let i in valueDatas) {
-            if (!valueDatas[i].token === self.token) {
-                expect(idMap.indexOf(valueDatas[i].deviceId)).not.toBe(-1)
+            if (valueDatas[i].token === self.token) {
+                const indexInQuery = idMap.indexOf(valueDatas[i].databaseId)
+                expect(indexInQuery).not.toBe(-1)
                 if (valueDatas[i].mutationName.includes("Float")) {
-                    expect(parsedRes.data.device.values[i].floatValue).toBe(
-                        valueDatas[i].specificProps[0].value
-                    )
+                    expect(
+                        parsedRes.data.device.values[indexInQuery].floatValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
                 } else if (valueDatas[i].mutationName.includes("String")) {
-                    expect(parsedRes.data.device.values[i].stringValue).toBe(
-                        valueDatas[i].specificProps[0].value
-                    )
+                    expect(
+                        parsedRes.data.device.values[indexInQuery].stringValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
                 } else if (valueDatas[i].mutationName.includes("Boolean")) {
-                    expect(parsedRes.data.device.values[i].boolValue).toBe(
-                        valueDatas[i].specificProps[0].value
-                    )
+                    expect(
+                        parsedRes.data.device.values[indexInQuery].boolValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
                 } else if (valueDatas[i].mutationName.includes("Colour")) {
-                    expect(parsedRes.data.device.values[i].colourValue).toBe(
-                        valueDatas[i].specificProps[0].value
-                    )
+                    expect(
+                        parsedRes.data.device.values[indexInQuery].colourValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
                 }
             }
         }
+        done()
+    })
+
+    it("should be listed in a users's values", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `{
+                            user{
+                                values{
+                                    id
+                                    ...on FloatValue{
+                                        floatValue: value
+                                    }
+                                    ...on StringValue{
+                                        stringValue: value
+                                    }
+                                    ...on BooleanValue{
+                                        boolValue: value
+                                    }
+                                    ...on ColourValue{
+                                        colourValue: value
+                                    }
+                                }
+                            }
+                        }
+                `,
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.user.values.length).toBe(4)
+        const idMap = parsedRes.data.user.values.map(el => el.id)
+
+        for (let i in valueDatas) {
+            if (valueDatas[i].token === self.token) {
+                const indexInQuery = idMap.indexOf(valueDatas[i].databaseId)
+                expect(indexInQuery).not.toBe(-1)
+                if (valueDatas[i].mutationName.includes("Float")) {
+                    expect(
+                        parsedRes.data.user.values[indexInQuery].floatValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
+                } else if (valueDatas[i].mutationName.includes("String")) {
+                    expect(
+                        parsedRes.data.user.values[indexInQuery].stringValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
+                } else if (valueDatas[i].mutationName.includes("Boolean")) {
+                    expect(
+                        parsedRes.data.user.values[indexInQuery].boolValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
+                } else if (valueDatas[i].mutationName.includes("Colour")) {
+                    expect(
+                        parsedRes.data.user.values[indexInQuery].colourValue
+                    ).toBe(valueDatas[i].specificProps[0].value)
+                }
+            }
+        }
+        done()
+    })
+
+    it("should be able to query a value", async done => {
+        let allPromises = []
+        for (let i in valueDatas) {
+            allPromises.push(
+                new Promise(async (resolve, reject) => {
+                    const {
+                        token,
+                        databaseId,
+                        specificProps,
+                        deviceId,
+                        email,
+                        mutationName,
+                    } = valueDatas[i]
+                    const res = await request(GraphQLServer)
+                        .post("/graphql")
+                        .set("content-type", "application/json")
+                        .set("accept", "application/json")
+                        .set("Authorization", "Bearer " + token)
+                        .send({
+                            query: `query Value($id:ID!){
+                                        value(id:$id){
+                                            id
+                                            createdAt
+                                            updatedAt
+                                            device {
+                                                id
+                                            }		
+                                            user{
+                                                email
+                                            }
+                                            permission
+                                            relevance
+                                            valueDetails
+                                            ...on FloatValue{
+                                                floatValue: value
+                                                precision
+                                                boundaries
+                                            }
+                                            ...on StringValue{
+                                                stringValue: value
+                                                maxChars
+                                            }
+                                            ...on BooleanValue{
+                                                booleanValue: value
+                                            }
+                                            ...on ColourValue{
+                                                colourValue: value
+                                            }
+                                        }
+                                    }
+                                    `,
+                            variables: {
+                                id: databaseId,
+                            },
+                        })
+                    const parsedRes = JSON.parse(res.text)
+                    expect(parsedRes.errors).toBeUndefined()
+                    expect(parsedRes.data.value.id).toBe(databaseId)
+                    expect(parsedRes.data.value.createdAt).toBeDefined()
+                    expect(parsedRes.data.value.updatedAt).toBeDefined()
+                    expect(parsedRes.data.value.device.id).toBe(deviceId)
+                    expect(parsedRes.data.value.user.email).toBe(email)
+                    expect(parsedRes.data.value.permission).toBe("READ_WRITE")
+                    expect(parsedRes.data.value.relevance).toBe("MAIN")
+                    expect(parsedRes.data.value.valueDetails).toBe("")
+                    if (mutationName.includes("Float")) {
+                        expect(parsedRes.data.value.floatValue).toBe(
+                            specificProps[0].value
+                        )
+                    } else if (mutationName.includes("String")) {
+                        expect(parsedRes.data.value.stringValue).toBe(
+                            specificProps[0].value
+                        )
+                    } else if (mutationName.includes("Boolean")) {
+                        expect(parsedRes.data.value.booleanValue).toBe(
+                            specificProps[0].value
+                        )
+                    } else if (mutationName.includes("Colour")) {
+                        expect(parsedRes.data.value.colourValue).toBe(
+                            specificProps[0].value
+                        )
+                    }
+                    resolve()
+                })
+            )
+        }
+        Promise.all(allPromises).then(() => done())
+    })
+
+    it("should not be able to query a value that doesn't exist", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + token)
+            .send({
+                query: `query Value($id:ID!){
+                                value(id:$id){
+                                    id
+                                }
+                            }
+                            `,
+                variables: {
+                    id: "50c28e6e-b6a5-4a95-9d3a-c860cf308b2b", // fake id
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "The requested resource does not exist"
+        )
+        done()
+    })
+
+    it("should not be able to query a value that he does not own", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set(
+                "Authorization",
+                "Bearer " +
+                    // choose the wrong token
+                    (valueDatas[0].token === self.token
+                        ? self.token2
+                        : self.token)
+            )
+            .send({
+                query: `query Value($id:ID!){
+                            value(id:$id){
+                                id
+                            }
+                        }
+                        `,
+                variables: {
+                    id: valueDatas[0].databaseId,
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "You are not allowed to access details about this resource"
+        )
         done()
     })
 })
