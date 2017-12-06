@@ -144,7 +144,7 @@ const databaseDefinition = sequelize => {
             allowNull: false,
         },
     })
-    const ColorValue = sequelize.define("colorValue", {
+    const ColourValue = sequelize.define("colourValue", {
         ...selfId,
         ...otherId("userId", User),
         value: {
@@ -167,8 +167,8 @@ const databaseDefinition = sequelize => {
     Value.hasOne(MapValue, {
         as: "childMap",
     })
-    Value.hasOne(ColorValue, {
-        as: "childColor",
+    Value.hasOne(ColourValue, {
+        as: "childColour",
     })
 
     return {
@@ -181,7 +181,7 @@ const databaseDefinition = sequelize => {
         PlotValue,
         PlotNode,
         MapValue,
-        ColorValue,
+        ColourValue,
     }
 }
 

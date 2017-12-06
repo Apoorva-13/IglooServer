@@ -18,6 +18,7 @@ const MutationResolver = (
     FloatValue,
     StringValue,
     BoolValue,
+    ColourValue,
     JWT_SECRET
 ) => ({
     // checks if the user exists, if so
@@ -198,6 +199,13 @@ const MutationResolver = (
         [],
         "childBool",
         BoolValue
+    ),
+    CreateColourValue: CreateGenericValue(
+        Device,
+        Value,
+        [],
+        "childColour",
+        ColourValue
     ),
 })
 

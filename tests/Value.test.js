@@ -186,6 +186,34 @@ describe("Value", function() {
                 deviceId: self.deviceId2,
                 email: "userTest5@email.com",
             },
+            {
+                idName: "colourValueId",
+                mutationName: "CreateColourValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "String!",
+                        value: "#ff0000",
+                    },
+                ],
+                token: self.token,
+                deviceId: self.deviceId,
+                email: "userTest4@email.com",
+            },
+            {
+                idName: "colourValueId2",
+                mutationName: "CreateColourValue",
+                specificProps: [
+                    {
+                        name: "value",
+                        type: "String!",
+                        value: "#00ff00",
+                    },
+                ],
+                token: self.token2,
+                deviceId: self.deviceId2,
+                email: "userTest5@email.com",
+            },
         ]
     })
 
@@ -380,6 +408,9 @@ describe("Value", function() {
                                     ...on BooleanValue{
                                         boolValue: value
                                     }
+                                    ...on ColourValue{
+                                        colourValue: value
+                                    }
                                 }
                             }
                         }
@@ -390,7 +421,7 @@ describe("Value", function() {
             })
         const parsedRes = JSON.parse(res.text)
         expect(parsedRes.errors).toBeUndefined()
-        expect(parsedRes.data.device.values.length).toBe(3)
+        expect(parsedRes.data.device.values.length).toBe(4)
         const idMap = parsedRes.data.device.values.map(el => el.id)
 
         for (let i in valueDatas) {
@@ -406,6 +437,10 @@ describe("Value", function() {
                     )
                 } else if (valueDatas[i].mutationName.includes("Boolean")) {
                     expect(parsedRes.data.device.values[i].boolValue).toBe(
+                        valueDatas[i].specificProps[0].value
+                    )
+                } else if (valueDatas[i].mutationName.includes("Colour")) {
+                    expect(parsedRes.data.device.values[i].colourValue).toBe(
                         valueDatas[i].specificProps[0].value
                     )
                 }

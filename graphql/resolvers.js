@@ -42,7 +42,7 @@ const {
     PlotValue,
     PlotNode,
     MapValue,
-    ColorValue,
+    ColourValue,
 } = require("../postgresql/databaseDefinition")(sequelize)
 
 const resolvers = {
@@ -59,7 +59,7 @@ const resolvers = {
         PlotValue,
         PlotNode,
         MapValue,
-        ColorValue
+        ColourValue
     ),
     Mutation: MutationResolver(
         User,
@@ -68,6 +68,7 @@ const resolvers = {
         FloatValue,
         StringValue,
         BoolValue,
+        ColourValue,
         JWT_SECRET
     ),
     Query: QueryResolver(Device),
@@ -75,7 +76,9 @@ const resolvers = {
         __resolveType(root, args, context) {
             return root.childFloat
                 ? "FloatValue"
-                : root.childString ? "StringValue" : "BooleanValue"
+                : root.childString
+                  ? "StringValue"
+                  : root.childBool ? "BooleanValue" : "ColourValue"
         },
     },
 }

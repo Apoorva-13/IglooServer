@@ -50,7 +50,7 @@ type Mutation {
         permission: ValuePermission!
         relevance: ValueRelevance!
         valueDetails: String
-        value: [Int!]! #rgb array
+        value: String! #hex code
     ): ColourValue
     #AddDeviceTag
 }
@@ -65,7 +65,6 @@ type Query {
     allPlotNodes: [PlotNode]
     allMaps: [Map]
     allMapPositions: [MapPosition]
-    allColours: [Colour]
     allFloatValues: [FloatValue]
     allStringValues: [StringValue]
     allPlotValues: [PlotValue]
@@ -102,7 +101,7 @@ enum ValueType {
     FLOAT
     PLOT
     STRING
-    COLOR
+    COLOUR
     MAP
     DATE_TIME
 }
@@ -147,12 +146,6 @@ type MapPosition {
     latitude: Float!
     longitude: Float!
     map: Map!
-}
-
-type Colour {
-    id: ID! @isUnique
-    deviceValue: Value!
-    rgb: [Int!]!
 }
 
 interface Value {
@@ -251,7 +244,7 @@ type ColourValue implements Value {
     relevance: ValueRelevance! @defaultValue(value: NORMAL) # relevance of this value in the UI
     # notifications: [Notification!]!
     valueDetails: String # Unit of measurement
-    value: Colour
+    value: String!
 }
 
 type MapValue implements Value {

@@ -12,7 +12,7 @@ const DeviceResolver = (
     PlotValue,
     PlotNode,
     MapValue,
-    ColorValue
+    ColourValue
 ) => ({
     createdAt: retrieveScalarProp(Device, "createdAt"),
     updatedAt: retrieveScalarProp(Device, "updatedAt"),
@@ -53,6 +53,11 @@ const DeviceResolver = (
                                     required: false,
                                     as: "childBool",
                                 },
+                                {
+                                    model: ColourValue,
+                                    required: false,
+                                    as: "childColour",
+                                },
                             ],
                         })
                         resolve(
@@ -68,15 +73,22 @@ const DeviceResolver = (
                                     return {
                                         ...value.dataValues,
                                         ...value.dataValues.childString
-                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                            .dataValues,
                                         __resolveType: "StringValue",
                                     }
                                 } else if (value.dataValues.childBool) {
                                     return {
                                         ...value.dataValues,
                                         ...value.dataValues.childBool
-                                            .dataValues, // childFloat second so that its id, createdAt, ... are selected
+                                            .dataValues,
                                         __resolveType: "BooleanValue",
+                                    }
+                                } else if (value.dataValues.childColour) {
+                                    return {
+                                        ...value.dataValues,
+                                        ...value.dataValues.childColour
+                                            .dataValues,
+                                        __resolveType: "ColourValue",
                                     }
                                 } else {
                                     return {
