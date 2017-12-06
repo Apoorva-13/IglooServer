@@ -275,10 +275,15 @@ describe("Value", function() {
                 }
                 self[idName] = parsedRes.data[mutationName].id
                 valueDatas[i].databaseId = parsedRes.data[mutationName].id
+
+                resolve()
             })
             allPromises.push(fetchPromise)
         }
-        return Promise.all(allPromises)
+        Promise.all(allPromises).then(() => {
+            console.log("done")
+            done()
+        })
     })
 
     it("should not be able to create a value under a foreign device", async done => {
@@ -389,7 +394,7 @@ describe("Value", function() {
         const idMap = parsedRes.data.device.values.map(el => el.id)
 
         for (let i in valueDatas) {
-            if (!valueDatas[i].idName.endsWith("2")) {
+            if (!valueDatas[i].token === self.token) {
                 expect(idMap.indexOf(valueDatas[i].deviceId)).not.toBe(-1)
                 if (valueDatas[i].mutationName.includes("Float")) {
                     expect(parsedRes.data.device.values[i].floatValue).toBe(
