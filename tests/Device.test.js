@@ -353,4 +353,122 @@ describe("Device", function() {
         }
         done()
     })
+
+    it("should be able to change device's props", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
+                            device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
+                                id
+                                updatedAt
+                                createdAt
+                                customName
+                                tags
+                                deviceType
+                                user{
+                                    id
+                                    email
+                                }
+                            }
+                        }
+                `,
+                variables: {
+                    id: self.deviceId,
+                    deviceType: "Street Lamp",
+                    customName: "Lampione",
+                    tags: ["street", "lights"],
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.device.id).toBe(self.deviceId)
+        expect(parsedRes.data.device.customName).toBe("Lampione")
+        expect(parsedRes.data.device.deviceType).toBe("Street Lamp")
+        expect(parsedRes.data.device.tags).toEqual(["street", "lights"])
+        expect(parsedRes.data.device.updatedAt).toBeDefined()
+        expect(parsedRes.data.device.createdAt).toBeDefined()
+        expect(parsedRes.data.device.user).toEqual({
+            id: self.userId,
+            email: "userTest2@email.com",
+        })
+        done()
+    })
+
+    it("should not be able to change another user's device's props", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token2)
+            .send({
+                query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
+                        device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
+                            id
+                            updatedAt
+                            createdAt
+                            customName
+                            tags
+                            deviceType
+                            user{
+                                id
+                                email
+                            }
+                        }
+                    }
+            `,
+                variables: {
+                    id: self.deviceId,
+                    deviceType: "Street Lamp",
+                    customName: "Lampione",
+                    tags: ["street", "lights"],
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "You are not allowed to access details about this resource"
+        )
+        done()
+    })
+
+    it("should not be able to change props of a device that doesn't exist", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
+                        device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
+                            id
+                            updatedAt
+                            createdAt
+                            customName
+                            tags
+                            deviceType
+                            user{
+                                id
+                                email
+                            }
+                        }
+                    }
+            `,
+                variables: {
+                    id: "3dfe08e7-0184-4f9c-9c00-c7d159a02236", // fake id
+                    deviceType: "Street Lamp",
+                    customName: "Lampione",
+                    tags: ["street", "lights"],
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "Device doesn't exist. Use `CreateDevice` to create one"
+        )
+        done()
+    })
 })

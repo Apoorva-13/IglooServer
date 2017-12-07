@@ -225,10 +225,39 @@ const MutationResolver = (
                         resolve(newUser)
                     }
                 } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - ChangePassword 115"))
+                    log(chalk.red("INTERNAL ERROR - user mutation 115"))
                     log(e)
                     reject(
                         "115 - An internal error occured, please contact us. The error code is 115"
+                    )
+                }
+            })
+        )
+    },
+    device(root, args, context) {
+        return new Promise(
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    const deviceFound = await Device.find({
+                        where: {id: args.id},
+                    })
+                    if (!deviceFound) {
+                        reject(
+                            "Device doesn't exist. Use `CreateDevice` to create one"
+                        )
+                    } else if (deviceFound.userId !== context.auth.userId) {
+                        reject(
+                            "You are not allowed to access details about this resource"
+                        )
+                    } else {
+                        const newDevice = await deviceFound.update(args)
+                        resolve(newDevice)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - device mutation 116"))
+                    log(e)
+                    reject(
+                        "116 - An internal error occured, please contact us. The error code is 116"
                     )
                 }
             })

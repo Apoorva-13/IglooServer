@@ -26,7 +26,7 @@ const DeviceResolver = (
                     const deviceFound = await Device.find({
                         where: {id: root.id},
                     })
-                    /* istanbul ignore next */
+                    /* istanbul ignore if */
                     if (!deviceFound) {
                         reject("The requested resource does not exist")
                     } else if (deviceFound.userId !== context.auth.userId) {
@@ -89,11 +89,6 @@ const DeviceResolver = (
                                             .dataValues,
                                         ...value.dataValues,
                                         __resolveType: "ColourValue",
-                                    }
-                                } else {
-                                    return {
-                                        ...value.dataValues,
-                                        __resolveType: null,
                                     }
                                 }
                             })
