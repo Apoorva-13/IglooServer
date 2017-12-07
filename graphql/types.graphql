@@ -53,6 +53,15 @@ type Mutation {
         value: String! #hex code
     ): ColourValue
     #AddDeviceTag
+
+    user(email: String!): User
+    device(
+        id: ID!
+        deviceType: String
+        customName: String
+        tags: [String!]
+    ): Device
+    value(id: ID!): Value
 }
 
 type Query {
@@ -95,16 +104,6 @@ type Device {
     tags: [String!]!
     values: [Value!]! # all the values to display to the user
     user: User! # the user owning this device
-}
-
-enum ValueType {
-    BOOL
-    FLOAT
-    PLOT
-    STRING
-    COLOUR
-    MAP
-    DATE_TIME
 }
 
 enum ValuePermission {

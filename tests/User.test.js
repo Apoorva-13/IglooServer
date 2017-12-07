@@ -148,4 +148,113 @@ describe("User", function() {
                 done()
             })
     })
+
+    it("should be able to change details", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `mutation User($email: String!){
+                                user(email:$email){
+                                    id
+                                    email
+                                    updatedAt
+                                    createdAt
+                                    devices{
+                                        id
+                                    }
+                                    values{
+                                        id
+                                    }
+                                }
+                            }
+                        `,
+                variables: {
+                    email: "gianni@pinotto.it",
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.user.id).toBe(self.userId)
+        expect(parsedRes.data.user.email).toBe("gianni@pinotto.it")
+        done()
+    })
+
+    it("should not be able to change details if not authenticated", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation User($email: String!){
+                                    user(email:$email){
+                                        id
+                                        email
+                                        updatedAt
+                                        createdAt
+                                        devices{
+                                            id
+                                        }
+                                        values{
+                                            id
+                                        }
+                                    }
+                                }
+                            `,
+                variables: {
+                    email: "gianni@pinotto.it",
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"
+        )
+        done()
+    })
+
+    it("should not be able to change details of a deleted user", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            // Creating a token referring to a wrong id
+            // to emulate a user that doesn't exist anymore
+            .set(
+                "Authorization",
+                "Bearer " +
+                    generateAuthenticationToken(
+                        "aaf5480f-b804-424d-bec8-3f7b363b5519",
+                        JWT_SECRET
+                    )
+            )
+            .send({
+                query: `mutation User($email: String!){
+                                    user(email:$email){
+                                        id
+                                        email
+                                        updatedAt
+                                        createdAt
+                                        devices{
+                                            id
+                                        }
+                                        values{
+                                            id
+                                        }
+                                    }
+                                }
+                            `,
+                variables: {
+                    email: "gianni@pinotto.it",
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
+        expect(parsedRes.errors[0].message).toBe(
+            "User doesn't exist. Use `SignupUser` to create one"
+        )
+        done()
+    })
 })

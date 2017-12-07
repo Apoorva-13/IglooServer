@@ -207,6 +207,33 @@ const MutationResolver = (
         "childColour",
         ColourValue
     ),
+    user(root, args, context) {
+        return new Promise(
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    const userFound = await User.find({
+                        where: {id: context.auth.userId},
+                    })
+                    if (!userFound) {
+                        reject(
+                            "User doesn't exist. Use `SignupUser` to create one"
+                        )
+                    } else {
+                        const newUser = await userFound.update({
+                            email: args.email,
+                        })
+                        resolve(newUser)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - ChangePassword 115"))
+                    log(e)
+                    reject(
+                        "115 - An internal error occured, please contact us. The error code is 115"
+                    )
+                }
+            })
+        )
+    },
 })
 
 export default MutationResolver

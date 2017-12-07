@@ -87,6 +87,7 @@ describe("Device", function() {
                     tags: ["yellow"],
                 },
             })
+        console.log(res.text)
         const parsedRes = JSON.parse(res.text)
         expect(parsedRes.errors).toBeUndefined()
         expect(parsedRes.data.CreateDevice.id).toBeDefined()
