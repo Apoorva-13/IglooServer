@@ -3,12 +3,16 @@ import UserResolver from "./resolvers/User.js"
 import MutationResolver from "./resolvers/Mutation.js"
 import QueryResolver from "./resolvers/Query.js"
 import DeviceResolver from "./resolvers/Device.js"
+import SubscriptionsResolver from "./resolvers/subscriptions.js"
+import {PubSub} from "graphql-subscriptions"
 import GraphQLToolsTypes from "graphql-tools-types"
 import Sequelize from "sequelize"
 import chalk from "chalk"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
 import moment from "moment"
+
+let pubsub = new PubSub()
 const log = console.log
 
 require("dotenv").config()
@@ -77,6 +81,7 @@ const resolvers = {
         StringValue,
         BoolValue,
         ColourValue,
+        pubsub,
         JWT_SECRET
     ),
     Query: QueryResolver(
@@ -87,6 +92,7 @@ const resolvers = {
         BoolValue,
         ColourValue
     ),
+    Subscription: SubscriptionsResolver(pubsub),
     Value: {
         __resolveType(root, args, context) {
             return root.childFloat

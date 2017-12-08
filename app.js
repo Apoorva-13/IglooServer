@@ -28,6 +28,9 @@ graphQLServer.use(
     "/graphiql",
     graphiqlExpress({
         endpointURL: "/graphql",
+        subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+        passHeader:
+            "'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMyNzQ1MzgsInVzZXJJZCI6IjY2MTUxOWMwLWRmNGUtNDVkZi1iYzA4LTYzYzk2ZDg1ODc5ZiJ9.YpRAmWBsMoN4NlMzAIofntO-Z8TtZ8RgvJ3771dq5vY'",
     })
 )
 

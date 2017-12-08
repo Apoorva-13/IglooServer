@@ -8,7 +8,6 @@ import jwt from "jwt-simple"
 import moment from "moment"
 import chalk from "chalk"
 const log = console.log
-
 const SALT_ROUNDS = 10
 
 const MutationResolver = (
@@ -19,6 +18,7 @@ const MutationResolver = (
     StringValue,
     BoolValue,
     ColourValue,
+    pubsub,
     JWT_SECRET
 ) => ({
     // checks if the user exists, if so
@@ -157,7 +157,8 @@ const MutationResolver = (
                         tags,
                     } = newDevice.dataValues
                     const values = [] // values cannot be set when creating the device so no need to fetch them
-                    resolve({
+
+                    const resolveValue = {
                         id,
                         createdAt,
                         updatedAt,
@@ -168,7 +169,15 @@ const MutationResolver = (
                         user: {
                             id: userId,
                         },
+                    }
+
+                    console.log(resolveValue)
+                    pubsub.publish("deviceCreated", {
+                        deviceCreated: resolveValue,
+                        userId: context.auth.userId,
                     })
+
+                    resolve(resolveValue)
                 } catch (e) /* istanbul ignore next */ {
                     log(chalk.red("INTERNAL ERROR - CreateDevice 104"))
                     log(e)

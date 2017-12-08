@@ -2,7 +2,6 @@ import jwt from "jwt-simple"
 import moment from "moment"
 import chalk from "chalk"
 const log = console.log
-
 const JWT_EXPIRE_DAYS = 7
 
 const authenticated = (context, callback) =>

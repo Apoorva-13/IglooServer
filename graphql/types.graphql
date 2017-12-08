@@ -83,6 +83,10 @@ type Query {
     allMapValues: [MapValue]
 }
 
+type Subscription {
+    deviceCreated: Device
+}
+
 type User {
     # Required system field:
     id: ID! @isUnique # read-only (managed by Graphcool)
