@@ -171,7 +171,6 @@ const MutationResolver = (
                         },
                     }
 
-                    console.log(resolveValue)
                     pubsub.publish("deviceCreated", {
                         deviceCreated: resolveValue,
                         userId: context.auth.userId,

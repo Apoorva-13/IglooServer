@@ -1,16 +1,21 @@
 {
-  "schemaPath": "./graphql/types.graphql",
-  "extensions": {
-    "endpoints": {
-      "dev": {
-        "url": "http://localhost:3000/graphql",
-        "subscription": {
-          "url": "ws://localhost:3000/subscriptions",
-          "connectionParams": {
-            "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMyNzQ1MzgsInVzZXJJZCI6IjY2MTUxOWMwLWRmNGUtNDVkZi1iYzA4LTYzYzk2ZDg1ODc5ZiJ9.YpRAmWBsMoN4NlMzAIofntO-Z8TtZ8RgvJ3771dq5vY"
-          }
+    "schemaPath": "./graphql/types.graphql",
+    "extensions": {
+        "endpoints": {
+            "dev": {
+                "url": "http://localhost:3000/graphql",
+                "headers": {
+                    "Authorization":
+                        "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY"
+                },
+                "subscription": {
+                    "url": "ws://localhost:3000/subscriptions",
+                    "connectionParams": {
+                        "Authorization":
+                            "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY"
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

@@ -8,6 +8,7 @@ import {graphqlExpress, graphiqlExpress} from "apollo-server-express"
 import bodyParser from "body-parser"
 import schema from "./graphql/schema"
 import expressJwt from "express-jwt"
+import expressPlayground from "graphql-playground-middleware-express"
 
 const GRAPHQL_PORT = 3000
 
@@ -30,7 +31,15 @@ graphQLServer.use(
         endpointURL: "/graphql",
         subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
         passHeader:
-            "'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMyNzQ1MzgsInVzZXJJZCI6IjY2MTUxOWMwLWRmNGUtNDVkZi1iYzA4LTYzYzk2ZDg1ODc5ZiJ9.YpRAmWBsMoN4NlMzAIofntO-Z8TtZ8RgvJ3771dq5vY'",
+            "'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY'",
+    })
+)
+graphQLServer.get(
+    "/playground",
+    expressPlayground({
+        // endpoint: "/graphql",
+        // subscriptionEndpoint: "/subscriptions",
+        setTitle: "Igloo Playground",
     })
 )
 
