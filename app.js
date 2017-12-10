@@ -29,21 +29,21 @@ graphQLServer.use(
 )
 graphQLServer.get("/graphiql", function(req, res, next) {
     console.log(req.query.bearer)
-    // if (req.query.bearer) {
-    return graphiqlExpress({
-        endpointURL: "/graphql",
-        subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
-        passHeader: `'Authorization': 'Bearer ${req.query.bearer}'`,
-        websocketConnectionParams: {
-            Authorization: `Bearer ${req.query.bearer}`,
-        },
-    })(req, res, next)
-    // } else {
-    //     return graphiqlExpress({
-    //         endpointURL: "/graphql",
-    //         subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
-    //     })(req, res, next)
-    // }
+    if (req.query.bearer) {
+        return graphiqlExpress({
+            endpointURL: "/graphql",
+            subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+            passHeader: `'Authorization': 'Bearer ${req.query.bearer}'`,
+            websocketConnectionParams: {
+                Authorization: `Bearer ${req.query.bearer}`,
+            },
+        })(req, res, next)
+    } else {
+        return graphiqlExpress({
+            endpointURL: "/graphql",
+            subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+        })(req, res, next)
+    }
 })
 graphQLServer.get(
     "/playground",
