@@ -192,28 +192,32 @@ const MutationResolver = (
         Value,
         ["precision", "boundaries"],
         "childFloat",
-        FloatValue
+        FloatValue,
+        pubsub
     ),
     CreateStringValue: CreateGenericValue(
         Device,
         Value,
         ["maxChars"],
         "childString",
-        StringValue
+        StringValue,
+        pubsub
     ),
     CreateBooleanValue: CreateGenericValue(
         Device,
         Value,
         [],
         "childBool",
-        BoolValue
+        BoolValue,
+        pubsub
     ),
     CreateColourValue: CreateGenericValue(
         Device,
         Value,
         [],
         "childColour",
-        ColourValue
+        ColourValue,
+        pubsub
     ),
     user(root, args, context) {
         return new Promise(

@@ -95,6 +95,8 @@ const resolvers = {
     Subscription: SubscriptionsResolver(pubsub),
     Value: {
         __resolveType(root, args, context) {
+            if (root.__resolveType) return root.__resolveType
+
             return root.childFloat
                 ? "FloatValue"
                 : root.childString

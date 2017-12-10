@@ -61,7 +61,8 @@ const CreateGenericValue = (
     Value,
     childProps,
     childName,
-    childModel
+    childModel,
+    pubsub
 ) => {
     return (root, args, context) => {
         return new Promise(
@@ -131,12 +132,25 @@ const CreateGenericValue = (
                             relevance: newValue.relevance,
                             valueDetails: newValue.valueDetails,
                             value: newValue[childName].value,
+                            __resolveType:
+                                childName === "childFloat"
+                                    ? "FloatValue"
+                                    : childName === "childString"
+                                      ? "StringValue"
+                                      : childName === "childBool"
+                                        ? "BooleanValue"
+                                        : "ColourValue",
                         }
                         // loads in resolveObj all the required props from args
                         for (let i in childProps) {
                             resolveObj[childProps[i]] =
                                 newValue[childName][childProps[i]]
                         }
+
+                        pubsub.publish("valueCreated", {
+                            valueCreated: resolveObj,
+                            userId: context.auth.userId,
+                        })
 
                         resolve(resolveObj)
                     }

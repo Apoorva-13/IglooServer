@@ -93,6 +93,7 @@ type Query {
 
 type Subscription {
     deviceCreated: Device
+    valueCreated: Value
 }
 
 type User {
