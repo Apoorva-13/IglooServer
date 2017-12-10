@@ -27,15 +27,24 @@ graphQLServer.use(
         },
     }))
 )
-graphQLServer.use(
-    "/graphiql",
-    graphiqlExpress({
+graphQLServer.get("/graphiql", function(req, res, next) {
+    console.log(req.query.bearer)
+    // if (req.query.bearer) {
+    return graphiqlExpress({
         endpointURL: "/graphql",
         subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
-        passHeader:
-            "'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY'",
-    })
-)
+        passHeader: `'Authorization': 'Bearer ${req.query.bearer}'`,
+        websocketConnectionParams: {
+            Authorization: `Bearer ${req.query.bearer}`,
+        },
+    })(req, res, next)
+    // } else {
+    //     return graphiqlExpress({
+    //         endpointURL: "/graphql",
+    //         subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+    //     })(req, res, next)
+    // }
+})
 graphQLServer.get(
     "/playground",
     expressPlayground({
