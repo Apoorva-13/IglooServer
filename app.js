@@ -9,11 +9,13 @@ import bodyParser from "body-parser"
 import schema from "./graphql/schema"
 import expressJwt from "express-jwt"
 import expressPlayground from "graphql-playground-middleware-express"
+import cors from "cors"
 
 const GRAPHQL_PORT = 3000
 
 const graphQLServer = express()
 
+graphQLServer.use(cors())
 graphQLServer.use(
     "/graphql",
     bodyParser.json(),

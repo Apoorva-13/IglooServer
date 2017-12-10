@@ -4,15 +4,11 @@
         "endpoints": {
             "dev": {
                 "url": "http://localhost:3000/graphql",
-                "headers": {
-                    "Authorization":
-                        "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY"
-                },
                 "subscription": {
                     "url": "ws://localhost:3000/subscriptions",
                     "connectionParams": {
                         "Authorization":
-                            "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDQ0NTMsInVzZXJJZCI6IjBkNGNkMmUzLTFmYzYtNGQ0Yy1iNGU1LTVkOWMwZTVhNzM3YiJ9.pzB60ipb1MasOe6--Eu3OsMPWhn0tTYL-rkBrD3rhWY"
+                            "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1MTMzNDg4MTYsInVzZXJJZCI6IjAxODQ5ZTNiLTRmYzMtNDk2NS05ZGU1LWIzZGEyMmE4NzM3MiJ9.npbo2qzVQR0EU3WHaO4Itz1OwkA1HCGM1nWaNzea6sI"
                     }
                 }
             }

@@ -64,6 +64,14 @@ type Mutation {
     value(id: ID!): Value
 }
 
+input DeviceFilter {
+    OR: [DeviceFilter!]
+    AND: [DeviceFilter!]
+    customName: String
+    deviceType: String
+    tagsContain: String
+}
+
 type Query {
     user: User
     device(id: ID!): Device
