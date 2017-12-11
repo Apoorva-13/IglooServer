@@ -10,6 +10,7 @@ import jwt from "jwt-simple"
 import chalk from "chalk"
 const {createServer} = require("http")
 import schema from "./graphql/schema"
+import open from "open"
 
 const GRAPHQL_PORT = 3000
 
@@ -18,6 +19,8 @@ httpServer.listen(GRAPHQL_PORT, () => {
     console.log(
         `GraphiQL is now running on http://localhost:${GRAPHQL_PORT}/graphiql`
     )
+
+    open(`http://localhost:${GRAPHQL_PORT}/graphiql`)
 
     new SubscriptionServer(
         {

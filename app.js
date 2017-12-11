@@ -28,7 +28,6 @@ graphQLServer.use(
     }))
 )
 graphQLServer.get("/graphiql", function(req, res, next) {
-    console.log(req.query.bearer)
     if (req.query.bearer) {
         return graphiqlExpress({
             endpointURL: "/graphql",
