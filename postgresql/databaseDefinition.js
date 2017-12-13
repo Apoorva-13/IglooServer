@@ -152,22 +152,22 @@ const databaseDefinition = sequelize => {
         },
     })
 
-    Value.hasOne(BoolValue, {
+    Value.belongsTo(BoolValue, {
         as: "childBool",
     })
-    Value.hasOne(FloatValue, {
+    Value.belongsTo(FloatValue, {
         as: "childFloat",
     })
-    Value.hasOne(StringValue, {
+    Value.belongsTo(StringValue, {
         as: "childString",
     })
-    Value.hasOne(PlotValue, {
+    Value.belongsTo(PlotValue, {
         as: "childPlot",
     })
-    Value.hasOne(MapValue, {
+    Value.belongsTo(MapValue, {
         as: "childMap",
     })
-    Value.hasOne(ColourValue, {
+    Value.belongsTo(ColourValue, {
         as: "childColour",
     })
 

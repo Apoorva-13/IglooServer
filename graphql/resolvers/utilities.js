@@ -165,9 +165,21 @@ const CreateGenericValue = (
         )
     }
 }
+
+const getPropsIfDefined = (args, props) => {
+    const propObject = {}
+    for (let i = 0; i < props.length; i++) {
+        if (args[props[i]]) {
+            propObject[props[i]] = args[props[i]]
+        }
+    }
+
+    return propObject
+}
 module.exports = {
     authenticated,
     generateAuthenticationToken,
     retrieveScalarProp,
     CreateGenericValue,
+    getPropsIfDefined,
 }

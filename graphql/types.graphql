@@ -52,7 +52,6 @@ type Mutation {
         valueDetails: String
         value: String! #hex code
     ): ColourValue
-    #AddDeviceTag
 
     user(email: String!): User
     device(
@@ -61,7 +60,38 @@ type Mutation {
         customName: String
         tags: [String!]
     ): Device
-    value(id: ID!): Value
+
+    floatValue(
+        id: ID!
+        permission: ValuePermission
+        relevance: ValueRelevance
+        valueDetails: String
+        value: Float
+        precision: Float
+        boundaries: [Float!]
+    ): FloatValue
+    stringValue(
+        id: ID!
+        permission: ValuePermission
+        relevance: ValueRelevance
+        valueDetails: String
+        value: String
+        maxChars: Int
+    ): StringValue
+    booleanValue(
+        id: ID!
+        permission: ValuePermission
+        relevance: ValueRelevance
+        valueDetails: String
+        value: Boolean
+    ): BooleanValue
+    colourValue(
+        id: ID!
+        permission: ValuePermission
+        relevance: ValueRelevance
+        valueDetails: String
+        value: String
+    ): ColourValue
 }
 
 input DeviceFilter {

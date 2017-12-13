@@ -2,6 +2,7 @@ import {
     authenticated,
     generateAuthenticationToken,
     CreateGenericValue,
+    getPropsIfDefined,
 } from "./utilities.js"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
@@ -270,6 +271,61 @@ const MutationResolver = (
                     log(e)
                     reject(
                         "116 - An internal error occured, please contact us. The error code is 116"
+                    )
+                }
+            })
+        )
+    },
+    floatValue(root, args, context) {
+        return new Promise(
+            authenticated(context, async (resolve, reject) => {
+                try {
+                    const valueFound = await Value.find({where: {id: args.id}})
+                    if (!valueFound) {
+                        reject(
+                            "Value doesn't exist. Use `CreateFloatValue` to create one"
+                        )
+                    } else if (valueFound.userId !== context.auth.userId) {
+                        reject("You are not allowed to edit this resource")
+                    } else if (!valueFound.childFloatId) {
+                        reject("This is not a FloatValue")
+                    } else {
+                        const valueUpdate = getPropsIfDefined(args, [
+                            "permission",
+                            "relevance",
+                            "valueDetails",
+                        ])
+                        const newValue =
+                            Object.keys(valueUpdate).length === 0
+                                ? valueFound
+                                : await valueFound.update(valueUpdate)
+
+                        const floatValueFound = await FloatValue.find({
+                            where: {id: valueFound.childFloatId},
+                        })
+                        const floatValueUpdate = getPropsIfDefined(args, [
+                            "value",
+                            "boundaries",
+                            "precision",
+                        ])
+                        const newFloatValue =
+                            Object.keys(floatValueUpdate).length === 0
+                                ? floatValueFound
+                                : await FloatValue.update(floatValueUpdate)
+
+                        const resolveObj = {
+                            ...newFloatValue.dataValues,
+                            ...newValue.dataValues,
+                            user: {id: newFloatValue.dataValues.userId},
+                            device: {id: newValue.dataValues.deviceId},
+                        }
+                        resolve(resolveObj)
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(chalk.red("INTERNAL ERROR - floatValue mutation 117"))
+                    log(e)
+                    reject(
+                        "117 - An internal error occured, please contact us. The error code is 117"
                     )
                 }
             })
