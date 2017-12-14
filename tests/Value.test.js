@@ -90,21 +90,25 @@ describe("Value", function() {
             {
                 idName: "valueId",
                 mutationName: "CreateFloatValue",
+                updateMutationName: "floatValue",
                 specificProps: [
                     {
                         name: "value",
                         type: "Float!",
                         value: 5,
+                        newValue: 6,
                     },
                     {
                         name: "precision",
                         type: "Float",
                         value: 0.1,
+                        newValue: 1,
                     },
                     {
                         name: "boundaries",
                         type: "[Float!]!",
                         value: [1, 2],
+                        newValue: [0, 10],
                     },
                 ],
                 token: self.token,
@@ -114,11 +118,13 @@ describe("Value", function() {
             {
                 idName: "valueId2",
                 mutationName: "CreateFloatValue",
+                updateMutationName: "floatValue",
                 specificProps: [
                     {
                         name: "value",
                         type: "Float!",
                         value: 5,
+                        newValue: 7,
                     },
                 ],
                 token: self.token2,
@@ -308,10 +314,7 @@ describe("Value", function() {
             })
             allPromises.push(fetchPromise)
         }
-        Promise.all(allPromises).then(() => {
-            console.log("done")
-            done()
-        })
+        Promise.all(allPromises).then(done)
     })
 
     it("should not be able to create a value under a foreign device", async done => {
@@ -653,5 +656,88 @@ describe("Value", function() {
             "You are not allowed to access details about this resource"
         )
         done()
+    })
+
+    it("should be able to update a floatValue", async done => {
+        let allPromises = []
+        for (let i = 0; i < 2; i++) {
+            const mutationPromise = new Promise(async (resolve, reject) => {
+                const {
+                    idName,
+                    mutationName,
+                    updateMutationName,
+                    specificProps,
+                    token,
+                    deviceId,
+                    email,
+                    databaseId,
+                } = valueDatas
+
+                const queryVariables = {
+                    id: databaseId,
+                }
+                for (let i in specificProps) {
+                    queryVariables[specificProps[i].name] =
+                        specificProps[i].newValue
+                }
+
+                const res = await request(GraphQLServer)
+                    .post("/graphql")
+                    .set("content-type", "application/json")
+                    .set("accept", "application/json")
+                    .set("Authorization", "Bearer " + token)
+                    .send({
+                        query: `mutation ${updateMutationName}(
+                        ${specificProps
+                            .map(prop => `$${prop.name}: ${prop.type}`)
+                            .join("\n")}
+                    ){
+                        ${updateMutationName}(
+                            ${specificProps
+                                .map(prop => `${prop.name}: $${prop.name}`)
+                                .join("\n")}
+                        ){
+                            id
+                            createdAt
+                            updatedAt
+                            device{
+                                id
+                            }
+                            user{
+                                email
+                            }
+                            permission
+                            relevance
+                            valueDetails
+                            ${specificProps
+                                .map(prop => `${prop.name}`)
+                                .join("\n")}
+                        }
+                    }`,
+                        variables: queryVariables,
+                    })
+
+                const parsedRes = JSON.parse(res.text)
+                expect(parsedRes.errors).toBeUndefined()
+                expect(parsedRes.data[mutationName].id).toBe(databaseId)
+                expect(parsedRes.data[mutationName].createdAt).toBeTruthy()
+                expect(parsedRes.data[mutationName].updatedAt).toBeTruthy()
+                expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
+                expect(parsedRes.data[mutationName].user.email).toBe(email)
+                expect(parsedRes.data[mutationName].permission).toBe(
+                    "READ_WRITE"
+                )
+                expect(parsedRes.data[mutationName].relevance).toBe("MAIN")
+                expect(parsedRes.data[mutationName].valueDetails).toBe("")
+                for (let i in specificProps) {
+                    expect(
+                        parsedRes.data[mutationName][specificProps[i].name]
+                    ).toEqual(specificProps[i].newValue)
+                }
+                resolve()
+            })
+            allPromises.push(mutationPromise)
+        }
+        Promise.all(allPromises).then(done)
     })
 })

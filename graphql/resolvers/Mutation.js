@@ -311,7 +311,7 @@ const MutationResolver = (
                         const newFloatValue =
                             Object.keys(floatValueUpdate).length === 0
                                 ? floatValueFound
-                                : await FloatValue.update(floatValueUpdate)
+                                : await floatValueFound.update(floatValueUpdate)
 
                         const resolveObj = {
                             ...newFloatValue.dataValues,
