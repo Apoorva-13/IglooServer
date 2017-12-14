@@ -27,6 +27,7 @@ graphQLServer.use(
         },
     }))
 )
+/* istanbul ignore next */
 graphQLServer.get("/graphiql", function(req, res, next) {
     if (req.query.bearer) {
         return graphiqlExpress({
@@ -44,13 +45,14 @@ graphQLServer.get("/graphiql", function(req, res, next) {
         })(req, res, next)
     }
 })
-graphQLServer.get(
-    "/playground",
-    expressPlayground({
-        // endpoint: "/graphql",
-        // subscriptionEndpoint: "/subscriptions",
-        setTitle: "Igloo Playground",
-    })
-)
+
+// graphQLServer.get(
+//     "/playground",
+//     expressPlayground({
+//         endpoint: "/graphql",
+//         subscriptionEndpoint: "/subscriptions",
+//         setTitle: "Igloo Playground",
+//     })
+// )
 
 export default graphQLServer

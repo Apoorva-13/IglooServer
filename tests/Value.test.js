@@ -1,6 +1,8 @@
 import request from "supertest"
 import GraphQLServer from "../app.js"
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
+
 describe("Value", function() {
     let valueDatas = []
 
@@ -314,7 +316,9 @@ describe("Value", function() {
             })
             allPromises.push(fetchPromise)
         }
-        Promise.all(allPromises).then(done)
+        Promise.all(allPromises).then(() => {
+            done()
+        }) // for some odd reason passing the done function directly makes jest crash
     })
 
     it("should not be able to create a value under a foreign device", async done => {
@@ -671,7 +675,7 @@ describe("Value", function() {
                     deviceId,
                     email,
                     databaseId,
-                } = valueDatas
+                } = valueDatas[i]
 
                 const queryVariables = {
                     id: databaseId,
@@ -688,11 +692,13 @@ describe("Value", function() {
                     .set("Authorization", "Bearer " + token)
                     .send({
                         query: `mutation ${updateMutationName}(
+                            $id:ID!
                         ${specificProps
                             .map(prop => `$${prop.name}: ${prop.type}`)
                             .join("\n")}
                     ){
                         ${updateMutationName}(
+                            id:$id
                             ${specificProps
                                 .map(prop => `${prop.name}: $${prop.name}`)
                                 .join("\n")}
@@ -719,25 +725,39 @@ describe("Value", function() {
 
                 const parsedRes = JSON.parse(res.text)
                 expect(parsedRes.errors).toBeUndefined()
-                expect(parsedRes.data[mutationName].id).toBe(databaseId)
-                expect(parsedRes.data[mutationName].createdAt).toBeTruthy()
-                expect(parsedRes.data[mutationName].updatedAt).toBeTruthy()
-                expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
-                expect(parsedRes.data[mutationName].user.email).toBe(email)
-                expect(parsedRes.data[mutationName].permission).toBe(
+                expect(parsedRes.data[updateMutationName].id).toBe(databaseId)
+                expect(
+                    parsedRes.data[updateMutationName].createdAt
+                ).toBeTruthy()
+                expect(
+                    parsedRes.data[updateMutationName].updatedAt
+                ).toBeTruthy()
+                expect(parsedRes.data[updateMutationName].device.id).toBe(
+                    deviceId
+                )
+                expect(parsedRes.data[updateMutationName].user.email).toBe(
+                    email
+                )
+                expect(parsedRes.data[updateMutationName].permission).toBe(
                     "READ_WRITE"
                 )
-                expect(parsedRes.data[mutationName].relevance).toBe("MAIN")
-                expect(parsedRes.data[mutationName].valueDetails).toBe("")
+                expect(parsedRes.data[updateMutationName].relevance).toBe(
+                    "MAIN"
+                )
+                expect(parsedRes.data[updateMutationName].valueDetails).toBe("")
                 for (let i in specificProps) {
                     expect(
-                        parsedRes.data[mutationName][specificProps[i].name]
+                        parsedRes.data[updateMutationName][
+                            specificProps[i].name
+                        ]
                     ).toEqual(specificProps[i].newValue)
                 }
                 resolve()
             })
             allPromises.push(mutationPromise)
         }
-        Promise.all(allPromises).then(done)
+        Promise.all(allPromises).then(() => {
+            done()
+        })
     })
 })

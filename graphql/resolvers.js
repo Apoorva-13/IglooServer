@@ -97,6 +97,7 @@ const resolvers = {
         __resolveType(root, args, context) {
             if (root.__resolveType) return root.__resolveType
 
+            /* istanbul ignore next - this should never happen*/
             return root.childFloat
                 ? "FloatValue"
                 : root.childString
