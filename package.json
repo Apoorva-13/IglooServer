@@ -7,7 +7,7 @@
         "start": "node ./build/server.js",
         "prestart": "npm run build",
         "build":
-            "babel server.js app.js -d build && babel postgresql -d build/postgresql && babel graphql -d build/graphql",
+            "./node_modules/.bin/babel server.js app.js -d build && ./node_modules/.bin/babel postgresql -d build/postgresql && ./node_modules/.bin/babel graphql -d build/graphql",
         "setupDatabase": "node ./postgresql/setup.js",
         "test": "jest --coverage --bail --forceExit",
         "pretest": "npm run setupDatabase",
