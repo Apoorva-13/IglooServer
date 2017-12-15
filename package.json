@@ -4,7 +4,10 @@
     "description": "Backend for the igloo platform",
     "scripts": {
         "dev": "nodemon ./server.js --exec babel-node -e js,graphql,env",
-        "start": "babel-node ./server.js",
+        "start": "node ./build/server.js",
+        "prestart": "npm run build",
+        "build":
+            "babel server.js app.js -d build && babel postgresql -d build/postgresql && babel graphql -d build/graphql",
         "setupDatabase": "node ./postgresql/setup.js",
         "test": "jest --coverage --bail --forceExit",
         "pretest": "npm run setupDatabase",
