@@ -21,7 +21,8 @@ const generateAuthenticationToken = (userId, JWT_SECRET) =>
                 .unix(),
             userId,
         },
-        JWT_SECRET
+        JWT_SECRET,
+        "HS512"
     )
 
 const retrieveScalarProp = (Model, prop) => {

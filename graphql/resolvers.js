@@ -95,6 +95,7 @@ const resolvers = {
     Subscription: SubscriptionsResolver(pubsub),
     Value: {
         __resolveType(root, args, context) {
+            /* istanbul ignore else */
             if (root.__resolveType) return root.__resolveType
 
             /* istanbul ignore next - this should never happen*/
