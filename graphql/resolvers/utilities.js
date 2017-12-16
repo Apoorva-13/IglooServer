@@ -55,6 +55,17 @@ const retrieveScalarProp = (Model, prop) => {
     }
 }
 
+const getPropsIfDefined = (args, props) => {
+    const propObject = {}
+    for (let i = 0; i < props.length; i++) {
+        if (args[props[i]] !== undefined && args[props[i]] !== null) {
+            propObject[props[i]] = args[props[i]]
+        }
+    }
+
+    return propObject
+}
+
 // generic resolver for CreateXValue mutations
 const CreateGenericValue = (
     Device,
@@ -88,11 +99,7 @@ const CreateGenericValue = (
                             value,
                         } = args
 
-                        const childGeneric = {}
-                        // loads in childGeneric all the required props from args
-                        for (let i in childProps) {
-                            childGeneric[childProps[i]] = args[childProps[i]]
-                        }
+                        const childGeneric = getPropsIfDefined(args, childProps)
 
                         // creates the value and the associated FloatValue/StringValue/...
                         const newValue = await Value.create(
@@ -166,15 +173,65 @@ const CreateGenericValue = (
     }
 }
 
-const getPropsIfDefined = (args, props) => {
-    const propObject = {}
-    for (let i = 0; i < props.length; i++) {
-        if (args[props[i]]) {
-            propObject[props[i]] = args[props[i]]
-        }
-    }
+const genericValueMutation = (
+    Value,
+    childProps,
+    childNameId,
+    childModel,
+    pubsub
+) => (root, args, context) => {
+    return new Promise(
+        authenticated(context, async (resolve, reject) => {
+            try {
+                const valueFound = await Value.find({where: {id: args.id}})
+                if (!valueFound) {
+                    reject("The requested resource does not exist")
+                } else if (valueFound.userId !== context.auth.userId) {
+                    reject("You are not allowed to update this resource")
+                } else if (!valueFound[childNameId]) {
+                    reject(
+                        "This Value has the wrong type, please use the correct mutation"
+                    )
+                } else {
+                    const valueUpdate = getPropsIfDefined(args, [
+                        "permission",
+                        "relevance",
+                        "valueDetails",
+                    ])
+                    const newValue =
+                        Object.keys(valueUpdate).length === 0
+                            ? valueFound
+                            : await valueFound.update(valueUpdate)
 
-    return propObject
+                    const childValueFound = await childModel.find({
+                        where: {id: valueFound[childNameId]},
+                    })
+                    const childValueUpdate = getPropsIfDefined(args, [
+                        "value",
+                        ...childProps,
+                    ])
+                    const newChildValue =
+                        Object.keys(childValueUpdate).length === 0
+                            ? childValueFound
+                            : await childValueFound.update(childValueUpdate)
+
+                    const resolveObj = {
+                        ...newChildValue.dataValues,
+                        ...newValue.dataValues,
+                        user: {id: newChildValue.dataValues.userId},
+                        device: {id: newValue.dataValues.deviceId},
+                    }
+                    resolve(resolveObj)
+                }
+            } catch (e) /* istanbul ignore next */ {
+                log(chalk.red("INTERNAL ERROR - floatValue mutation 117"))
+                log(e)
+                reject(
+                    "117 - An internal error occured, please contact us. The error code is 117"
+                )
+            }
+        })
+    )
 }
 module.exports = {
     authenticated,
@@ -182,4 +239,5 @@ module.exports = {
     retrieveScalarProp,
     CreateGenericValue,
     getPropsIfDefined,
+    genericValueMutation,
 }

@@ -38,8 +38,7 @@ node_modules
 # vs code
 .vscode
 
-# locks
+# lock
 package-lock.json
-yarn.lock
 
 build
