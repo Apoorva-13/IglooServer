@@ -13,7 +13,9 @@ import cors from "cors"
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 const GRAPHQL_URL =
-    process.env.NODE_ENV === production ? "iglooql.herokuapp.com" : "localhost"
+    process.env.NODE_ENV === "production"
+        ? "iglooql.herokuapp.com"
+        : "localhost"
 const graphQLServer = express()
 
 graphQLServer.use(cors())
