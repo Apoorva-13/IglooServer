@@ -1,10 +1,14 @@
 "use strict"
-
 import jwt from "jwt-simple"
 import moment from "moment"
 import chalk from "chalk"
+import OTP from "otp.js"
+import fortuna from "javascript-fortuna"
+const GA = OTP.googleAuthenticator
 const log = console.log
 const JWT_EXPIRE_DAYS = 7
+
+fortuna.init()
 
 const authenticated = (context, callback) =>
     context.auth
@@ -236,6 +240,26 @@ const genericValueMutation = (
         })
     )
 }
+
+const create2FSecret = user => {
+    const allowedChars = "QWERTYUIOPASDFGHJKLZXCVBNM234567"
+    let secret = ""
+    for (let i = 0; i < 12; i++) {
+        const randomNumber = Math.floor(fortuna.random() * allowedChars.length)
+        secret += allowedChars[randomNumber]
+    }
+    secret = GA.encode(secret)
+    return {secret, qrCode: GA.qrCode(user, "igloo", secret)}
+}
+const check2FCode = (code, secret) => {
+    try {
+        const {delta} = GA.verify(code, secret)
+        return Math.abs(delta) < 3
+    } catch (e) {
+        return false
+    }
+}
+
 module.exports = {
     authenticated,
     generateAuthenticationToken,
@@ -243,4 +267,6 @@ module.exports = {
     CreateGenericValue,
     getPropsIfDefined,
     genericValueMutation,
+    create2FSecret,
+    check2FCode,
 }

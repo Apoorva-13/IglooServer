@@ -6,6 +6,8 @@ import {
     CreateGenericValue,
     getPropsIfDefined,
     genericValueMutation,
+    create2FSecret,
+    check2FCode,
 } from "./utilities.js"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
@@ -98,6 +100,36 @@ const MutationResolver = (
             }
         })
     },
+    UpgradeTo2FactorAuthentication(root, args, context) {
+        return new Promise(
+            authenticated(async (resolve, reject) => {
+                try {
+                    const userFound = await User.find({
+                        where: {id: context.auth.userId},
+                    })
+                    if (!userFound) {
+                        reject(
+                            "User doesn't exist. Use `SignupUser` to create one"
+                        )
+                    } else if (!userFound.twoFactorSecret) {
+                        const {secret, qrCode} = create2FSecret(userFound.email)
+                        await userFound.update({twoFactorSecret: secret})
+                        resolve({secret, qrCode})
+                    }
+                } catch (e) /* istanbul ignore next */ {
+                    log(
+                        chalk.red(
+                            "INTERNAL ERROR - UpgradeTo2FactorAuthentication 118"
+                        )
+                    )
+                    log(e)
+                    reject(
+                        "118 - An internal error occured, please contact us. The error code is 118"
+                    )
+                }
+            })
+        )
+    },
     // checks that the provided email and password are correct
     // if so changes the password and returns an access token
     ChangePassword(root, args, context) {
@@ -128,12 +160,9 @@ const MutationResolver = (
                             ),
                         })
                     }
-                } catch (e) {
-                    /* istanbul ignore next */
+                } catch (e) /* istanbul ignore next */ {
                     log(chalk.red("INTERNAL ERROR - ChangePassword 101"))
-                    /* istanbul ignore next */
                     log(e)
-                    /* istanbul ignore next */
                     reject(
                         "101 - An internal error occured, please contact us. The error code is 101"
                     )

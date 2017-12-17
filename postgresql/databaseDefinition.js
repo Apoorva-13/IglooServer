@@ -51,6 +51,9 @@ const databaseDefinition = sequelize => {
             type: Sequelize.STRING,
             allowNull: false,
         },
+        twoFactorSecret: {
+            type: Sequelize.STRING,
+        },
     })
 
     const Device = sequelize.define("device", {

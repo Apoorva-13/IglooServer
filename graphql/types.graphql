@@ -17,11 +17,20 @@ type AuthenticateUserPayload {
     token: String!
 }
 
+type UpgradeTo2FactorPayload {
+    # totp secret
+    secret: String
+    # svg for the qr code
+    qrCode: String
+}
+
 type Mutation {
     # Gets an authentication token
     AuthenticateUser(email: String!, password: String!): AuthenticateUserPayload
     # Creates a new account
     SignupUser(email: String!, password: String!): SignupUserPayload
+    # upgrades a user to 2 factor authentication
+    UpgradeTo2FactorAuthentication: UpgradeTo2FactorPayload
     # Changes the password of the authenticated user
     ChangePassword(newPassword: String!): AuthenticateUserPayload
     # Creates a new Device
