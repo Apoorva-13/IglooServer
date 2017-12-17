@@ -12,7 +12,9 @@ import expressPlayground from "graphql-playground-middleware-express"
 import cors from "cors"
 
 const GRAPHQL_PORT = process.env.PORT || 3000
-
+const GRAPHQL_URL = process.env.production
+    ? "iglooql.herokuapp.com"
+    : "localhost"
 const graphQLServer = express()
 
 graphQLServer.use(cors())
@@ -32,7 +34,7 @@ graphQLServer.get("/graphiql", function(req, res, next) {
     if (req.query.bearer) {
         return graphiqlExpress({
             endpointURL: "/graphql",
-            subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+            subscriptionsEndpoint: `ws://${GRAPHQL_URL}:${GRAPHQL_PORT}/subscriptions`,
             passHeader: `'Authorization': 'Bearer ${req.query.bearer}'`,
             websocketConnectionParams: {
                 Authorization: `Bearer ${req.query.bearer}`,
@@ -41,7 +43,7 @@ graphQLServer.get("/graphiql", function(req, res, next) {
     } else {
         return graphiqlExpress({
             endpointURL: "/graphql",
-            subscriptionsEndpoint: `ws://localhost:${GRAPHQL_PORT}/subscriptions`,
+            subscriptionsEndpoint: `ws://${GRAPHQL_URL}:${GRAPHQL_PORT}/subscriptions`,
         })(req, res, next)
     }
 })
