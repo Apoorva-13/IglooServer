@@ -11,7 +11,7 @@ import chalk from "chalk"
 const {createServer} = require("http")
 import schema from "./graphql/schema"
 
-const GRAPHQL_PORT = 3000
+const GRAPHQL_PORT = process.env.PORT || 3000
 
 const httpServer = createServer(graphQLServer)
 httpServer.listen(GRAPHQL_PORT, () => {

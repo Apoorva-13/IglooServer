@@ -11,7 +11,7 @@ import expressJwt from "express-jwt"
 import expressPlayground from "graphql-playground-middleware-express"
 import cors from "cors"
 
-const GRAPHQL_PORT = 3000
+const GRAPHQL_PORT = process.env.PORT || 3000
 
 const graphQLServer = express()
 
