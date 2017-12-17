@@ -41,7 +41,6 @@ const setup = async () => {
     try {
         await User.sync({force: true})
         await Device.sync({force: true})
-        await Value.sync({force: true})
         await BoolValue.sync({force: true})
         await FloatValue.sync({force: true})
         await StringValue.sync({force: true})
@@ -49,6 +48,7 @@ const setup = async () => {
         await PlotNode.sync({force: true})
         await MapValue.sync({force: true})
         await ColourValue.sync({force: true})
+        await Value.sync({force: true})
 
         log(chalk.green("ALL WELL"))
         sequelize.close()

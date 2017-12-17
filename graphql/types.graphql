@@ -166,7 +166,6 @@ type User {
 }
 
 type Device {
-    # system fields - read-only (managed by Graphcool)
     id: ID! @isUnique
     createdAt: DateTime!
     updatedAt: DateTime!
