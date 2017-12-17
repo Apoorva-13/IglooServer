@@ -1,3 +1,5 @@
+"use strict"
+
 import {withFilter} from "graphql-subscriptions"
 import {authenticated} from "./utilities.js"
 import chalk from "chalk"

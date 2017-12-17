@@ -1,3 +1,5 @@
+"use strict"
+
 import {authenticated, retrieveScalarProp} from "./utilities.js"
 import chalk from "chalk"
 const log = console.log

@@ -1,3 +1,5 @@
+"use strict"
+
 require("dotenv").config()
 /* istanbul ignore if */
 if (!process.env.JWT_SECRET) {

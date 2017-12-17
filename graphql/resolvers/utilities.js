@@ -1,3 +1,5 @@
+"use strict"
+
 import jwt from "jwt-simple"
 import moment from "moment"
 import chalk from "chalk"

@@ -1,3 +1,5 @@
+"use strict"
+
 import {authenticated} from "./resolvers/utilities.js"
 import UserResolver from "./resolvers/User.js"
 import MutationResolver from "./resolvers/Mutation.js"

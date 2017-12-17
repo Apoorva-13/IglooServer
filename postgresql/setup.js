@@ -1,3 +1,5 @@
+"use strict"
+
 const Sequelize = require("sequelize")
 const chalk = require("chalk")
 const log = console.log
