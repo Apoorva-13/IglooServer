@@ -3,6 +3,7 @@
 import request from "supertest"
 import GraphQLServer from "../app.js"
 import {generateAuthenticationToken} from "../graphql/resolvers/utilities"
+import OTP from "otp.js"
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
 
@@ -259,6 +260,111 @@ describe("User", function() {
         expect(parsedRes.errors[0].message).toBe(
             "User doesn't exist. Use `SignupUser` to create one"
         )
+        done()
+    })
+
+    it("should be able to activate 2F authentication", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `mutation UpgradeTo2FactorAuthentication{
+                                UpgradeTo2FactorAuthentication{
+                                    secret
+                                    qrCode
+                                }
+                            }
+                        `,
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(
+            parsedRes.data.UpgradeTo2FactorAuthentication.secret
+        ).toBeTruthy()
+        self.twoFactorSecret =
+            parsedRes.data.UpgradeTo2FactorAuthentication.secret
+
+        expect(
+            parsedRes.data.UpgradeTo2FactorAuthentication.qrCode
+        ).toBeDefined()
+        done()
+    })
+
+    it("should keep the same 2F authentication secret for the following upgrades", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .set("Authorization", "Bearer " + self.token)
+            .send({
+                query: `mutation UpgradeTo2FactorAuthentication{
+                                    UpgradeTo2FactorAuthentication{
+                                        secret
+                                        qrCode
+                                    }
+                                }
+                            `,
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.UpgradeTo2FactorAuthentication.secret).toBe(
+            self.twoFactorSecret
+        )
+
+        expect(
+            parsedRes.data.UpgradeTo2FactorAuthentication.qrCode
+        ).toBeDefined()
+        done()
+    })
+
+    it("should be able to log in using 2F authentication", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation AuthenticateUser($email: String!, $password: String!, $twoFactorCode: String!){
+                                AuthenticateUser(email: $email, password: $password, twoFactorCode:$twoFactorCode){
+                                    token
+                                }
+                            }
+                        `,
+                variables: {
+                    email: "gianni@pinotto.it",
+                    password: "password",
+                    twoFactorCode: OTP.googleAuthenticator.gen(
+                        self.twoFactorSecret
+                    ),
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeUndefined()
+        expect(parsedRes.data.AuthenticateUser.token).toBeDefined()
+        done()
+    })
+
+    it("should not be able to log in using wrong 2F authentication code", async done => {
+        const res = await request(GraphQLServer)
+            .post("/graphql")
+            .set("content-type", "application/json")
+            .set("accept", "application/json")
+            .send({
+                query: `mutation AuthenticateUser($email: String!, $password: String!, $twoFactorCode: String!){
+                                    AuthenticateUser(email:$email, password: $password, twoFactorCode:$twoFactorCode){
+                                        token
+                                    }
+                                }
+                            `,
+                variables: {
+                    email: "gianni@pinotto.it",
+                    password: "password",
+                    twoFactorCode: OTP.googleAuthenticator.gen("WRONGSECRET"),
+                },
+            })
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeDefined()
         done()
     })
 })

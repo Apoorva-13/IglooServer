@@ -120,6 +120,7 @@ const MutationResolver = (
                     const userFound = await User.find({
                         where: {id: context.auth.userId},
                     })
+                    /* istanbul ignore if - should ever happen */
                     if (!userFound) {
                         reject(
                             "User doesn't exist. Use `SignupUser` to create one"
