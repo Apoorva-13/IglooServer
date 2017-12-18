@@ -8,6 +8,7 @@ import {
     genericValueMutation,
     create2FSecret,
     check2FCode,
+    logErrorsPromise,
 } from "./utilities.js"
 import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
@@ -32,8 +33,10 @@ const MutationResolver = (
     // compares the given password with the hash
     // and returns an access token
     AuthenticateUser(root, args, context) {
-        return new Promise(async (resolve, reject) => {
-            try {
+        return logErrorsPromise(
+            "AuthenticateUser",
+            103,
+            async (resolve, reject) => {
                 const userFound = await User.find({where: {email: args.email}})
                 if (!userFound) {
                     reject("User doesn't exist. Use `SignupUser` to create one")
@@ -65,92 +68,63 @@ const MutationResolver = (
                 } else {
                     reject("Wrong or missing 2-Factor Authentication Code")
                 }
-            } catch (e) {
-                /* istanbul ignore next */
-                log(chalk.red("INTERNAL ERROR - AuthenticateUser 103"))
-                /* istanbul ignore next */
-                log(e)
-                /* istanbul ignore next */
-                reject(
-                    "103 - An internal error occured, please contact us. The error code is 103"
-                )
             }
-        })
+        )
     },
     // checks if a user with that email already exists
     // if not it creates one and returnes an access token
     SignupUser(root, args, context) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                const user = await User.find({where: {email: args.email}})
-                if (user) {
-                    reject("A user with this email already exists")
-                } else {
-                    const encryptedPass = bcrypt.hashSync(
-                        args.password,
-                        SALT_ROUNDS
-                    )
-
-                    User.create({
-                        email: args.email,
-                        password: encryptedPass,
-                    }).then(newUser => {
-                        resolve({
-                            id: newUser.dataValues.id,
-                            token: generateAuthenticationToken(
-                                newUser.dataValues.id,
-                                JWT_SECRET
-                            ),
-                        })
-                    })
-                }
-            } catch (e) /* istanbul ignore next */ {
-                log(chalk.red("INTERNAL ERROR - SignupUser 102"))
-                log(e)
-                reject(
-                    "102 - An internal error occured, please contact us. The error code is 102"
+        return logErrorsPromise("SignupUser", 102, async (resolve, reject) => {
+            const user = await User.find({where: {email: args.email}})
+            if (user) {
+                reject("A user with this email already exists")
+            } else {
+                const encryptedPass = bcrypt.hashSync(
+                    args.password,
+                    SALT_ROUNDS
                 )
+
+                User.create({
+                    email: args.email,
+                    password: encryptedPass,
+                }).then(newUser => {
+                    resolve({
+                        id: newUser.dataValues.id,
+                        token: generateAuthenticationToken(
+                            newUser.dataValues.id,
+                            JWT_SECRET
+                        ),
+                    })
+                })
             }
         })
     },
     UpgradeTo2FactorAuthentication(root, args, context) {
-        return new Promise(
+        return logErrorsPromise(
+            "UpgradeTo2FactorAuthentication",
+            118,
             authenticated(context, async (resolve, reject) => {
-                try {
-                    const userFound = await User.find({
-                        where: {id: context.auth.userId},
-                    })
-                    /* istanbul ignore if - should ever happen */
-                    if (!userFound) {
-                        reject(
-                            "User doesn't exist. Use `SignupUser` to create one"
-                        )
-                    } else if (!userFound.twoFactorSecret) {
-                        const {secret, qrCode} = create2FSecret(userFound.email)
-                        await userFound.update({twoFactorSecret: secret})
-                        resolve({secret, qrCode})
-                    } else {
-                        const qrCode = OTP.googleAuthenticator.qrCode(
-                            userFound.email,
-                            "igloo",
-                            userFound.twoFactorSecret
-                        )
+                const userFound = await User.find({
+                    where: {id: context.auth.userId},
+                })
+                /* istanbul ignore if - should ever happen */
+                if (!userFound) {
+                    reject("User doesn't exist. Use `SignupUser` to create one")
+                } else if (!userFound.twoFactorSecret) {
+                    const {secret, qrCode} = create2FSecret(userFound.email)
+                    await userFound.update({twoFactorSecret: secret})
+                    resolve({secret, qrCode})
+                } else {
+                    const qrCode = OTP.googleAuthenticator.qrCode(
+                        userFound.email,
+                        "igloo",
+                        userFound.twoFactorSecret
+                    )
 
-                        resolve({
-                            secret: userFound.twoFactorSecret,
-                            qrCode,
-                        })
-                    }
-                } catch (e) /* istanbul ignore next */ {
-                    log(
-                        chalk.red(
-                            "INTERNAL ERROR - UpgradeTo2FactorAuthentication 118"
-                        )
-                    )
-                    log(e)
-                    reject(
-                        "118 - An internal error occured, please contact us. The error code is 118"
-                    )
+                    resolve({
+                        secret: userFound.twoFactorSecret,
+                        qrCode,
+                    })
                 }
             })
         )
@@ -158,90 +132,76 @@ const MutationResolver = (
     // checks that the provided email and password are correct
     // if so changes the password and returns an access token
     ChangePassword(root, args, context) {
-        return new Promise(
+        return logErrorsPromise(
+            "ChangePassword",
+            101,
             authenticated(context, async (resolve, reject) => {
-                try {
-                    const userFound = await User.find({
-                        where: {id: context.auth.userId},
-                    })
-                    if (!userFound) {
-                        reject(
-                            "User doesn't exist. Use `SignupUser` to create one"
-                        )
-                    } else {
-                        const encryptedPass = bcrypt.hashSync(
-                            args.newPassword,
-                            SALT_ROUNDS
-                        )
-
-                        const newUser = await userFound.update({
-                            password: encryptedPass,
-                        })
-                        resolve({
-                            id: newUser.dataValues.id,
-                            token: generateAuthenticationToken(
-                                newUser.dataValues.id,
-                                JWT_SECRET
-                            ),
-                        })
-                    }
-                } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - ChangePassword 101"))
-                    log(e)
-                    reject(
-                        "101 - An internal error occured, please contact us. The error code is 101"
+                const userFound = await User.find({
+                    where: {id: context.auth.userId},
+                })
+                if (!userFound) {
+                    reject("User doesn't exist. Use `SignupUser` to create one")
+                } else {
+                    const encryptedPass = bcrypt.hashSync(
+                        args.newPassword,
+                        SALT_ROUNDS
                     )
+
+                    const newUser = await userFound.update({
+                        password: encryptedPass,
+                    })
+                    resolve({
+                        id: newUser.dataValues.id,
+                        token: generateAuthenticationToken(
+                            newUser.dataValues.id,
+                            JWT_SECRET
+                        ),
+                    })
                 }
             })
         )
     },
     CreateDevice(root, args, context) {
-        return new Promise(
+        return logErrorsPromise(
+            "CreateDevice",
+            104,
             authenticated(context, async (resolve, reject) => {
-                try {
-                    const newDevice = await Device.create({
-                        customName: args.customName,
-                        deviceType: args.deviceType,
-                        tags: args.tags,
-                        userId: context.auth.userId,
-                    })
-                    const {
-                        id,
-                        createdAt,
-                        updatedAt,
-                        deviceType,
-                        customName,
-                        userId,
-                        tags,
-                    } = newDevice.dataValues
-                    const values = [] // values cannot be set when creating the device so no need to fetch them
+                const newDevice = await Device.create({
+                    customName: args.customName,
+                    deviceType: args.deviceType,
+                    tags: args.tags,
+                    userId: context.auth.userId,
+                })
+                const {
+                    id,
+                    createdAt,
+                    updatedAt,
+                    deviceType,
+                    customName,
+                    userId,
+                    tags,
+                } = newDevice.dataValues
+                const values = [] // values cannot be set when creating the device so no need to fetch them
 
-                    const resolveValue = {
-                        id,
-                        createdAt,
-                        updatedAt,
-                        deviceType,
-                        customName,
-                        tags,
-                        values,
-                        user: {
-                            id: userId,
-                        },
-                    }
-
-                    pubsub.publish("deviceCreated", {
-                        deviceCreated: resolveValue,
-                        userId: context.auth.userId,
-                    })
-
-                    resolve(resolveValue)
-                } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - CreateDevice 104"))
-                    log(e)
-                    reject(
-                        "104 - An internal error occured, please contact us. The error code is 104"
-                    )
+                const resolveValue = {
+                    id,
+                    createdAt,
+                    updatedAt,
+                    deviceType,
+                    customName,
+                    tags,
+                    values,
+                    user: {
+                        id: userId,
+                    },
                 }
+
+                pubsub.publish("deviceCreated", {
+                    deviceCreated: resolveValue,
+                    userId: context.auth.userId,
+                })
+
+                resolve(resolveValue)
             })
         )
     },
@@ -278,57 +238,43 @@ const MutationResolver = (
         pubsub
     ),
     user(root, args, context) {
-        return new Promise(
+        return logErrorsPromise(
+            "user mutation",
+            115,
             authenticated(context, async (resolve, reject) => {
-                try {
-                    const userFound = await User.find({
-                        where: {id: context.auth.userId},
+                const userFound = await User.find({
+                    where: {id: context.auth.userId},
+                })
+                if (!userFound) {
+                    reject("User doesn't exist. Use `SignupUser` to create one")
+                } else {
+                    const newUser = await userFound.update({
+                        email: args.email,
                     })
-                    if (!userFound) {
-                        reject(
-                            "User doesn't exist. Use `SignupUser` to create one"
-                        )
-                    } else {
-                        const newUser = await userFound.update({
-                            email: args.email,
-                        })
-                        resolve(newUser)
-                    }
-                } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - user mutation 115"))
-                    log(e)
-                    reject(
-                        "115 - An internal error occured, please contact us. The error code is 115"
-                    )
+                    resolve(newUser)
                 }
             })
         )
     },
     device(root, args, context) {
-        return new Promise(
+        return logErrorsPromise(
+            "device mutation",
+            116,
             authenticated(context, async (resolve, reject) => {
-                try {
-                    const deviceFound = await Device.find({
-                        where: {id: args.id},
-                    })
-                    if (!deviceFound) {
-                        reject(
-                            "Device doesn't exist. Use `CreateDevice` to create one"
-                        )
-                    } else if (deviceFound.userId !== context.auth.userId) {
-                        reject(
-                            "You are not allowed to access details about this resource"
-                        )
-                    } else {
-                        const newDevice = await deviceFound.update(args)
-                        resolve(newDevice)
-                    }
-                } catch (e) /* istanbul ignore next */ {
-                    log(chalk.red("INTERNAL ERROR - device mutation 116"))
-                    log(e)
+                const deviceFound = await Device.find({
+                    where: {id: args.id},
+                })
+                if (!deviceFound) {
                     reject(
-                        "116 - An internal error occured, please contact us. The error code is 116"
+                        "Device doesn't exist. Use `CreateDevice` to create one"
                     )
+                } else if (deviceFound.userId !== context.auth.userId) {
+                    reject(
+                        "You are not allowed to access details about this resource"
+                    )
+                } else {
+                    const newDevice = await deviceFound.update(args)
+                    resolve(newDevice)
                 }
             })
         )

@@ -187,55 +187,49 @@ const genericValueMutation = (
     childModel,
     pubsub
 ) => (root, args, context) => {
-    return new Promise(
+    return logErrorsPromise(
+        "genericValue mutation",
+        117,
         authenticated(context, async (resolve, reject) => {
-            try {
-                const valueFound = await Value.find({where: {id: args.id}})
-                if (!valueFound) {
-                    reject("The requested resource does not exist")
-                } else if (valueFound.userId !== context.auth.userId) {
-                    reject("You are not allowed to update this resource")
-                } else if (!valueFound[childNameId]) {
-                    reject(
-                        "This Value has the wrong type, please use the correct mutation"
-                    )
-                } else {
-                    const valueUpdate = getPropsIfDefined(args, [
-                        "permission",
-                        "relevance",
-                        "valueDetails",
-                    ])
-                    const newValue =
-                        Object.keys(valueUpdate).length === 0
-                            ? valueFound
-                            : await valueFound.update(valueUpdate)
-
-                    const childValueFound = await childModel.find({
-                        where: {id: valueFound[childNameId]},
-                    })
-                    const childValueUpdate = getPropsIfDefined(args, [
-                        "value",
-                        ...childProps,
-                    ])
-                    const newChildValue =
-                        Object.keys(childValueUpdate).length === 0
-                            ? childValueFound
-                            : await childValueFound.update(childValueUpdate)
-
-                    const resolveObj = {
-                        ...newChildValue.dataValues,
-                        ...newValue.dataValues,
-                        user: {id: newChildValue.dataValues.userId},
-                        device: {id: newValue.dataValues.deviceId},
-                    }
-                    resolve(resolveObj)
-                }
-            } catch (e) /* istanbul ignore next */ {
-                log(chalk.red("INTERNAL ERROR - floatValue mutation 117"))
-                log(e)
+            const valueFound = await Value.find({where: {id: args.id}})
+            if (!valueFound) {
+                reject("The requested resource does not exist")
+            } else if (valueFound.userId !== context.auth.userId) {
+                reject("You are not allowed to update this resource")
+            } else if (!valueFound[childNameId]) {
                 reject(
-                    "117 - An internal error occured, please contact us. The error code is 117"
+                    "This Value has the wrong type, please use the correct mutation"
                 )
+            } else {
+                const valueUpdate = getPropsIfDefined(args, [
+                    "permission",
+                    "relevance",
+                    "valueDetails",
+                ])
+                const newValue =
+                    Object.keys(valueUpdate).length === 0
+                        ? valueFound
+                        : await valueFound.update(valueUpdate)
+
+                const childValueFound = await childModel.find({
+                    where: {id: valueFound[childNameId]},
+                })
+                const childValueUpdate = getPropsIfDefined(args, [
+                    "value",
+                    ...childProps,
+                ])
+                const newChildValue =
+                    Object.keys(childValueUpdate).length === 0
+                        ? childValueFound
+                        : await childValueFound.update(childValueUpdate)
+
+                const resolveObj = {
+                    ...newChildValue.dataValues,
+                    ...newValue.dataValues,
+                    user: {id: newChildValue.dataValues.userId},
+                    device: {id: newValue.dataValues.deviceId},
+                }
+                resolve(resolveObj)
             }
         })
     )
@@ -260,6 +254,22 @@ const check2FCode = (code, secret) => {
     }
 }
 
+const logErrorsPromise = (name, code, callback) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            return await callback(resolve, reject)
+        } catch (e) {
+            /* istanbul ignore next */
+            log(chalk.red(`INTERNAL ERROR - ${name} ${code}`))
+            /* istanbul ignore next */
+            log(e)
+            /* istanbul ignore next */
+            reject(
+                `${code} - An internal error occured, please contact us. The error code is ${code}`
+            )
+        }
+    })
+}
 module.exports = {
     authenticated,
     generateAuthenticationToken,
@@ -269,4 +279,5 @@ module.exports = {
     genericValueMutation,
     create2FSecret,
     check2FCode,
+    logErrorsPromise,
 }
