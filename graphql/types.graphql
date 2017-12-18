@@ -26,7 +26,11 @@ type UpgradeTo2FactorPayload {
 
 type Mutation {
     # Gets an authentication token
-    AuthenticateUser(email: String!, password: String!): AuthenticateUserPayload
+    AuthenticateUser(
+        email: String!
+        password: String!
+        twoFactorCode: String
+    ): AuthenticateUserPayload
     # Creates a new account
     SignupUser(email: String!, password: String!): SignupUserPayload
     # upgrades a user to 2 factor authentication

@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jwt-simple"
 import moment from "moment"
 import chalk from "chalk"
+import OTP from "otp.js"
 const log = console.log
 const SALT_ROUNDS = 10
 
@@ -37,10 +38,22 @@ const MutationResolver = (
                 if (!userFound) {
                     reject("User doesn't exist. Use `SignupUser` to create one")
                 } else if (
-                    bcrypt.compareSync(
+                    !bcrypt.compareSync(
                         args.password,
                         userFound.dataValues.password
                     )
+                ) {
+                    reject("Wrong password")
+                } else if (!userFound.twoFactorSecret) {
+                    resolve({
+                        id: userFound.dataValues.id,
+                        token: generateAuthenticationToken(
+                            userFound.dataValues.id,
+                            JWT_SECRET
+                        ),
+                    })
+                } else if (
+                    check2FCode(args.twoFactorCode, userFound.twoFactorSecret)
                 ) {
                     resolve({
                         id: userFound.dataValues.id,
@@ -50,7 +63,7 @@ const MutationResolver = (
                         ),
                     })
                 } else {
-                    reject("Wrong password")
+                    reject("Wrong or missing 2-Factor Authentication Code")
                 }
             } catch (e) {
                 /* istanbul ignore next */
@@ -102,7 +115,7 @@ const MutationResolver = (
     },
     UpgradeTo2FactorAuthentication(root, args, context) {
         return new Promise(
-            authenticated(async (resolve, reject) => {
+            authenticated(context, async (resolve, reject) => {
                 try {
                     const userFound = await User.find({
                         where: {id: context.auth.userId},
@@ -115,6 +128,17 @@ const MutationResolver = (
                         const {secret, qrCode} = create2FSecret(userFound.email)
                         await userFound.update({twoFactorSecret: secret})
                         resolve({secret, qrCode})
+                    } else {
+                        const qrCode = OTP.googleAuthenticator.qrCode(
+                            userFound.email,
+                            "igloo",
+                            userFound.twoFactorSecret
+                        )
+
+                        resolve({
+                            secret: userFound.twoFactorSecret,
+                            qrCode,
+                        })
                     }
                 } catch (e) /* istanbul ignore next */ {
                     log(
