@@ -251,7 +251,12 @@ const MutationResolver = (
                     const newUser = await userFound.update({
                         email: args.email,
                     })
-                    resolve(newUser)
+                    resolve(newUser.dataValues)
+
+                    pubsub.publish("userUpdated", {
+                        userUpdated: newUser.dataValues,
+                        userId: context.auth.userId,
+                    })
                 }
             })
         )
@@ -274,7 +279,11 @@ const MutationResolver = (
                     )
                 } else {
                     const newDevice = await deviceFound.update(args)
-                    resolve(newDevice)
+                    resolve(newDevice.dataValues)
+                    pubsub.publish("deviceUpdated", {
+                        deviceUpdated: newDevice.dataValues,
+                        userId: context.auth.userId,
+                    })
                 }
             })
         )

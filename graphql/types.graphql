@@ -167,6 +167,10 @@ type Subscription {
     deviceCreated: Device
     # subscribes to value creations
     valueCreated: Value
+    # subscribes to value updates
+    userUpdated: User
+    # subscribes to device updates
+    deviceUpdated: Device
 }
 
 type User {
