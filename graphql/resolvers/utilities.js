@@ -4,6 +4,7 @@ import moment from "moment"
 import chalk from "chalk"
 import OTP from "otp.js"
 import fortuna from "javascript-fortuna"
+import {withFilter} from "graphql-subscriptions"
 const GA = OTP.googleAuthenticator
 const log = console.log
 const JWT_EXPIRE_DAYS = 7
@@ -270,6 +271,23 @@ const logErrorsPromise = (name, code, callback) => {
         }
     })
 }
+
+const subscriptionFilterOnlyMine = (subscriptionName, pubsub) => ({
+    subscribe: (root, args, context, info) => {
+        if (context.auth) {
+            const myUserId = context.auth.userId
+            return withFilter(
+                () => pubsub.asyncIterator(subscriptionName),
+                payload => {
+                    return payload.userId === myUserId
+                }
+            )(root, args, context, info)
+        } else {
+            throw new Error("No authorization token")
+        }
+    },
+})
+
 module.exports = {
     authenticated,
     generateAuthenticationToken,
@@ -280,4 +298,5 @@ module.exports = {
     create2FSecret,
     check2FCode,
     logErrorsPromise,
+    subscriptionFilterOnlyMine,
 }
