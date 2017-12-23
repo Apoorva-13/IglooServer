@@ -40,7 +40,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
                             process.env.JWT_SECRET
                         )
                         return {auth: decodedJwt}
-                    } catch (e) {
+                    } catch (e) /* istanbul ignore next */ {
                         console.log(chalk.bgRed("internal error - server.js"))
                         console.log(e)
                         return false
@@ -54,3 +54,5 @@ httpServer.listen(GRAPHQL_PORT, () => {
         }
     )
 })
+
+module.exports = httpServer
