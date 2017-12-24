@@ -195,11 +195,11 @@ describe("subscriptions", function() {
                 async next(res) {
                     expect(res.errors).toBeUndefined()
 
-                    const device = res.data.valueCreated
-                    expect(device.id).toBeDefined()
-                    expect(device.permission).toBe("READ_WRITE")
-                    expect(device.relevance).toBe("NORMAL")
-                    expect(device.value).toBe(4)
+                    const value = res.data.valueCreated
+                    expect(value.id).toBeDefined()
+                    expect(value.permission).toBe("READ_WRITE")
+                    expect(value.relevance).toBe("NORMAL")
+                    expect(value.value).toBe(4)
 
                     subscription.unsubscribe()
                     done()
@@ -249,11 +249,11 @@ describe("subscriptions", function() {
                 async next(res) {
                     expect(res.errors).toBeUndefined()
 
-                    const device = res.data.valueCreated
-                    expect(device.id).toBeDefined()
-                    expect(device.permission).toBe("READ_WRITE")
-                    expect(device.relevance).toBe("NORMAL")
-                    expect(device.value).toBe("ehiehie")
+                    const value = res.data.valueCreated
+                    expect(value.id).toBeDefined()
+                    expect(value.permission).toBe("READ_WRITE")
+                    expect(value.relevance).toBe("NORMAL")
+                    expect(value.value).toBe("ehiehie")
 
                     subscription.unsubscribe()
                     done()
@@ -303,11 +303,11 @@ describe("subscriptions", function() {
                 async next(res) {
                     expect(res.errors).toBeUndefined()
 
-                    const device = res.data.valueCreated
-                    expect(device.id).toBeDefined()
-                    expect(device.permission).toBe("READ_WRITE")
-                    expect(device.relevance).toBe("NORMAL")
-                    expect(device.value).toBe(true)
+                    const value = res.data.valueCreated
+                    expect(value.id).toBeDefined()
+                    expect(value.permission).toBe("READ_WRITE")
+                    expect(value.relevance).toBe("NORMAL")
+                    expect(value.value).toBe(true)
 
                     subscription.unsubscribe()
                     done()
@@ -357,11 +357,11 @@ describe("subscriptions", function() {
                 async next(res) {
                     expect(res.errors).toBeUndefined()
 
-                    const device = res.data.valueCreated
-                    expect(device.id).toBeDefined()
-                    expect(device.permission).toBe("READ_WRITE")
-                    expect(device.relevance).toBe("NORMAL")
-                    expect(device.value).toBe("#00ff00")
+                    const value = res.data.valueCreated
+                    expect(value.id).toBeDefined()
+                    expect(value.permission).toBe("READ_WRITE")
+                    expect(value.relevance).toBe("NORMAL")
+                    expect(value.value).toBe("#00ff00")
 
                     subscription.unsubscribe()
                     done()
@@ -397,6 +397,142 @@ describe("subscriptions", function() {
                 query: gql`
                     subscription {
                         valueCreated {
+                            id
+                        }
+                    }
+                `,
+            })
+            .subscribe({
+                async next(res) {
+                    expect(res.errors).toBeDefined()
+                    expect(res.errors[0].message).toBe("No authorization token")
+                    done()
+                },
+                error(e) {
+                    throw new Error("Subscription error " + e)
+                },
+            })
+    })
+
+    it("userUpdated subscription should work", async done => {
+        const subscription = authenticatedClient
+            .subscribe({
+                query: gql`
+                    subscription {
+                        userUpdated {
+                            id
+                            email
+                        }
+                    }
+                `,
+            })
+            .subscribe({
+                async next(res) {
+                    expect(res.errors).toBeUndefined()
+
+                    const user = res.data.userUpdated
+                    expect(user.id).toBeDefined()
+                    expect(user.email).toBe("userTestSubscription2@gmail.com")
+
+                    subscription.unsubscribe()
+                    done()
+                },
+                error(e) {
+                    throw new Error("Subscription error " + e)
+                },
+            })
+
+        await authenticatedClient.mutate({
+            mutation: gql`
+                mutation {
+                    user(email: "userTestSubscription2@gmail.com") {
+                        id
+                    }
+                }
+            `,
+        })
+    })
+
+    it("userUpdated shouldn't work if not authenticated", done => {
+        clientWithoutToken
+            .subscribe({
+                query: gql`
+                    subscription {
+                        userUpdated {
+                            id
+                        }
+                    }
+                `,
+            })
+            .subscribe({
+                async next(res) {
+                    expect(res.errors).toBeDefined()
+                    expect(res.errors[0].message).toBe("No authorization token")
+                    done()
+                },
+                error(e) {
+                    throw new Error("Subscription error " + e)
+                },
+            })
+    })
+
+    it("deviceUpdated subscription should work", async done => {
+        const subscription = authenticatedClient
+            .subscribe({
+                query: gql`
+                    subscription {
+                        deviceUpdated {
+                            id
+                            deviceType
+                            customName
+                            tags
+                        }
+                    }
+                `,
+            })
+            .subscribe({
+                async next(res) {
+                    expect(res.errors).toBeUndefined()
+
+                    const device = res.data.deviceUpdated
+                    expect(device.id).toBe(deviceId)
+                    expect(device.deviceType).toBe("NewType")
+                    expect(device.customName).toBe("NewName")
+                    expect(device.tags).toEqual(["newTag"])
+
+                    subscription.unsubscribe()
+                    done()
+                },
+                error(e) {
+                    throw new Error("Subscription error " + e)
+                },
+            })
+
+        await authenticatedClient.mutate({
+            mutation: gql`
+                mutation($deviceId: ID!) {
+                    device(
+                        id: $deviceId
+                        deviceType: "NewType"
+                        customName: "NewName"
+                        tags: ["newTag"]
+                    ) {
+                        id
+                    }
+                }
+            `,
+            variables: {
+                deviceId,
+            },
+        })
+    })
+
+    it("deviceUpdated shouldn't work if not authenticated", done => {
+        clientWithoutToken
+            .subscribe({
+                query: gql`
+                    subscription {
+                        deviceUpdated {
                             id
                         }
                     }
