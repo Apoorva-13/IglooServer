@@ -116,18 +116,11 @@ const UserResolver = (
                                     ...value.dataValues,
                                     __resolveType: "BooleanValue",
                                 }
-                            } else if (value.dataValues.childColour) {
+                            } else {
                                 return {
                                     ...value.dataValues.childColour.dataValues,
                                     ...value.dataValues,
                                     __resolveType: "ColourValue",
-                                }
-                            } else {
-                                // should never happen
-                                /* istanbul ignore next */
-                                return {
-                                    ...value.dataValues,
-                                    __resolveType: null,
                                 }
                             }
                         })

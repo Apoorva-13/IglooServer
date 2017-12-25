@@ -244,7 +244,7 @@ describe("Device", function() {
             "values{id}",
             "user{id}",
         ]
-        for (let i in props) {
+        for (let prop of props) {
             const res = await request(GraphQLServer)
                 .post("/graphql")
                 .set("content-type", "application/json")
@@ -253,16 +253,7 @@ describe("Device", function() {
                 .send({
                     query: `query device($id:ID!){
                             device(id:$id){
-                                id
-                                updatedAt
-                                createdAt
-                                customName
-                                tags
-                                deviceType
-                                user{
-                                    id
-                                    email
-                                }
+                                ${prop}
                             }
                         }
                 `,
@@ -332,7 +323,7 @@ describe("Device", function() {
             "values{id}",
             "user{id}",
         ]
-        for (let i in props) {
+        for (let prop of props) {
             const res = await request(GraphQLServer)
                 .post("/graphql")
                 .set("content-type", "application/json")
@@ -341,7 +332,7 @@ describe("Device", function() {
                 .send({
                     query: `query device($id:ID!){
                             device(id:$id){
-                                ${props[i]}
+                                ${prop}
                             }
                         }
                 `,

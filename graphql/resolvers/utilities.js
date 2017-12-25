@@ -259,12 +259,9 @@ const logErrorsPromise = (name, code, callback) => {
     return new Promise(async (resolve, reject) => {
         try {
             return await callback(resolve, reject)
-        } catch (e) {
-            /* istanbul ignore next */
+        } catch (e) /* istanbul ignore next */ {
             log(chalk.red(`INTERNAL ERROR - ${name} ${code}`))
-            /* istanbul ignore next */
             log(e)
-            /* istanbul ignore next */
             reject(
                 `${code} - An internal error occured, please contact us. The error code is ${code}`
             )

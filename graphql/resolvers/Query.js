@@ -95,7 +95,6 @@ const QueryResolver = (
                         "You are not allowed to access details about this resource"
                     )
                 } else {
-                    /* istanbul ignore else */
                     if (valueFound.dataValues.childFloat) {
                         resolve({
                             ...valueFound.dataValues.childFloat.dataValues, // childFloat first to use main Value id
@@ -132,7 +131,7 @@ const QueryResolver = (
                             },
                             __resolveType: "BooleanValue",
                         })
-                    } else if (valueFound.dataValues.childColour) {
+                    } else {
                         resolve({
                             ...valueFound.dataValues.childColour.dataValues,
                             ...valueFound.dataValues,
@@ -143,23 +142,6 @@ const QueryResolver = (
                                 id: valueFound.dataValues.deviceId,
                             },
                             __resolveType: "ColourValue",
-                        })
-                    } else {
-                        // should never happen
-                        console.log(
-                            chalk.red(
-                                "WARNING - Query value returned null __resolveType"
-                            )
-                        )
-                        resolve({
-                            ...valueFound.dataValues,
-                            user: {
-                                id: valueFound.dataValues.userId,
-                            },
-                            device: {
-                                id: valueFound.dataValues.deviceId,
-                            },
-                            __resolveType: null,
                         })
                     }
                 }
