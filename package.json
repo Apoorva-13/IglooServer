@@ -6,7 +6,8 @@
         "dev": "nodemon ./server.js --exec babel-node -e js,graphql,env",
         "start": "node ./build/server.js",
         "prestart": "npm run build",
-        "build": "babel server.js app.js -d build && babel postgresql -d build/postgresql && babel graphql -d build/graphql",
+        "build":
+            "babel server.js app.js -d build && babel postgresql -d build/postgresql && babel graphql -d build/graphql",
         "setupDatabase": "node ./postgresql/setup.js",
         "test": "jest --coverage --bail --forceExit",
         "pretest": "npm run setupDatabase",
@@ -22,7 +23,7 @@
     "bugs": {
         "url": "https://github.com/hellowitlab/iglooQL/issues"
     },
-    "homepage": "",
+    "homepage": "https://github.com/hellowitlab/iglooQL",
     "dependencies": {
         "apollo-server-express": "^1.0.2",
         "babel-cli": "^6.26.0",
