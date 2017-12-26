@@ -1,5 +1,7 @@
 {
-  "name": "igloo-graphql",  "version": "0.1.0",  "description": "Backend for the igloo platform",  "scripts": {
+  "name": "igloo-graphql",   "version": "0.1.0",
+  "description": "Backend for the igloo platform",
+  "scripts": {
     "dev": "nodemon ./server.js --exec babel-node -e js,graphql,env",
     "start": "node ./build/server.js",
     "prestart": "npm run build",
@@ -10,8 +12,9 @@
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
-    "precommit": "npm run lint && npm run test"
+    "precommit": "lint-staged && npm run test"
   },
+  "lint-staged": { "*.js": ["prettier-eslint --write", "git add"] },
   "repository": {
     "type": "git",
     "url": "https://github.com/hellowitlab/iglooQL"
@@ -65,6 +68,7 @@
     "graphql-tag": "^2.6.1",
     "husky": "^0.14.3",
     "jest": "^21.2.1",
+    "lint-staged": "^6.0.0",
     "minimal-graphql": "^1.0.3",
     "nodemon": "^1.12.1",
     "prettier-eslint-cli": "^4.7.0",
