@@ -1,6 +1,6 @@
 "use strict"
 
-import {makeExecutableSchema, addMockFunctionsToSchema} from "graphql-tools"
+import {makeExecutableSchema} from "graphql-tools"
 import fs from "fs"
 import resolvers from "./resolvers"
 

@@ -3,15 +3,6 @@
 const Sequelize = require("sequelize")
 
 const databaseDefinition = sequelize => {
-    const ValueType = Sequelize.ENUM(
-        "BOOL",
-        "FLOAT",
-        "PLOT",
-        "STRING",
-        "COLOR",
-        "MAP",
-        "DATE_TIME"
-    )
     const ValuePermission = Sequelize.ENUM("READ_ONLY", "READ_WRITE")
     const ValueRelevance = Sequelize.ENUM(
         "MAIN",
