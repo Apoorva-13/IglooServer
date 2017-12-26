@@ -4,18 +4,13 @@ import {
     authenticated,
     generateAuthenticationToken,
     CreateGenericValue,
-    getPropsIfDefined,
     genericValueMutation,
     create2FSecret,
     check2FCode,
     logErrorsPromise,
 } from "./utilities.js"
 import bcrypt from "bcryptjs"
-import jwt from "jwt-simple"
-import moment from "moment"
-import chalk from "chalk"
 import OTP from "otp.js"
-const log = console.log
 const SALT_ROUNDS = 10
 
 const MutationResolver = (
@@ -32,7 +27,7 @@ const MutationResolver = (
     // checks if the user exists, if so
     // compares the given password with the hash
     // and returns an access token
-    AuthenticateUser(root, args, context) {
+    AuthenticateUser(root, args) {
         return logErrorsPromise(
             "AuthenticateUser",
             103,
@@ -73,7 +68,7 @@ const MutationResolver = (
     },
     // checks if a user with that email already exists
     // if not it creates one and returnes an access token
-    SignupUser(root, args, context) {
+    SignupUser(root, args) {
         return logErrorsPromise("SignupUser", 102, async (resolve, reject) => {
             const user = await User.find({where: {email: args.email}})
             if (user) {
@@ -165,7 +160,7 @@ const MutationResolver = (
         return logErrorsPromise(
             "CreateDevice",
             104,
-            authenticated(context, async (resolve, reject) => {
+            authenticated(context, async resolve => {
                 const newDevice = await Device.create({
                     customName: args.customName,
                     deviceType: args.deviceType,
