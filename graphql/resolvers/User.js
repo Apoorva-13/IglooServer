@@ -1,8 +1,6 @@
 "use strict"
 
 import {authenticated, logErrorsPromise} from "./utilities.js"
-import chalk from "chalk"
-const log = console.log
 
 const retrieveUserScalarProp = (User, prop) => {
     return (root, args, context) => {

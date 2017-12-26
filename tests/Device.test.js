@@ -2,7 +2,6 @@
 
 import request from "supertest"
 import GraphQLServer from "../app.js"
-import {generateAuthenticationToken} from "../graphql/resolvers/utilities"
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
 
@@ -11,7 +10,6 @@ if (!process.env.JWT_SECRET) {
     throw new Error("Could not load .env")
 }
 
-const {JWT_SECRET} = process.env
 let self = {}
 
 describe("Device", function() {

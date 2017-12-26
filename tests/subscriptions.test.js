@@ -1,6 +1,6 @@
 const minimalGraphql = require("minimal-graphql")
 const gql = require("graphql-tag")
-const server = require("../server")
+require("../server")
 const GRAPHQL_PORT = process.env.PORT || 3000
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000
 
@@ -18,7 +18,6 @@ describe("subscriptions", function() {
     )
 
     let authenticatedClient
-    let authBearer
     let deviceId
     let floatValueId
     let stringValueId
@@ -49,7 +48,7 @@ describe("subscriptions", function() {
                 },
             },
             {
-                uri: `ws://localhost:3000/subscriptions`,
+                uri: "ws://localhost:3000/subscriptions",
                 options: {
                     reconnect: true,
                     connectionParams: {
@@ -69,7 +68,7 @@ describe("subscriptions", function() {
                 },
             },
             {
-                uri: `ws://localhost:3000/subscriptions`,
+                uri: "ws://localhost:3000/subscriptions",
                 options: {
                     reconnect: true,
                     connectionParams: {

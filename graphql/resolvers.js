@@ -1,6 +1,5 @@
 "use strict"
 
-import {authenticated} from "./resolvers/utilities.js"
 import UserResolver from "./resolvers/User.js"
 import MutationResolver from "./resolvers/Mutation.js"
 import QueryResolver from "./resolvers/Query.js"
@@ -9,13 +8,8 @@ import SubscriptionsResolver from "./resolvers/subscriptions.js"
 import {PubSub} from "graphql-subscriptions"
 import GraphQLToolsTypes from "graphql-tools-types"
 import Sequelize from "sequelize"
-import chalk from "chalk"
-import bcrypt from "bcryptjs"
-import jwt from "jwt-simple"
-import moment from "moment"
 
 let pubsub = new PubSub()
-const log = console.log
 
 require("dotenv").config()
 /* istanbul ignore if */
@@ -96,7 +90,7 @@ const resolvers = {
     ),
     Subscription: SubscriptionsResolver(pubsub),
     Value: {
-        __resolveType(root, args, context) {
+        __resolveType(root) {
             /* istanbul ignore else */
             if (root.__resolveType) return root.__resolveType
 

@@ -7,6 +7,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to
 
 describe("Value", function() {
     let valueDatas = []
+    let self = this
 
     beforeAll(async () => {
         // creating 2 accounts and 2 devices to perform all the operations
@@ -291,7 +292,7 @@ describe("Value", function() {
     it("should be able to add Values", async done => {
         const allPromises = []
         for (let i in valueDatas) {
-            const fetchPromise = new Promise(async (resolve, reject) => {
+            const fetchPromise = new Promise(async resolve => {
                 const {
                     idName,
                     mutationName,
@@ -581,7 +582,7 @@ describe("Value", function() {
         let allPromises = []
         for (let i in valueDatas) {
             allPromises.push(
-                new Promise(async (resolve, reject) => {
+                new Promise(async resolve => {
                     const {
                         token,
                         databaseId,
@@ -671,7 +672,7 @@ describe("Value", function() {
             .post("/graphql")
             .set("content-type", "application/json")
             .set("accept", "application/json")
-            .set("Authorization", "Bearer " + token)
+            .set("Authorization", "Bearer " + self.token)
             .send({
                 query: `query Value($id:ID!){
                                 value(id:$id){
@@ -726,10 +727,8 @@ describe("Value", function() {
     it("should be able to update all values", async done => {
         let allPromises = []
         for (let i in valueDatas) {
-            const mutationPromise = new Promise(async (resolve, reject) => {
+            const mutationPromise = new Promise(async resolve => {
                 const {
-                    idName,
-                    mutationName,
                     updateMutationName,
                     specificProps,
                     token,
@@ -822,8 +821,6 @@ describe("Value", function() {
         let allPromises = []
         for (let i in valueDatas) {
             const {
-                idName,
-                mutationName,
                 updateMutationName,
                 specificProps,
                 token,
@@ -833,7 +830,7 @@ describe("Value", function() {
             } = valueDatas[i]
 
             for (let i in specificProps) {
-                const mutationPromise = new Promise(async (resolve, reject) => {
+                const mutationPromise = new Promise(async resolve => {
                     const queryVariables = {
                         id: databaseId,
                     }
@@ -921,7 +918,7 @@ describe("Value", function() {
             .post("/graphql")
             .set("content-type", "application/json")
             .set("accept", "application/json")
-            .set("Authorization", "Bearer " + token)
+            .set("Authorization", "Bearer " + self.token)
             .send({
                 query: `mutation floatValue($id:ID!){
                                 floatValue(id:$id){

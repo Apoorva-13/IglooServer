@@ -10,7 +10,6 @@ import {graphqlExpress, graphiqlExpress} from "apollo-server-express"
 import bodyParser from "body-parser"
 import schema from "./graphql/schema"
 import expressJwt from "express-jwt"
-import expressPlayground from "graphql-playground-middleware-express"
 import cors from "cors"
 
 const GRAPHQL_PORT = process.env.PORT || 3000
@@ -51,14 +50,5 @@ graphQLServer.get("/graphiql", function(req, res, next) {
         })(req, res, next)
     }
 })
-
-// graphQLServer.get(
-//     "/playground",
-//     expressPlayground({
-//         endpoint: "/graphql",
-//         subscriptionEndpoint: "/subscriptions",
-//         setTitle: "Igloo Playground",
-//     })
-// )
 
 export default graphQLServer
