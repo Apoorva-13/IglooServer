@@ -1,8 +1,6 @@
 "use strict"
 
 import {authenticated, logErrorsPromise} from "./utilities.js"
-import chalk from "chalk"
-const log = console.log
 
 const QueryResolver = (
     Device,
@@ -14,7 +12,7 @@ const QueryResolver = (
 ) => ({
     user(root, args, context) {
         return new Promise(
-            authenticated(context, (resolve, reject) => {
+            authenticated(context, resolve => {
                 resolve({id: context.auth.userId})
             })
         )
