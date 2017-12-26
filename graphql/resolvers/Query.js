@@ -1,4 +1,4 @@
-import { authenticated, logErrorsPromise } from "./utilities.js"
+import { authenticated, logErrorsPromise } from './utilities.js'
 
 const QueryResolver = (
   Device,
@@ -15,16 +15,16 @@ const QueryResolver = (
   },
   device(root, args, context) {
     return logErrorsPromise(
-      "device query",
+      'device query',
       105,
       authenticated(context, async (resolve, reject) => {
         const deviceFound = await Device.find({
           where: { id: args.id },
         })
         if (!deviceFound) {
-          reject("The requested resource does not exist")
+          reject('The requested resource does not exist')
         } else if (deviceFound.userId !== context.auth.userId) {
-          reject("You are not allowed to access details about this resource")
+          reject('You are not allowed to access details about this resource')
         } else {
           const {
             id,
@@ -52,7 +52,7 @@ const QueryResolver = (
   },
   value(root, args, context) {
     return logErrorsPromise(
-      "values query",
+      'values query',
       114,
       authenticated(context, async (resolve, reject) => {
         const valueFound = await Value.find({
@@ -61,29 +61,29 @@ const QueryResolver = (
             {
               model: FloatValue,
               required: false,
-              as: "childFloat",
+              as: 'childFloat',
             },
             {
               model: StringValue,
               required: false,
-              as: "childString",
+              as: 'childString',
             },
             {
               model: BoolValue,
               required: false,
-              as: "childBool",
+              as: 'childBool',
             },
             {
               model: ColourValue,
               required: false,
-              as: "childColour",
+              as: 'childColour',
             },
           ],
         })
         if (!valueFound) {
-          reject("The requested resource does not exist")
+          reject('The requested resource does not exist')
         } else if (valueFound.userId !== context.auth.userId) {
-          reject("You are not allowed to access details about this resource")
+          reject('You are not allowed to access details about this resource')
         } else if (valueFound.dataValues.childFloat) {
           resolve({
             ...valueFound.dataValues.childFloat.dataValues, // childFloat first to use main Value id
@@ -94,7 +94,7 @@ const QueryResolver = (
             device: {
               id: valueFound.dataValues.deviceId,
             },
-            __resolveType: "FloatValue",
+            __resolveType: 'FloatValue',
           })
         } else if (valueFound.dataValues.childString) {
           resolve({
@@ -106,7 +106,7 @@ const QueryResolver = (
             device: {
               id: valueFound.dataValues.deviceId,
             },
-            __resolveType: "StringValue",
+            __resolveType: 'StringValue',
           })
         } else if (valueFound.dataValues.childBool) {
           resolve({
@@ -118,7 +118,7 @@ const QueryResolver = (
             device: {
               id: valueFound.dataValues.deviceId,
             },
-            __resolveType: "BooleanValue",
+            __resolveType: 'BooleanValue',
           })
         } else {
           resolve({
@@ -130,7 +130,7 @@ const QueryResolver = (
             device: {
               id: valueFound.dataValues.deviceId,
             },
-            __resolveType: "ColourValue",
+            __resolveType: 'ColourValue',
           })
         }
       }),

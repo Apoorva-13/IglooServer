@@ -6,9 +6,9 @@ import {
   create2FSecret,
   check2FCode,
   logErrorsPromise,
-} from "./utilities.js"
-import bcrypt from "bcryptjs"
-import OTP from "otp.js"
+} from './utilities.js'
+import bcrypt from 'bcryptjs'
+import OTP from 'otp.js'
 
 const SALT_ROUNDS = 10
 
@@ -28,7 +28,7 @@ const MutationResolver = (
   // and returns an access token
   AuthenticateUser(root, args) {
     return logErrorsPromise(
-      "AuthenticateUser",
+      'AuthenticateUser',
       103,
       async (resolve, reject) => {
         const userFound = await User.find({ where: { email: args.email } })
@@ -37,7 +37,7 @@ const MutationResolver = (
         } else if (
           !bcrypt.compareSync(args.password, userFound.dataValues.password)
         ) {
-          reject("Wrong password")
+          reject('Wrong password')
         } else if (!userFound.twoFactorSecret) {
           resolve({
             id: userFound.dataValues.id,
@@ -55,7 +55,7 @@ const MutationResolver = (
             ),
           })
         } else {
-          reject("Wrong or missing 2-Factor Authentication Code")
+          reject('Wrong or missing 2-Factor Authentication Code')
         }
       },
     )
@@ -63,10 +63,10 @@ const MutationResolver = (
   // checks if a user with that email already exists
   // if not it creates one and returnes an access token
   SignupUser(root, args) {
-    return logErrorsPromise("SignupUser", 102, async (resolve, reject) => {
+    return logErrorsPromise('SignupUser', 102, async (resolve, reject) => {
       const user = await User.find({ where: { email: args.email } })
       if (user) {
-        reject("A user with this email already exists")
+        reject('A user with this email already exists')
       } else {
         const encryptedPass = bcrypt.hashSync(args.password, SALT_ROUNDS)
 
@@ -87,7 +87,7 @@ const MutationResolver = (
   },
   UpgradeTo2FactorAuthentication(root, args, context) {
     return logErrorsPromise(
-      "UpgradeTo2FactorAuthentication",
+      'UpgradeTo2FactorAuthentication',
       118,
       authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
@@ -103,7 +103,7 @@ const MutationResolver = (
         } else {
           const qrCode = OTP.googleAuthenticator.qrCode(
             userFound.email,
-            "igloo",
+            'igloo',
             userFound.twoFactorSecret,
           )
 
@@ -119,7 +119,7 @@ const MutationResolver = (
   // if so changes the password and returns an access token
   ChangePassword(root, args, context) {
     return logErrorsPromise(
-      "ChangePassword",
+      'ChangePassword',
       101,
       authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
@@ -146,7 +146,7 @@ const MutationResolver = (
   },
   CreateDevice(root, args, context) {
     return logErrorsPromise(
-      "CreateDevice",
+      'CreateDevice',
       104,
       authenticated(context, async (resolve) => {
         const newDevice = await Device.create({
@@ -179,7 +179,7 @@ const MutationResolver = (
           },
         }
 
-        pubsub.publish("deviceCreated", {
+        pubsub.publish('deviceCreated', {
           deviceCreated: resolveValue,
           userId: context.auth.userId,
         })
@@ -191,16 +191,16 @@ const MutationResolver = (
   CreateFloatValue: CreateGenericValue(
     Device,
     Value,
-    ["precision", "boundaries"],
-    "childFloat",
+    ['precision', 'boundaries'],
+    'childFloat',
     FloatValue,
     pubsub,
   ),
   CreateStringValue: CreateGenericValue(
     Device,
     Value,
-    ["maxChars"],
-    "childString",
+    ['maxChars'],
+    'childString',
     StringValue,
     pubsub,
   ),
@@ -208,7 +208,7 @@ const MutationResolver = (
     Device,
     Value,
     [],
-    "childBool",
+    'childBool',
     BoolValue,
     pubsub,
   ),
@@ -216,13 +216,13 @@ const MutationResolver = (
     Device,
     Value,
     [],
-    "childColour",
+    'childColour',
     ColourValue,
     pubsub,
   ),
   user(root, args, context) {
     return logErrorsPromise(
-      "user mutation",
+      'user mutation',
       115,
       authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
@@ -236,7 +236,7 @@ const MutationResolver = (
           })
           resolve(newUser.dataValues)
 
-          pubsub.publish("userUpdated", {
+          pubsub.publish('userUpdated', {
             userUpdated: newUser.dataValues,
             userId: context.auth.userId,
           })
@@ -246,7 +246,7 @@ const MutationResolver = (
   },
   device(root, args, context) {
     return logErrorsPromise(
-      "device mutation",
+      'device mutation',
       116,
       authenticated(context, async (resolve, reject) => {
         const deviceFound = await Device.find({
@@ -255,11 +255,11 @@ const MutationResolver = (
         if (!deviceFound) {
           reject("Device doesn't exist. Use `CreateDevice` to create one")
         } else if (deviceFound.userId !== context.auth.userId) {
-          reject("You are not allowed to access details about this resource")
+          reject('You are not allowed to access details about this resource')
         } else {
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
-          pubsub.publish("deviceUpdated", {
+          pubsub.publish('deviceUpdated', {
             deviceUpdated: newDevice.dataValues,
             userId: context.auth.userId,
           })
@@ -269,29 +269,29 @@ const MutationResolver = (
   },
   floatValue: genericValueMutation(
     Value,
-    ["boundaries", "precision"],
-    "childFloatId",
+    ['boundaries', 'precision'],
+    'childFloatId',
     FloatValue,
     pubsub,
   ),
   stringValue: genericValueMutation(
     Value,
-    ["maxChars"],
-    "childStringId",
+    ['maxChars'],
+    'childStringId',
     StringValue,
     pubsub,
   ),
   booleanValue: genericValueMutation(
     Value,
     [],
-    "childBoolId",
+    'childBoolId',
     BoolValue,
     pubsub,
   ),
   colourValue: genericValueMutation(
     Value,
     [],
-    "childColourId",
+    'childColourId',
     ColourValue,
     pubsub,
   ),

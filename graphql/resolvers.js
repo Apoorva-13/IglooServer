@@ -1,18 +1,18 @@
-import UserResolver from "./resolvers/User.js"
-import MutationResolver from "./resolvers/Mutation.js"
-import QueryResolver from "./resolvers/Query.js"
-import DeviceResolver from "./resolvers/Device.js"
-import SubscriptionsResolver from "./resolvers/subscriptions.js"
-import { PubSub } from "graphql-subscriptions"
-import GraphQLToolsTypes from "graphql-tools-types"
-import Sequelize from "sequelize"
+import UserResolver from './resolvers/User.js'
+import MutationResolver from './resolvers/Mutation.js'
+import QueryResolver from './resolvers/Query.js'
+import DeviceResolver from './resolvers/Device.js'
+import SubscriptionsResolver from './resolvers/subscriptions.js'
+import { PubSub } from 'graphql-subscriptions'
+import GraphQLToolsTypes from 'graphql-tools-types'
+import Sequelize from 'sequelize'
 
 const pubsub = new PubSub()
 
-require("dotenv").config()
+require('dotenv').config()
 /* istanbul ignore if */
 if (!process.env.JWT_SECRET) {
-  throw new Error("Could not load .env")
+  throw new Error('Could not load .env')
 }
 
 const {
@@ -26,7 +26,7 @@ const sequelize = new Sequelize({
   username: DB_USERNAME,
   password: PASSWORD,
   ssl: true,
-  dialect: "postgres",
+  dialect: 'postgres',
   dialectOptions: {
     ssl: true,
   },
@@ -43,11 +43,11 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
-} = require("../postgresql/databaseDefinition")(sequelize)
+} = require('../postgresql/databaseDefinition')(sequelize)
 
 const resolvers = {
-  DateTime: GraphQLToolsTypes.Date({ name: "DateTime" }),
-  Json: GraphQLToolsTypes.JSON({ name: "Json" }),
+  DateTime: GraphQLToolsTypes.Date({ name: 'DateTime' }),
+  Json: GraphQLToolsTypes.JSON({ name: 'Json' }),
   User: UserResolver(
     User,
     Device,
@@ -96,10 +96,10 @@ const resolvers = {
 
       /* istanbul ignore next - this should never happen */
       return root.childFloat
-        ? "FloatValue"
+        ? 'FloatValue'
         : root.childString
-          ? "StringValue"
-          : root.childBool ? "BooleanValue" : "ColourValue"
+          ? 'StringValue'
+          : root.childBool ? 'BooleanValue' : 'ColourValue'
     },
   },
 }

@@ -1,11 +1,11 @@
-const minimalGraphql = require("minimal-graphql")
-const gql = require("graphql-tag")
-require("../server")
+const minimalGraphql = require('minimal-graphql')
+const gql = require('graphql-tag')
+require('../server')
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000
 
-describe("subscriptions", () => {
+describe('subscriptions', () => {
   const clientWithoutToken = minimalGraphql(
     {
       uri: `http://localhost:${GRAPHQL_PORT}/graphql`,
@@ -43,13 +43,13 @@ describe("subscriptions", () => {
     const authBearer = res.data.SignupUser.token
     authenticatedClient = minimalGraphql(
       {
-        uri: "http://localhost:3000/graphql",
+        uri: 'http://localhost:3000/graphql',
         headers: {
           Authorization: `Bearer ${authBearer}`,
         },
       },
       {
-        uri: "ws://localhost:3000/subscriptions",
+        uri: 'ws://localhost:3000/subscriptions',
         options: {
           reconnect: true,
           connectionParams: {
@@ -60,20 +60,20 @@ describe("subscriptions", () => {
     )
   })
 
-  it("should reject wrongly formatted authorization", async (done) => {
+  it('should reject wrongly formatted authorization', async (done) => {
     const wrongTokenClient = minimalGraphql(
       {
-        uri: "http://localhost:3000/graphql",
+        uri: 'http://localhost:3000/graphql',
         headers: {
-          Authorization: "NotABearer ",
+          Authorization: 'NotABearer ',
         },
       },
       {
-        uri: "ws://localhost:3000/subscriptions",
+        uri: 'ws://localhost:3000/subscriptions',
         options: {
           reconnect: true,
           connectionParams: {
-            Authorization: "NotABearer",
+            Authorization: 'NotABearer',
           },
         },
       },
@@ -92,12 +92,12 @@ describe("subscriptions", () => {
       .subscribe({
         next(res) {
           expect(res.errors).toBeDefined()
-          expect(res.errors[0].message).toBe("No authorization token")
+          expect(res.errors[0].message).toBe('No authorization token')
           done()
         },
       })
   })
-  it("deviceCreated subscription should work", (done) => {
+  it('deviceCreated subscription should work', (done) => {
     authenticatedClient
       .subscribe({
         query: gql`
@@ -116,8 +116,8 @@ describe("subscriptions", () => {
           expect(res.errors).toBeUndefined()
 
           const device = res.data.deviceCreated
-          expect(device.customName).toBe("Lampada")
-          expect(device.deviceType).toBe("Lamp")
+          expect(device.customName).toBe('Lampada')
+          expect(device.deviceType).toBe('Lamp')
           expect(device.tags).toEqual([])
 
           done()
@@ -162,7 +162,7 @@ describe("subscriptions", () => {
       .subscribe({
         async next(res) {
           expect(res.errors).toBeDefined()
-          expect(res.errors[0].message).toBe("No authorization token")
+          expect(res.errors[0].message).toBe('No authorization token')
           done()
         },
         error(e) {
@@ -171,7 +171,7 @@ describe("subscriptions", () => {
       })
   })
 
-  it("valueCreated subscription should work with floatValue", async (done) => {
+  it('valueCreated subscription should work with floatValue', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -193,8 +193,8 @@ describe("subscriptions", () => {
 
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
-          expect(value.permission).toBe("READ_WRITE")
-          expect(value.relevance).toBe("NORMAL")
+          expect(value.permission).toBe('READ_WRITE')
+          expect(value.relevance).toBe('NORMAL')
           expect(value.value).toBe(4)
 
           subscription.unsubscribe()
@@ -225,7 +225,7 @@ describe("subscriptions", () => {
     floatValueId = res.data.CreateFloatValue.id
   })
 
-  it("valueCreated subscription should work with stringValue", async (done) => {
+  it('valueCreated subscription should work with stringValue', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -247,9 +247,9 @@ describe("subscriptions", () => {
 
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
-          expect(value.permission).toBe("READ_WRITE")
-          expect(value.relevance).toBe("NORMAL")
-          expect(value.value).toBe("ehiehie")
+          expect(value.permission).toBe('READ_WRITE')
+          expect(value.relevance).toBe('NORMAL')
+          expect(value.value).toBe('ehiehie')
 
           subscription.unsubscribe()
           done()
@@ -279,7 +279,7 @@ describe("subscriptions", () => {
     stringValueId = res.data.CreateStringValue.id
   })
 
-  it("valueCreated subscription should work with booleanValue", async (done) => {
+  it('valueCreated subscription should work with booleanValue', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -301,8 +301,8 @@ describe("subscriptions", () => {
 
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
-          expect(value.permission).toBe("READ_WRITE")
-          expect(value.relevance).toBe("NORMAL")
+          expect(value.permission).toBe('READ_WRITE')
+          expect(value.relevance).toBe('NORMAL')
           expect(value.value).toBe(true)
 
           subscription.unsubscribe()
@@ -333,7 +333,7 @@ describe("subscriptions", () => {
     boolValueId = res.data.CreateBooleanValue.id
   })
 
-  it("valueCreated subscription should work with colourValue", async (done) => {
+  it('valueCreated subscription should work with colourValue', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -355,9 +355,9 @@ describe("subscriptions", () => {
 
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
-          expect(value.permission).toBe("READ_WRITE")
-          expect(value.relevance).toBe("NORMAL")
-          expect(value.value).toBe("#00ff00")
+          expect(value.permission).toBe('READ_WRITE')
+          expect(value.relevance).toBe('NORMAL')
+          expect(value.value).toBe('#00ff00')
 
           subscription.unsubscribe()
           done()
@@ -401,7 +401,7 @@ describe("subscriptions", () => {
       .subscribe({
         async next(res) {
           expect(res.errors).toBeDefined()
-          expect(res.errors[0].message).toBe("No authorization token")
+          expect(res.errors[0].message).toBe('No authorization token')
           done()
         },
         error(e) {
@@ -410,7 +410,7 @@ describe("subscriptions", () => {
       })
   })
 
-  it("userUpdated subscription should work", async (done) => {
+  it('userUpdated subscription should work', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -428,7 +428,7 @@ describe("subscriptions", () => {
 
           const user = res.data.userUpdated
           expect(user.id).toBeDefined()
-          expect(user.email).toBe("userTestSubscription2@gmail.com")
+          expect(user.email).toBe('userTestSubscription2@gmail.com')
 
           subscription.unsubscribe()
           done()
@@ -463,7 +463,7 @@ describe("subscriptions", () => {
       .subscribe({
         async next(res) {
           expect(res.errors).toBeDefined()
-          expect(res.errors[0].message).toBe("No authorization token")
+          expect(res.errors[0].message).toBe('No authorization token')
           done()
         },
         error(e) {
@@ -472,7 +472,7 @@ describe("subscriptions", () => {
       })
   })
 
-  it("deviceUpdated subscription should work", async (done) => {
+  it('deviceUpdated subscription should work', async (done) => {
     const subscription = authenticatedClient
       .subscribe({
         query: gql`
@@ -492,9 +492,9 @@ describe("subscriptions", () => {
 
           const device = res.data.deviceUpdated
           expect(device.id).toBe(deviceId)
-          expect(device.deviceType).toBe("NewType")
-          expect(device.customName).toBe("NewName")
-          expect(device.tags).toEqual(["newTag"])
+          expect(device.deviceType).toBe('NewType')
+          expect(device.customName).toBe('NewName')
+          expect(device.tags).toEqual(['newTag'])
 
           subscription.unsubscribe()
           done()
@@ -537,7 +537,7 @@ describe("subscriptions", () => {
       .subscribe({
         async next(res) {
           expect(res.errors).toBeDefined()
-          expect(res.errors[0].message).toBe("No authorization token")
+          expect(res.errors[0].message).toBe('No authorization token')
           done()
         },
         error(e) {

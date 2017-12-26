@@ -1,17 +1,17 @@
-require("dotenv").config()
+require('dotenv').config()
 /* istanbul ignore if */
 if (!process.env.JWT_SECRET) {
-  throw new Error("Could not load .env")
+  throw new Error('Could not load .env')
 }
-import graphQLServer from "./app.js"
-import { SubscriptionServer } from "subscriptions-transport-ws"
-import { execute, subscribe } from "graphql"
-import jwt from "jwt-simple"
-import chalk from "chalk"
+import graphQLServer from './app.js'
+import { SubscriptionServer } from 'subscriptions-transport-ws'
+import { execute, subscribe } from 'graphql'
+import jwt from 'jwt-simple'
+import chalk from 'chalk'
 
-const { createServer } = require("http")
+const { createServer } = require('http')
 
-import schema from "./graphql/schema"
+import schema from './graphql/schema'
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 
@@ -27,7 +27,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
       onConnect: (connectionParams) => {
         if (!connectionParams.Authorization) {
           return false
-        } else if (!connectionParams.Authorization.startsWith("Bearer ")) {
+        } else if (!connectionParams.Authorization.startsWith('Bearer ')) {
           return false
         }
         try {
@@ -37,7 +37,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
           )
           return { auth: decodedJwt }
         } catch (e) /* istanbul ignore next */ {
-          console.log(chalk.bgRed("internal error - server.js"))
+          console.log(chalk.bgRed('internal error - server.js'))
           console.log(e)
           return false
         }
@@ -45,7 +45,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
     },
     {
       server: httpServer,
-      path: "/subscriptions",
+      path: '/subscriptions',
     },
   )
 })

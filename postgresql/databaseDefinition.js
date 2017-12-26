@@ -1,8 +1,8 @@
-const Sequelize = require("sequelize")
+const Sequelize = require('sequelize')
 
 const databaseDefinition = (sequelize) => {
-  const ValuePermission = Sequelize.ENUM("READ_ONLY", "READ_WRITE")
-  const ValueRelevance = Sequelize.ENUM("MAIN", "NORMAL", "ADVANCED", "HIDDEN")
+  const ValuePermission = Sequelize.ENUM('READ_ONLY', 'READ_WRITE')
+  const ValueRelevance = Sequelize.ENUM('MAIN', 'NORMAL', 'ADVANCED', 'HIDDEN')
   const selfId = {
     id: {
       type: Sequelize.UUID,
@@ -16,13 +16,13 @@ const databaseDefinition = (sequelize) => {
       allowNull: false,
       references: {
         model,
-        key: "id",
+        key: 'id',
         deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE,
       },
     },
   })
 
-  const User = sequelize.define("user", {
+  const User = sequelize.define('user', {
     ...selfId,
     email: {
       type: Sequelize.STRING,
@@ -40,9 +40,9 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  const Device = sequelize.define("device", {
+  const Device = sequelize.define('device', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     deviceType: {
       type: Sequelize.STRING,
     },
@@ -54,10 +54,10 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  const Value = sequelize.define("value", {
+  const Value = sequelize.define('value', {
     ...selfId,
-    ...otherId("userId", User),
-    ...otherId("deviceId", Device),
+    ...otherId('userId', User),
+    ...otherId('deviceId', Device),
     valueDetails: {
       type: Sequelize.STRING,
     },
@@ -69,17 +69,17 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  const BoolValue = sequelize.define("boolValue", {
+  const BoolValue = sequelize.define('boolValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     value: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
     },
   })
-  const FloatValue = sequelize.define("floatValue", {
+  const FloatValue = sequelize.define('floatValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     value: {
       type: Sequelize.FLOAT,
       allowNull: false,
@@ -91,9 +91,9 @@ const databaseDefinition = (sequelize) => {
       type: Sequelize.ARRAY(Sequelize.FLOAT),
     },
   })
-  const StringValue = sequelize.define("stringValue", {
+  const StringValue = sequelize.define('stringValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     value: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -102,14 +102,14 @@ const databaseDefinition = (sequelize) => {
       type: Sequelize.INTEGER,
     },
   })
-  const PlotValue = sequelize.define("plotValue", {
+  const PlotValue = sequelize.define('plotValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
   })
-  const PlotNode = sequelize.define("plotNode", {
+  const PlotNode = sequelize.define('plotNode', {
     ...selfId,
-    ...otherId("userId", User),
-    ...otherId("plotValueId", PlotValue),
+    ...otherId('userId', User),
+    ...otherId('plotValueId', PlotValue),
     value: {
       type: Sequelize.FLOAT,
       allowNull: false,
@@ -119,9 +119,9 @@ const databaseDefinition = (sequelize) => {
       allowNull: false,
     },
   })
-  const MapValue = sequelize.define("mapValue", {
+  const MapValue = sequelize.define('mapValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     latitude: {
       type: Sequelize.FLOAT,
     },
@@ -133,31 +133,31 @@ const databaseDefinition = (sequelize) => {
       allowNull: false,
     },
   })
-  const ColourValue = sequelize.define("colourValue", {
+  const ColourValue = sequelize.define('colourValue', {
     ...selfId,
-    ...otherId("userId", User),
+    ...otherId('userId', User),
     value: {
       type: Sequelize.STRING,
     },
   })
 
   Value.belongsTo(BoolValue, {
-    as: "childBool",
+    as: 'childBool',
   })
   Value.belongsTo(FloatValue, {
-    as: "childFloat",
+    as: 'childFloat',
   })
   Value.belongsTo(StringValue, {
-    as: "childString",
+    as: 'childString',
   })
   Value.belongsTo(PlotValue, {
-    as: "childPlot",
+    as: 'childPlot',
   })
   Value.belongsTo(MapValue, {
-    as: "childMap",
+    as: 'childMap',
   })
   Value.belongsTo(ColourValue, {
-    as: "childColour",
+    as: 'childColour',
   })
 
   return {

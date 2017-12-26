@@ -1,23 +1,23 @@
-import request from "supertest"
-import GraphQLServer from "../app.js"
+import request from 'supertest'
+import GraphQLServer from '../app.js'
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
 
-require("dotenv").config()
+require('dotenv').config()
 
 if (!process.env.JWT_SECRET) {
-  throw new Error("Could not load .env")
+  throw new Error('Could not load .env')
 }
 
 const self = {}
 
-describe("Device", () => {
+describe('Device', () => {
   beforeAll(async () => {
     // creating 2 accounts to perform all the operations
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .send({
         query: `mutation SignupUser($email: String!, $password: String!) {
                                 SignupUser(email: $email, password: $password) {
@@ -27,8 +27,8 @@ describe("Device", () => {
                             }
                         `,
         variables: {
-          email: "userTest2@email.com",
-          password: "password",
+          email: 'userTest2@email.com',
+          password: 'password',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -36,9 +36,9 @@ describe("Device", () => {
     self.token = parsedRes.data.SignupUser.token
 
     const res2 = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .send({
         query: `mutation SignupUser($email: String!, $password: String!) {
                             SignupUser(email: $email, password: $password) {
@@ -48,8 +48,8 @@ describe("Device", () => {
                         }
                     `,
         variables: {
-          email: "userTest3@email.com",
-          password: "password",
+          email: 'userTest3@email.com',
+          password: 'password',
         },
       })
     const parsedRes2 = JSON.parse(res2.text)
@@ -57,12 +57,12 @@ describe("Device", () => {
     self.token2 = parsedRes2.data.SignupUser.token
   })
 
-  it("should be able to create a device", async (done) => {
+  it('should be able to create a device', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation CreateDevice($deviceType: String!, $customName: String!, $tags:[String!]!){
                     CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags){
@@ -83,9 +83,9 @@ describe("Device", () => {
                 }
                 `,
         variables: {
-          deviceType: "Lamp",
-          customName: "Lampada",
-          tags: ["yellow"],
+          deviceType: 'Lamp',
+          customName: 'Lampada',
+          tags: ['yellow'],
         },
       })
     console.log(res.text)
@@ -94,24 +94,24 @@ describe("Device", () => {
     expect(parsedRes.data.CreateDevice.id).toBeDefined()
     expect(parsedRes.data.CreateDevice.updatedAt).toBeDefined()
     expect(parsedRes.data.CreateDevice.createdAt).toBeDefined()
-    expect(parsedRes.data.CreateDevice.tags).toEqual(["yellow"])
+    expect(parsedRes.data.CreateDevice.tags).toEqual(['yellow'])
     expect(parsedRes.data.CreateDevice.values).toEqual([])
-    expect(parsedRes.data.CreateDevice.customName).toBe("Lampada")
-    expect(parsedRes.data.CreateDevice.deviceType).toBe("Lamp")
+    expect(parsedRes.data.CreateDevice.customName).toBe('Lampada')
+    expect(parsedRes.data.CreateDevice.deviceType).toBe('Lamp')
     expect(parsedRes.data.CreateDevice.user).toEqual({
       id: self.userId,
-      email: "userTest2@email.com",
+      email: 'userTest2@email.com',
     })
     self.deviceId = parsedRes.data.CreateDevice.id
     done()
   })
 
-  it("should be able to create a device without tags", (done) => {
+  it('should be able to create a device without tags', (done) => {
     request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token2}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token2}`)
       .send({
         query: `mutation CreateDevice($deviceType: String!, $customName: String!, $tags:[String!]!){
                     CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags){
@@ -132,8 +132,8 @@ describe("Device", () => {
                 }
                 `,
         variables: {
-          deviceType: "Lamp",
-          customName: "Lampada",
+          deviceType: 'Lamp',
+          customName: 'Lampada',
           tags: [],
         },
       })
@@ -145,22 +145,22 @@ describe("Device", () => {
         expect(parsedRes.data.CreateDevice.createdAt).toBeTruthy()
         expect(parsedRes.data.CreateDevice.tags).toEqual([])
         expect(parsedRes.data.CreateDevice.values).toEqual([])
-        expect(parsedRes.data.CreateDevice.customName).toBe("Lampada")
-        expect(parsedRes.data.CreateDevice.deviceType).toBe("Lamp")
+        expect(parsedRes.data.CreateDevice.customName).toBe('Lampada')
+        expect(parsedRes.data.CreateDevice.deviceType).toBe('Lamp')
         expect(parsedRes.data.CreateDevice.user).toEqual({
           id: self.userId2,
-          email: "userTest3@email.com",
+          email: 'userTest3@email.com',
         })
         self.deviceId2 = parsedRes.data.CreateDevice.id
         done()
       })
   })
 
-  it("should not be able to create a device without a token", (done) => {
+  it('should not be able to create a device without a token', (done) => {
     request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .send({
         query: `mutation CreateDevice($deviceType: String!, $customName: String!, $tags:[String!]!){
                     CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags){
@@ -169,25 +169,25 @@ describe("Device", () => {
                 }
                 `,
         variables: {
-          deviceType: "Lamp",
-          customName: "Lampada",
+          deviceType: 'Lamp',
+          customName: 'Lampada',
           tags: [],
         },
       })
       .then((res) => {
         const parsedRes = JSON.parse(res.text)
         expect(parsedRes.errors).toBeTruthy()
-        expect(parsedRes.errors[0].message).toBe("You are not authenticated. Use `AuthenticateUser` to obtain an authentication token")
+        expect(parsedRes.errors[0].message).toBe('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
         done()
       })
   })
 
-  it("should be able to load data about a device", (done) => {
+  it('should be able to load data about a device', (done) => {
     request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `query device($id:ID!){
                             device(id:$id){
@@ -214,12 +214,12 @@ describe("Device", () => {
         expect(parsedRes.data.device.id).toBe(self.deviceId)
         expect(parsedRes.data.device.updatedAt).toBeTruthy()
         expect(parsedRes.data.device.createdAt).toBeTruthy()
-        expect(parsedRes.data.device.customName).toBe("Lampada")
-        expect(parsedRes.data.device.deviceType).toBe("Lamp")
-        expect(parsedRes.data.device.tags).toEqual(["yellow"])
+        expect(parsedRes.data.device.customName).toBe('Lampada')
+        expect(parsedRes.data.device.deviceType).toBe('Lamp')
+        expect(parsedRes.data.device.tags).toEqual(['yellow'])
         expect(parsedRes.data.device.user).toEqual({
           id: self.userId,
-          email: "userTest2@email.com",
+          email: 'userTest2@email.com',
         })
         done()
       })
@@ -230,21 +230,21 @@ describe("Device", () => {
     // otherwise we would risk of having a prop unprotected that
     // we do not detect because another prop rejects the request
     const props = [
-      "id",
-      "updatedAt",
-      "createdAt",
-      "customName",
-      "tags",
-      "deviceType",
-      "values{id}",
-      "user{id}",
+      'id',
+      'updatedAt',
+      'createdAt',
+      'customName',
+      'tags',
+      'deviceType',
+      'values{id}',
+      'user{id}',
     ]
     for (const prop of props) {
       const res = await request(GraphQLServer)
-        .post("/graphql")
-        .set("content-type", "application/json")
-        .set("accept", "application/json")
-        .set("Authorization", `Bearer ${self.token}`)
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('accept', 'application/json')
+        .set('Authorization', `Bearer ${self.token}`)
         .send({
           query: `query device($id:ID!){
                             device(id:$id){
@@ -253,35 +253,35 @@ describe("Device", () => {
                         }
                 `,
           variables: {
-            id: "aaf5480f-b804-424d-bec8-3f7b363b5519", // wrong ID
+            id: 'aaf5480f-b804-424d-bec8-3f7b363b5519', // wrong ID
           },
         })
       const parsedRes = JSON.parse(res.text)
       expect(parsedRes.errors).toBeTruthy()
-      expect(parsedRes.errors[0].message).toBe("The requested resource does not exist")
+      expect(parsedRes.errors[0].message).toBe('The requested resource does not exist')
     }
     done()
   })
 
-  it("should not be able to load a device without a token", async (done) => {
+  it('should not be able to load a device without a token', async (done) => {
     // try each prop alone, so that each resolver is triggered,
     // otherwise we would risk of having a prop unprotected that
     // we do not detect because another prop rejects the request
     const props = [
-      "id",
-      "updatedAt",
-      "createdAt",
-      "customName",
-      "tags",
-      "deviceType",
-      "values{id}",
-      "user{id}",
+      'id',
+      'updatedAt',
+      'createdAt',
+      'customName',
+      'tags',
+      'deviceType',
+      'values{id}',
+      'user{id}',
     ]
     for (const i in props) {
       const res = await request(GraphQLServer)
-        .post("/graphql")
-        .set("content-type", "application/json")
-        .set("accept", "application/json")
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('accept', 'application/json')
         .send({
           query: `query device($id:ID!){
                             device(id:$id){
@@ -295,31 +295,31 @@ describe("Device", () => {
         })
       const parsedRes = JSON.parse(res.text)
       expect(parsedRes.errors).toBeTruthy()
-      expect(parsedRes.errors[0].message).toBe("You are not authenticated. Use `AuthenticateUser` to obtain an authentication token")
+      expect(parsedRes.errors[0].message).toBe('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
     }
     done()
   })
 
-  it("should not be able to load a device owned by someone else", async (done) => {
+  it('should not be able to load a device owned by someone else', async (done) => {
     // try each prop alone, so that each resolver is triggered,
     // otherwise we would risk of having a prop unprotected that
     // we do not detect because another prop rejects the request
     const props = [
-      "id",
-      "updatedAt",
-      "createdAt",
-      "customName",
-      "tags",
-      "deviceType",
-      "values{id}",
-      "user{id}",
+      'id',
+      'updatedAt',
+      'createdAt',
+      'customName',
+      'tags',
+      'deviceType',
+      'values{id}',
+      'user{id}',
     ]
     for (const prop of props) {
       const res = await request(GraphQLServer)
-        .post("/graphql")
-        .set("content-type", "application/json")
-        .set("accept", "application/json")
-        .set("Authorization", `Bearer ${self.token}`) // token of user 1
+        .post('/graphql')
+        .set('content-type', 'application/json')
+        .set('accept', 'application/json')
+        .set('Authorization', `Bearer ${self.token}`) // token of user 1
         .send({
           query: `query device($id:ID!){
                             device(id:$id){
@@ -333,17 +333,17 @@ describe("Device", () => {
         })
       const parsedRes = JSON.parse(res.text)
       expect(parsedRes.errors).toBeTruthy()
-      expect(parsedRes.errors[0].message).toBe("You are not allowed to access details about this resource")
+      expect(parsedRes.errors[0].message).toBe('You are not allowed to access details about this resource')
     }
     done()
   })
 
   it("should be able to change device's props", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
                             device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
@@ -362,32 +362,32 @@ describe("Device", () => {
                 `,
         variables: {
           id: self.deviceId,
-          deviceType: "Street Lamp",
-          customName: "Lampione",
-          tags: ["street", "lights"],
+          deviceType: 'Street Lamp',
+          customName: 'Lampione',
+          tags: ['street', 'lights'],
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeUndefined()
     expect(parsedRes.data.device.id).toBe(self.deviceId)
-    expect(parsedRes.data.device.customName).toBe("Lampione")
-    expect(parsedRes.data.device.deviceType).toBe("Street Lamp")
-    expect(parsedRes.data.device.tags).toEqual(["street", "lights"])
+    expect(parsedRes.data.device.customName).toBe('Lampione')
+    expect(parsedRes.data.device.deviceType).toBe('Street Lamp')
+    expect(parsedRes.data.device.tags).toEqual(['street', 'lights'])
     expect(parsedRes.data.device.updatedAt).toBeDefined()
     expect(parsedRes.data.device.createdAt).toBeDefined()
     expect(parsedRes.data.device.user).toEqual({
       id: self.userId,
-      email: "userTest2@email.com",
+      email: 'userTest2@email.com',
     })
     done()
   })
 
   it("should not be able to change another user's device's props", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token2}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token2}`)
       .send({
         query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
                         device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
@@ -406,23 +406,23 @@ describe("Device", () => {
             `,
         variables: {
           id: self.deviceId,
-          deviceType: "Street Lamp",
-          customName: "Lampione",
-          tags: ["street", "lights"],
+          deviceType: 'Street Lamp',
+          customName: 'Lampione',
+          tags: ['street', 'lights'],
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("You are not allowed to access details about this resource")
+    expect(parsedRes.errors[0].message).toBe('You are not allowed to access details about this resource')
     done()
   })
 
   it("should not be able to change props of a device that doesn't exist", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
                         device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
@@ -440,10 +440,10 @@ describe("Device", () => {
                     }
             `,
         variables: {
-          id: "3dfe08e7-0184-4f9c-9c00-c7d159a02236", // fake id
-          deviceType: "Street Lamp",
-          customName: "Lampione",
-          tags: ["street", "lights"],
+          id: '3dfe08e7-0184-4f9c-9c00-c7d159a02236', // fake id
+          deviceType: 'Street Lamp',
+          customName: 'Lampione',
+          tags: ['street', 'lights'],
         },
       })
     const parsedRes = JSON.parse(res.text)

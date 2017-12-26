@@ -1,12 +1,12 @@
-const Sequelize = require("sequelize")
-const chalk = require("chalk")
+const Sequelize = require('sequelize')
+const chalk = require('chalk')
 
 const log = console.log
-require("dotenv").config()
+require('dotenv').config()
 
 /* istanbul ignore if */
 if (!process.env.JWT_SECRET) {
-  throw new Error("Could not load .env")
+  throw new Error('Could not load .env')
 }
 const {
   HOST, DATABASE, DB_USERNAME, PASSWORD,
@@ -19,7 +19,7 @@ const sequelize = new Sequelize({
   username: DB_USERNAME,
   password: PASSWORD,
   ssl: true,
-  dialect: "postgres",
+  dialect: 'postgres',
   dialectOptions: {
     ssl: true,
   },
@@ -36,7 +36,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
-} = require("./databaseDefinition")(sequelize)
+} = require('./databaseDefinition')(sequelize)
 
 const setup = async () => {
   try {
@@ -51,7 +51,7 @@ const setup = async () => {
     await ColourValue.sync({ force: true })
     await Value.sync({ force: true })
 
-    log(chalk.green("ALL WELL"))
+    log(chalk.green('ALL WELL'))
     sequelize.close()
   } catch (e) {
     log(chalk.red(e))

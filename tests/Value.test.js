@@ -1,18 +1,18 @@
-import request from "supertest"
-import GraphQLServer from "../app.js"
+import request from 'supertest'
+import GraphQLServer from '../app.js'
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
 
-describe("Value", function () {
+describe('Value', function () {
   let valueDatas = []
   const self = this
 
   beforeAll(async () => {
     // creating 2 accounts and 2 devices to perform all the operations
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .send({
         query: `mutation SignupUser($email: String!, $password: String!) {
                              SignupUser(email: $email, password: $password) {
@@ -22,8 +22,8 @@ describe("Value", function () {
                          }
                      `,
         variables: {
-          email: "userTest4@email.com",
-          password: "password",
+          email: 'userTest4@email.com',
+          password: 'password',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -31,10 +31,10 @@ describe("Value", function () {
     self.token = parsedRes.data.SignupUser.token
 
     const resB = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation CreateDevice{
                             CreateDevice(tags: []){
@@ -49,9 +49,9 @@ describe("Value", function () {
     self.deviceId = parsedResB.data.CreateDevice.id
 
     const res2 = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .send({
         query: `mutation SignupUser($email: String!, $password: String!) {
                          SignupUser(email: $email, password: $password) {
@@ -61,8 +61,8 @@ describe("Value", function () {
                      }
                  `,
         variables: {
-          email: "userTest5@email.com",
-          password: "password",
+          email: 'userTest5@email.com',
+          password: 'password',
         },
       })
     const parsedRes2 = JSON.parse(res2.text)
@@ -73,10 +73,10 @@ describe("Value", function () {
     self.token2 = parsedRes2.data.SignupUser.token
 
     const res2B = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token2}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token2}`)
       .send({
         query: `mutation CreateDevice{
                             CreateDevice(tags: []){
@@ -91,203 +91,203 @@ describe("Value", function () {
 
     valueDatas = [
       {
-        idName: "valueId",
-        mutationName: "CreateFloatValue",
-        updateMutationName: "floatValue",
+        idName: 'valueId',
+        mutationName: 'CreateFloatValue',
+        updateMutationName: 'floatValue',
         specificProps: [
           {
-            name: "value",
-            type: "Float!",
+            name: 'value',
+            type: 'Float!',
             value: 5,
             newValue: 6,
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
           {
-            name: "precision",
-            type: "Float",
+            name: 'precision',
+            type: 'Float',
             value: 0.1,
             newValue: 1,
           },
           {
-            name: "boundaries",
-            type: "[Float!]!",
+            name: 'boundaries',
+            type: '[Float!]!',
             value: [1, 2],
             newValue: [0, 10],
           },
         ],
         token: self.token,
         deviceId: self.deviceId,
-        email: "userTest4@email.com",
+        email: 'userTest4@email.com',
       },
       {
-        idName: "valueId2",
-        mutationName: "CreateFloatValue",
-        updateMutationName: "floatValue",
+        idName: 'valueId2',
+        mutationName: 'CreateFloatValue',
+        updateMutationName: 'floatValue',
         specificProps: [
           {
-            name: "value",
-            type: "Float!",
+            name: 'value',
+            type: 'Float!',
             value: 5,
             newValue: 7,
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token2,
         deviceId: self.deviceId2,
-        email: "userTest5@email.com",
+        email: 'userTest5@email.com',
       },
       {
-        idName: "stringValueId",
-        mutationName: "CreateStringValue",
-        updateMutationName: "stringValue",
+        idName: 'stringValueId',
+        mutationName: 'CreateStringValue',
+        updateMutationName: 'stringValue',
         specificProps: [
           {
-            name: "value",
-            type: "String!",
-            value: "aaaa",
-            newValue: "bbbb",
+            name: 'value',
+            type: 'String!',
+            value: 'aaaa',
+            newValue: 'bbbb',
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
           {
-            name: "maxChars",
-            type: "Int",
+            name: 'maxChars',
+            type: 'Int',
             value: 10,
             newValue: 5,
           },
         ],
         token: self.token,
         deviceId: self.deviceId,
-        email: "userTest4@email.com",
+        email: 'userTest4@email.com',
       },
       {
-        idName: "stringValueId2",
-        mutationName: "CreateStringValue",
-        updateMutationName: "stringValue",
+        idName: 'stringValueId2',
+        mutationName: 'CreateStringValue',
+        updateMutationName: 'stringValue',
         specificProps: [
           {
-            name: "value",
-            type: "String!",
-            value: "aaaa",
-            newValue: "cccc",
+            name: 'value',
+            type: 'String!',
+            value: 'aaaa',
+            newValue: 'cccc',
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token2,
         deviceId: self.deviceId2,
-        email: "userTest5@email.com",
+        email: 'userTest5@email.com',
       },
       {
-        idName: "boolValueId",
-        mutationName: "CreateBooleanValue",
-        updateMutationName: "booleanValue",
+        idName: 'boolValueId',
+        mutationName: 'CreateBooleanValue',
+        updateMutationName: 'booleanValue',
         specificProps: [
           {
-            name: "value",
-            type: "Boolean!",
+            name: 'value',
+            type: 'Boolean!',
             value: true,
             newValue: false,
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token,
         deviceId: self.deviceId,
-        email: "userTest4@email.com",
+        email: 'userTest4@email.com',
       },
       {
-        idName: "boolValueId2",
-        mutationName: "CreateBooleanValue",
-        updateMutationName: "booleanValue",
+        idName: 'boolValueId2',
+        mutationName: 'CreateBooleanValue',
+        updateMutationName: 'booleanValue',
         specificProps: [
           {
-            name: "value",
-            type: "Boolean!",
+            name: 'value',
+            type: 'Boolean!',
             value: false,
             newValue: true,
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token2,
         deviceId: self.deviceId2,
-        email: "userTest5@email.com",
+        email: 'userTest5@email.com',
       },
       {
-        idName: "colourValueId",
-        mutationName: "CreateColourValue",
-        updateMutationName: "colourValue",
+        idName: 'colourValueId',
+        mutationName: 'CreateColourValue',
+        updateMutationName: 'colourValue',
         specificProps: [
           {
-            name: "value",
-            type: "String!",
-            value: "#ff0000",
-            newValue: "#00ff00",
+            name: 'value',
+            type: 'String!',
+            value: '#ff0000',
+            newValue: '#00ff00',
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token,
         deviceId: self.deviceId,
-        email: "userTest4@email.com",
+        email: 'userTest4@email.com',
       },
       {
-        idName: "colourValueId2",
-        mutationName: "CreateColourValue",
-        updateMutationName: "colourValue",
+        idName: 'colourValueId2',
+        mutationName: 'CreateColourValue',
+        updateMutationName: 'colourValue',
         specificProps: [
           {
-            name: "value",
-            type: "String!",
-            value: "#00ff00",
-            newValue: "#ff00ff",
+            name: 'value',
+            type: 'String!',
+            value: '#00ff00',
+            newValue: '#ff00ff',
           },
           {
-            name: "relevance",
-            type: "ValueRelevance!",
-            value: "MAIN",
-            newValue: "NORMAL",
+            name: 'relevance',
+            type: 'ValueRelevance!',
+            value: 'MAIN',
+            newValue: 'NORMAL',
           },
         ],
         token: self.token2,
         deviceId: self.deviceId2,
-        email: "userTest5@email.com",
+        email: 'userTest5@email.com',
       },
     ]
   })
 
-  it("should be able to add Values", async (done) => {
+  it('should be able to add Values', async (done) => {
     const allPromises = []
     for (const i in valueDatas) {
       const fetchPromise = new Promise(async (resolve) => {
@@ -301,19 +301,19 @@ describe("Value", function () {
         } = valueDatas[i]
         const queryVariables = {
           deviceId,
-          permission: "READ_WRITE",
-          relevance: "MAIN",
-          valueDetails: "",
+          permission: 'READ_WRITE',
+          relevance: 'MAIN',
+          valueDetails: '',
         }
         for (const i in specificProps) {
           queryVariables[specificProps[i].name] = specificProps[i].value
         }
         // sends a query passing the right specificProps and mutationName
         const res = await request(GraphQLServer)
-          .post("/graphql")
-          .set("content-type", "application/json")
-          .set("accept", "application/json")
-          .set("Authorization", `Bearer ${token}`)
+          .post('/graphql')
+          .set('content-type', 'application/json')
+          .set('accept', 'application/json')
+          .set('Authorization', `Bearer ${token}`)
           .send({
             query: `mutation ${mutationName}(
                             $deviceId: ID!
@@ -321,7 +321,7 @@ describe("Value", function () {
                             $valueDetails: String
                             ${specificProps
     .map(prop => `$${prop.name}: ${prop.type}`)
-    .join("\n")}
+    .join('\n')}
                         ){
                             ${mutationName}(
                                 deviceId: $deviceId,
@@ -329,7 +329,7 @@ describe("Value", function () {
                                 valueDetails: $valueDetails,
                                 ${specificProps
     .map(prop => `${prop.name}: $${prop.name}`)
-    .join("\n")}
+    .join('\n')}
                             ){
                                 id
                                 createdAt
@@ -345,7 +345,7 @@ describe("Value", function () {
                                 valueDetails
                                 ${specificProps
     .map(prop => `${prop.name}`)
-    .join("\n")}
+    .join('\n')}
                             }
                         }`,
             variables: queryVariables,
@@ -358,9 +358,9 @@ describe("Value", function () {
         expect(parsedRes.data[mutationName].updatedAt).toBeTruthy()
         expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[mutationName].user.email).toBe(email)
-        expect(parsedRes.data[mutationName].permission).toBe("READ_WRITE")
-        expect(parsedRes.data[mutationName].relevance).toBe("MAIN")
-        expect(parsedRes.data[mutationName].valueDetails).toBe("")
+        expect(parsedRes.data[mutationName].permission).toBe('READ_WRITE')
+        expect(parsedRes.data[mutationName].relevance).toBe('MAIN')
+        expect(parsedRes.data[mutationName].valueDetails).toBe('')
         for (const i in specificProps) {
           expect(parsedRes.data[mutationName][specificProps[i].name]).toEqual(specificProps[i].value)
         }
@@ -376,12 +376,12 @@ describe("Value", function () {
     }) // for some odd reason passing the done function directly makes jest crash
   })
 
-  it("should not be able to create a value under a foreign device", async (done) => {
+  it('should not be able to create a value under a foreign device', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation CreateFloatValue(
                             $deviceId: ID!
@@ -401,22 +401,22 @@ describe("Value", function () {
         variables: {
           deviceId: self.deviceId2,
           value: 5,
-          permission: "READ_ONLY",
-          relevance: "MAIN",
+          permission: 'READ_ONLY',
+          relevance: 'MAIN',
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeTruthy()
-    expect(parsedRes.errors[0].message).toBe("You are not allowed to edit details about this device")
+    expect(parsedRes.errors[0].message).toBe('You are not allowed to edit details about this device')
     done()
   })
 
-  it("should not be able to create a value under a device that does not exist", async (done) => {
+  it('should not be able to create a value under a device that does not exist', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation CreateFloatValue(
                             $deviceId: ID!
@@ -434,24 +434,24 @@ describe("Value", function () {
                             }
                         }`,
         variables: {
-          deviceId: "88b2fb06-be2f-482a-8c88-59d90566992d", // fake id
+          deviceId: '88b2fb06-be2f-482a-8c88-59d90566992d', // fake id
           value: 5,
-          permission: "READ_ONLY",
-          relevance: "MAIN",
+          permission: 'READ_ONLY',
+          relevance: 'MAIN',
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeTruthy()
-    expect(parsedRes.errors[0].message).toBe("The supplied deviceId does not exist")
+    expect(parsedRes.errors[0].message).toBe('The supplied deviceId does not exist')
     done()
   })
 
   it("should be listed in a device's values", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `query device($id:ID!){
                             device(id:$id){
@@ -486,13 +486,13 @@ describe("Value", function () {
       if (valueDatas[i].token === self.token) {
         const indexInQuery = idMap.indexOf(valueDatas[i].databaseId)
         expect(indexInQuery).not.toBe(-1)
-        if (valueDatas[i].mutationName.includes("Float")) {
+        if (valueDatas[i].mutationName.includes('Float')) {
           expect(parsedRes.data.device.values[indexInQuery].floatValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("String")) {
+        } else if (valueDatas[i].mutationName.includes('String')) {
           expect(parsedRes.data.device.values[indexInQuery].stringValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("Boolean")) {
+        } else if (valueDatas[i].mutationName.includes('Boolean')) {
           expect(parsedRes.data.device.values[indexInQuery].boolValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("Colour")) {
+        } else if (valueDatas[i].mutationName.includes('Colour')) {
           expect(parsedRes.data.device.values[indexInQuery].colourValue).toBe(valueDatas[i].specificProps[0].value)
         }
       }
@@ -502,10 +502,10 @@ describe("Value", function () {
 
   it("should be listed in a users's values", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `{
                             user{
@@ -537,13 +537,13 @@ describe("Value", function () {
       if (valueDatas[i].token === self.token) {
         const indexInQuery = idMap.indexOf(valueDatas[i].databaseId)
         expect(indexInQuery).not.toBe(-1)
-        if (valueDatas[i].mutationName.includes("Float")) {
+        if (valueDatas[i].mutationName.includes('Float')) {
           expect(parsedRes.data.user.values[indexInQuery].floatValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("String")) {
+        } else if (valueDatas[i].mutationName.includes('String')) {
           expect(parsedRes.data.user.values[indexInQuery].stringValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("Boolean")) {
+        } else if (valueDatas[i].mutationName.includes('Boolean')) {
           expect(parsedRes.data.user.values[indexInQuery].boolValue).toBe(valueDatas[i].specificProps[0].value)
-        } else if (valueDatas[i].mutationName.includes("Colour")) {
+        } else if (valueDatas[i].mutationName.includes('Colour')) {
           expect(parsedRes.data.user.values[indexInQuery].colourValue).toBe(valueDatas[i].specificProps[0].value)
         }
       }
@@ -551,7 +551,7 @@ describe("Value", function () {
     done()
   })
 
-  it("should be able to query a value", async (done) => {
+  it('should be able to query a value', async (done) => {
     const allPromises = []
     for (const i in valueDatas) {
       allPromises.push(new Promise(async (resolve) => {
@@ -564,10 +564,10 @@ describe("Value", function () {
           mutationName,
         } = valueDatas[i]
         const res = await request(GraphQLServer)
-          .post("/graphql")
-          .set("content-type", "application/json")
-          .set("accept", "application/json")
-          .set("Authorization", `Bearer ${token}`)
+          .post('/graphql')
+          .set('content-type', 'application/json')
+          .set('accept', 'application/json')
+          .set('Authorization', `Bearer ${token}`)
           .send({
             query: `query Value($id:ID!){
                                         value(id:$id){
@@ -612,16 +612,16 @@ describe("Value", function () {
         expect(parsedRes.data.value.updatedAt).toBeDefined()
         expect(parsedRes.data.value.device.id).toBe(deviceId)
         expect(parsedRes.data.value.user.email).toBe(email)
-        expect(parsedRes.data.value.permission).toBe("READ_WRITE")
-        expect(parsedRes.data.value.relevance).toBe("MAIN")
-        expect(parsedRes.data.value.valueDetails).toBe("")
-        if (mutationName.includes("Float")) {
+        expect(parsedRes.data.value.permission).toBe('READ_WRITE')
+        expect(parsedRes.data.value.relevance).toBe('MAIN')
+        expect(parsedRes.data.value.valueDetails).toBe('')
+        if (mutationName.includes('Float')) {
           expect(parsedRes.data.value.floatValue).toBe(specificProps[0].value)
-        } else if (mutationName.includes("String")) {
+        } else if (mutationName.includes('String')) {
           expect(parsedRes.data.value.stringValue).toBe(specificProps[0].value)
-        } else if (mutationName.includes("Boolean")) {
+        } else if (mutationName.includes('Boolean')) {
           expect(parsedRes.data.value.booleanValue).toBe(specificProps[0].value)
-        } else if (mutationName.includes("Colour")) {
+        } else if (mutationName.includes('Colour')) {
           expect(parsedRes.data.value.colourValue).toBe(specificProps[0].value)
         }
         resolve()
@@ -632,10 +632,10 @@ describe("Value", function () {
 
   it("should not be able to query a value that doesn't exist", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `query Value($id:ID!){
                                 value(id:$id){
@@ -644,22 +644,22 @@ describe("Value", function () {
                             }
                             `,
         variables: {
-          id: "50c28e6e-b6a5-4a95-9d3a-c860cf308b2b", // fake id
+          id: '50c28e6e-b6a5-4a95-9d3a-c860cf308b2b', // fake id
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("The requested resource does not exist")
+    expect(parsedRes.errors[0].message).toBe('The requested resource does not exist')
     done()
   })
 
-  it("should not be able to query a value that he does not own", async (done) => {
+  it('should not be able to query a value that he does not own', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .set(
-        "Authorization",
+        'Authorization',
         `Bearer ${
           // choose the wrong token
           valueDatas[0].token === self.token ? self.token2 : self.token
@@ -678,11 +678,11 @@ describe("Value", function () {
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("You are not allowed to access details about this resource")
+    expect(parsedRes.errors[0].message).toBe('You are not allowed to access details about this resource')
     done()
   })
 
-  it("should be able to update all values", async (done) => {
+  it('should be able to update all values', async (done) => {
     const allPromises = []
     for (const i in valueDatas) {
       const mutationPromise = new Promise(async (resolve) => {
@@ -703,22 +703,22 @@ describe("Value", function () {
         }
 
         const res = await request(GraphQLServer)
-          .post("/graphql")
-          .set("content-type", "application/json")
-          .set("accept", "application/json")
-          .set("Authorization", `Bearer ${token}`)
+          .post('/graphql')
+          .set('content-type', 'application/json')
+          .set('accept', 'application/json')
+          .set('Authorization', `Bearer ${token}`)
           .send({
             query: `mutation ${updateMutationName}(
                             $id:ID!
                         ${specificProps
     .map(prop => `$${prop.name}: ${prop.type}`)
-    .join("\n")}
+    .join('\n')}
                     ){
                         ${updateMutationName}(
                             id:$id
                             ${specificProps
     .map(prop => `${prop.name}: $${prop.name}`)
-    .join("\n")}
+    .join('\n')}
                         ){
                             id
                             createdAt
@@ -733,7 +733,7 @@ describe("Value", function () {
                             valueDetails
                             ${specificProps
     .map(prop => `${prop.name}`)
-    .join("\n")}
+    .join('\n')}
                         }
                     }`,
             variables: queryVariables,
@@ -746,8 +746,8 @@ describe("Value", function () {
         expect(parsedRes.data[updateMutationName].updatedAt).toBeTruthy()
         expect(parsedRes.data[updateMutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[updateMutationName].user.email).toBe(email)
-        expect(parsedRes.data[updateMutationName].permission).toBe("READ_WRITE")
-        expect(parsedRes.data[updateMutationName].valueDetails).toBe("")
+        expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
+        expect(parsedRes.data[updateMutationName].valueDetails).toBe('')
         for (const i in specificProps) {
           expect(parsedRes.data[updateMutationName][specificProps[i].name]).toEqual(specificProps[i].newValue)
         }
@@ -760,7 +760,7 @@ describe("Value", function () {
     })
   })
 
-  it("should be able to update all values one prop at a time", async (done) => {
+  it('should be able to update all values one prop at a time', async (done) => {
     const allPromises = []
     for (const i in valueDatas) {
       const {
@@ -783,10 +783,10 @@ describe("Value", function () {
           queryVariables[updatedProp.name] = updatedProp.value
 
           const res = await request(GraphQLServer)
-            .post("/graphql")
-            .set("content-type", "application/json")
-            .set("accept", "application/json")
-            .set("Authorization", `Bearer ${token}`)
+            .post('/graphql')
+            .set('content-type', 'application/json')
+            .set('accept', 'application/json')
+            .set('Authorization', `Bearer ${token}`)
             .send({
               query: `mutation ${updateMutationName}(
                                             $id:ID!
@@ -824,8 +824,8 @@ describe("Value", function () {
           expect(parsedRes.data[updateMutationName].updatedAt).toBeTruthy()
           expect(parsedRes.data[updateMutationName].device.id).toBe(deviceId)
           expect(parsedRes.data[updateMutationName].user.email).toBe(email)
-          expect(parsedRes.data[updateMutationName].permission).toBe("READ_WRITE")
-          expect(parsedRes.data[updateMutationName].valueDetails).toBe("")
+          expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
+          expect(parsedRes.data[updateMutationName].valueDetails).toBe('')
 
           expect(parsedRes.data[updateMutationName][updatedProp.name]).toEqual(updatedProp.value)
 
@@ -842,10 +842,10 @@ describe("Value", function () {
 
   it("should not be able to update a value that doesn't exist", async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${self.token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${self.token}`)
       .send({
         query: `mutation floatValue($id:ID!){
                                 floatValue(id:$id){
@@ -854,22 +854,22 @@ describe("Value", function () {
                                 }
                                 `,
         variables: {
-          id: "50c28e6e-b6a5-4a95-9d3a-c860cf308b2b", // fake id
+          id: '50c28e6e-b6a5-4a95-9d3a-c860cf308b2b', // fake id
         },
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("The requested resource does not exist")
+    expect(parsedRes.errors[0].message).toBe('The requested resource does not exist')
     done()
   })
 
-  it("should not be able to query a value that he does not own", async (done) => {
+  it('should not be able to query a value that he does not own', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
       .set(
-        "Authorization",
+        'Authorization',
         `Bearer ${
           // choose the wrong token
           valueDatas[0].token === self.token ? self.token2 : self.token
@@ -888,16 +888,16 @@ describe("Value", function () {
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("You are not allowed to update this resource")
+    expect(parsedRes.errors[0].message).toBe('You are not allowed to update this resource')
     done()
   })
 
-  it("should not be able to update a value using the wrong type mutation", async (done) => {
+  it('should not be able to update a value using the wrong type mutation', async (done) => {
     const res = await request(GraphQLServer)
-      .post("/graphql")
-      .set("content-type", "application/json")
-      .set("accept", "application/json")
-      .set("Authorization", `Bearer ${valueDatas[2].token}`)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .set('Authorization', `Bearer ${valueDatas[2].token}`)
       .send({
         query: `mutation ${valueDatas[2].updateMutationName}($id:ID!){
                                     ${valueDatas[2].updateMutationName}(id:$id){
@@ -911,7 +911,7 @@ describe("Value", function () {
       })
     const parsedRes = JSON.parse(res.text)
     expect(parsedRes.errors).toBeDefined()
-    expect(parsedRes.errors[0].message).toBe("This Value has the wrong type, please use the correct mutation")
+    expect(parsedRes.errors[0].message).toBe('This Value has the wrong type, please use the correct mutation')
     done()
   })
 })

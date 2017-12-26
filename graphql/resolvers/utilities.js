@@ -1,12 +1,12 @@
-import jwt from "jwt-simple"
-import moment from "moment"
-import chalk from "chalk"
-import OTP from "otp.js"
-import fortuna from "javascript-fortuna"
-import { withFilter } from "graphql-subscriptions"
+import jwt from 'jwt-simple'
+import moment from 'moment'
+import chalk from 'chalk'
+import OTP from 'otp.js'
+import fortuna from 'javascript-fortuna'
+import { withFilter } from 'graphql-subscriptions'
 
 const GA = OTP.googleAuthenticator
-const log = console.log
+const { log } = console
 const JWT_EXPIRE_DAYS = 7
 
 fortuna.init()
@@ -15,7 +15,7 @@ const authenticated = (context, callback) =>
   (context.auth
     ? callback
     : (resolve, reject) =>
-      reject("You are not authenticated. Use `AuthenticateUser` to obtain an authentication token"))
+      reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token'))
 
 const generateAuthenticationToken = (userId, JWT_SECRET) =>
   jwt.encode(
@@ -27,7 +27,7 @@ const generateAuthenticationToken = (userId, JWT_SECRET) =>
       userId,
     },
     JWT_SECRET,
-    "HS512",
+    'HS512',
   )
 
 const retrieveScalarProp = (Model, prop) => (root, args, context) =>
@@ -38,23 +38,23 @@ const retrieveScalarProp = (Model, prop) => (root, args, context) =>
       })
       /* istanbul ignore next */
       if (!resourceFound) {
-        reject("The requested resource does not exist")
+        reject('The requested resource does not exist')
       } else if (resourceFound.userId !== context.auth.userId) {
         /* istanbul ignore next */
-        reject("You are not allowed to access details about this resource")
+        reject('You are not allowed to access details about this resource')
       } else {
         resolve(resourceFound[prop])
       }
     } catch (e) /* istanbul ignore next */ {
-      log(chalk.red("INTERNAL ERROR - retrieveScalarProp 109"))
+      log(chalk.red('INTERNAL ERROR - retrieveScalarProp 109'))
       log(e)
-      reject("109 - An internal error occured, please contact us. The error code is 109")
+      reject('109 - An internal error occured, please contact us. The error code is 109')
     }
   }))
 
 const getPropsIfDefined = (args, props) => {
   const propObject = {}
-  for (let i = 0; i < props.length; i++) {
+  for (let i = 0; i < props.length; i += 1) {
     if (args[props[i]] !== undefined && args[props[i]] !== null) {
       propObject[props[i]] = args[props[i]]
     }
@@ -80,9 +80,9 @@ const CreateGenericValue = (
         where: { id: args.deviceId },
       })
       if (!deviceFound) {
-        reject("The supplied deviceId does not exist")
+        reject('The supplied deviceId does not exist')
       } else if (deviceFound.userId !== context.auth.userId) {
-        reject("You are not allowed to edit details about this device")
+        reject('You are not allowed to edit details about this device')
       } else {
         const {
           deviceId, valueDetails, permission, relevance, value,
@@ -129,18 +129,18 @@ const CreateGenericValue = (
           valueDetails: newValue.valueDetails,
           value: newValue[childName].value,
           __resolveType:
-              childName === "childFloat"
-                ? "FloatValue"
-                : childName === "childString"
-                  ? "StringValue"
-                  : childName === "childBool" ? "BooleanValue" : "ColourValue",
+              childName === 'childFloat'
+                ? 'FloatValue'
+                : childName === 'childString'
+                  ? 'StringValue'
+                  : childName === 'childBool' ? 'BooleanValue' : 'ColourValue',
         }
         // loads in resolveObj all the required props from args
         for (const i in childProps) {
           resolveObj[childProps[i]] = newValue[childName][childProps[i]]
         }
 
-        pubsub.publish("valueCreated", {
+        pubsub.publish('valueCreated', {
           valueCreated: resolveObj,
           userId: context.auth.userId,
         })
@@ -148,11 +148,22 @@ const CreateGenericValue = (
         resolve(resolveObj)
       }
     } catch (e) /* istanbul ignore next */ {
-      log(chalk.red("INTERNAL ERROR - CreateGenericValue 112"))
+      log(chalk.red('INTERNAL ERROR - CreateGenericValue 112'))
       log(e)
-      reject("112 - An internal error occured, please contact us. The error code is 112")
+      reject('112 - An internal error occured, please contact us. The error code is 112')
     }
   }))
+
+const logErrorsPromise = (name, code, callback) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      await callback(resolve, reject)
+    } catch (e) /* istanbul ignore next */ {
+      log(chalk.red(`INTERNAL ERROR - ${name} ${code}`))
+      log(e)
+      reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
+    }
+  })
 
 const genericValueMutation = (
   Value,
@@ -162,21 +173,21 @@ const genericValueMutation = (
   pubsub,
 ) => (root, args, context) =>
   logErrorsPromise(
-    "genericValue mutation",
+    'genericValue mutation',
     117,
     authenticated(context, async (resolve, reject) => {
       const valueFound = await Value.find({ where: { id: args.id } })
       if (!valueFound) {
-        reject("The requested resource does not exist")
+        reject('The requested resource does not exist')
       } else if (valueFound.userId !== context.auth.userId) {
-        reject("You are not allowed to update this resource")
+        reject('You are not allowed to update this resource')
       } else if (!valueFound[childNameId]) {
-        reject("This Value has the wrong type, please use the correct mutation")
+        reject('This Value has the wrong type, please use the correct mutation')
       } else {
         const valueUpdate = getPropsIfDefined(args, [
-          "permission",
-          "relevance",
-          "valueDetails",
+          'permission',
+          'relevance',
+          'valueDetails',
         ])
         const newValue =
           Object.keys(valueUpdate).length === 0
@@ -187,7 +198,7 @@ const genericValueMutation = (
           where: { id: valueFound[childNameId] },
         })
         const childValueUpdate = getPropsIfDefined(args, [
-          "value",
+          'value',
           ...childProps,
         ])
         const newChildValue =
@@ -207,14 +218,14 @@ const genericValueMutation = (
   )
 
 const create2FSecret = (user) => {
-  const allowedChars = "QWERTYUIOPASDFGHJKLZXCVBNM234567"
-  let secret = ""
-  for (let i = 0; i < 12; i++) {
+  const allowedChars = 'QWERTYUIOPASDFGHJKLZXCVBNM234567'
+  let secret = ''
+  for (let i = 0; i < 12; i += 1) {
     const randomNumber = Math.floor(fortuna.random() * allowedChars.length)
     secret += allowedChars[randomNumber]
   }
   secret = GA.encode(secret)
-  return { secret, qrCode: GA.qrCode(user, "igloo", secret) }
+  return { secret, qrCode: GA.qrCode(user, 'igloo', secret) }
 }
 const check2FCode = (code, secret) => {
   try {
@@ -225,17 +236,6 @@ const check2FCode = (code, secret) => {
   }
 }
 
-const logErrorsPromise = (name, code, callback) =>
-  new Promise(async (resolve, reject) => {
-    try {
-      return await callback(resolve, reject)
-    } catch (e) /* istanbul ignore next */ {
-      log(chalk.red(`INTERNAL ERROR - ${name} ${code}`))
-      log(e)
-      reject(`${code} - An internal error occured, please contact us. The error code is ${code}`)
-    }
-  })
-
 const subscriptionFilterOnlyMine = (subscriptionName, pubsub) => ({
   subscribe: (root, args, context, info) => {
     if (context.auth) {
@@ -245,7 +245,7 @@ const subscriptionFilterOnlyMine = (subscriptionName, pubsub) => ({
         payload => payload.userId === myUserId,
       )(root, args, context, info)
     }
-    throw new Error("No authorization token")
+    throw new Error('No authorization token')
   },
 })
 
