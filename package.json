@@ -7,15 +7,18 @@
     "start": "node ./build/server.js",
     "prestart": "npm run build",
     "build":
-      "babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
+      "rimraf build && babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
     "setupDatabase": "node ./postgresql/setup.js",
     "test": "jest --coverage --bail --forceExit",
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
-    "precommit": "lint-staged && npm run test"
+    "precommit": "lint-staged"
   },
-  "lint-staged": { "*": ["prettier-eslint --write", "git add"] },
+  "lint-staged": {
+    "*.js": ["prettier-eslint --write", "git add"],
+    "*.json": ["prettier-eslint --write", "git add"]
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/hellowitlab/iglooQL"
@@ -73,6 +76,7 @@
     "minimal-graphql": "^1.0.3",
     "nodemon": "^1.12.1",
     "prettier-eslint-cli": "^4.7.0",
+    "rimraf": "^2.6.2",
     "supertest": "^3.0.0"
   },
   "peerDependencies": {
