@@ -107,6 +107,7 @@ describe('subscriptions', () => {
               customName
               deviceType
               tags
+            }
           }
         `,
       })
