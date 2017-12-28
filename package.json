@@ -61,7 +61,8 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
-    "winston": "^3.0.0-rc1"
+    "winston": "^3.0.0-rc1",
+    "winston-slacker": "^1.0.3"
   },
   "devDependencies": {
     "babel-eslint": "^8.1.2",
