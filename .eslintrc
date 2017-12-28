@@ -3,7 +3,8 @@
     "semi": ["error", "never"],
     "no-console": "off",
     "no-nested-ternary": "off",
-    "linebreak-style": "off"
+    "linebreak-style": "off",
+    "no-underscore-dangle": "off"
   },
   "env": {
     "node": true,

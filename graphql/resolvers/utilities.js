@@ -4,9 +4,56 @@ import chalk from 'chalk'
 import OTP from 'otp.js'
 import fortuna from 'javascript-fortuna'
 import { withFilter } from 'graphql-subscriptions'
+import winston from 'winston'
+import WinstonSlacker from 'winston-slacker'
+
+require('dotenv').config()
+
+/* istanbul ignore if */
+if (!process.env.JWT_SECRET) {
+  throw new Error('Could not load .env')
+}
+
+const { combine, timestamp, printf } = winston.format
+
+const formatString = info =>
+  `${info.timestamp} [${info.label ? info.label : 'generic'}${chalk.bold(info.code ? ` ${info.code}` : '')}] ${info.level}: ${info.message}`
+
+const colorizedFormat = printf((info) => {
+  /* istanbul ignore next */
+  const colorizer =
+    info.level === 'error'
+      ? chalk.red
+      : info.level === 'warn'
+        ? chalk.yellow
+        : info.level === 'info' ? chalk.blue : id => id
+
+  return colorizer(formatString(info))
+})
+const logger = winston.createLogger({
+  level: 'verbose',
+  transports: [
+    new winston.transports.Console({
+      format: combine(timestamp(), colorizedFormat),
+    }),
+    new winston.transports.File({
+      filename: 'logs.log',
+      format: combine(timestamp(), printf(formatString)), // do not colorize file logs
+    }),
+    ...(process.env.NODE_ENV === 'production'
+      ? [
+        new WinstonSlacker({
+          webhook: process.env.SLACK_WEBHOOK,
+          channel: '#alerts',
+          username: 'Production Alert',
+          icon_emoji: ':scream:',
+        }),
+      ]
+      : []),
+  ],
+})
 
 const GA = OTP.googleAuthenticator
-const { log } = console
 const JWT_EXPIRE_DAYS = 7
 
 fortuna.init()
@@ -46,8 +93,7 @@ const retrieveScalarProp = (Model, prop) => (root, args, context) =>
         resolve(resourceFound[prop])
       }
     } catch (e) /* istanbul ignore next */ {
-      log(chalk.red('INTERNAL ERROR - retrieveScalarProp 109'))
-      log(e)
+      logger.error(e, { label: 'retrieveScalarProp', code: 109 })
       reject('109 - An internal error occured, please contact us. The error code is 109')
     }
   }))
@@ -136,7 +182,7 @@ const CreateGenericValue = (
                   : childName === 'childBool' ? 'BooleanValue' : 'ColourValue',
         }
         // loads in resolveObj all the required props from args
-        for (const i in childProps) {
+        for (let i = 0; i < childProps.length; i += 1) {
           resolveObj[childProps[i]] = newValue[childName][childProps[i]]
         }
 
@@ -148,8 +194,7 @@ const CreateGenericValue = (
         resolve(resolveObj)
       }
     } catch (e) /* istanbul ignore next */ {
-      log(chalk.red('INTERNAL ERROR - CreateGenericValue 112'))
-      log(e)
+      logger.error(e, { label: 'CreateGenericValue', code: 112 })
       reject('112 - An internal error occured, please contact us. The error code is 112')
     }
   }))
@@ -159,8 +204,7 @@ const logErrorsPromise = (name, code, callback) =>
     try {
       await callback(resolve, reject)
     } catch (e) /* istanbul ignore next */ {
-      log(chalk.red(`INTERNAL ERROR - ${name} ${code}`))
-      log(e)
+      logger.error(e, { label: name, code })
       reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
     }
   })
@@ -266,4 +310,5 @@ module.exports = {
   check2FCode,
   logErrorsPromise,
   subscriptionFilterOnlyMine,
+  logger,
 }
