@@ -1,4 +1,4 @@
-import { authenticated, logErrorsPromise } from './utilities.js'
+import { authenticated, logErrorsPromise } from './utilities'
 
 const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
   logErrorsPromise(

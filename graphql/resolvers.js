@@ -1,11 +1,11 @@
-import UserResolver from './resolvers/User.js'
-import MutationResolver from './resolvers/Mutation.js'
-import QueryResolver from './resolvers/Query.js'
-import DeviceResolver from './resolvers/Device.js'
-import SubscriptionsResolver from './resolvers/subscriptions.js'
 import { PubSub } from 'graphql-subscriptions'
 import GraphQLToolsTypes from 'graphql-tools-types'
 import Sequelize from 'sequelize'
+import UserResolver from './resolvers/User'
+import MutationResolver from './resolvers/Mutation'
+import QueryResolver from './resolvers/Query'
+import DeviceResolver from './resolvers/Device'
+import SubscriptionsResolver from './resolvers/subscriptions'
 
 const pubsub = new PubSub()
 

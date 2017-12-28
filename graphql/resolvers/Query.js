@@ -1,5 +1,4 @@
-"use strict"
-import { authenticated, logErrorsPromise } from './utilities.js'
+import { authenticated, logErrorsPromise } from './utilities'
 
 const QueryResolver = (
   Device,
