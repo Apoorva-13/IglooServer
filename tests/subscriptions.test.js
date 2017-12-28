@@ -146,7 +146,7 @@ describe('subscriptions', () => {
   })
 
   it("deviceCreated shouldn't work if not authenticated", (done) => {
-    clientWithoutToken
+    const subscription = clientWithoutToken
       .subscribe({
         query: gql`
           subscription {
@@ -163,6 +163,8 @@ describe('subscriptions', () => {
         async next(res) {
           expect(res.errors).toBeDefined()
           expect(res.errors[0].message).toBe('No authorization token')
+
+          subscription.unsubscribe()
           done()
         },
         error(e) {
@@ -388,7 +390,7 @@ describe('subscriptions', () => {
   })
 
   it("valueCreated shouldn't work if not authenticated", (done) => {
-    clientWithoutToken
+    const subscription = clientWithoutToken
       .subscribe({
         query: gql`
           subscription {
@@ -402,6 +404,8 @@ describe('subscriptions', () => {
         async next(res) {
           expect(res.errors).toBeDefined()
           expect(res.errors[0].message).toBe('No authorization token')
+
+          subscription.unsubscribe()
           done()
         },
         error(e) {
@@ -450,7 +454,7 @@ describe('subscriptions', () => {
   })
 
   it("userUpdated shouldn't work if not authenticated", (done) => {
-    clientWithoutToken
+    const subscription = clientWithoutToken
       .subscribe({
         query: gql`
           subscription {
@@ -464,6 +468,8 @@ describe('subscriptions', () => {
         async next(res) {
           expect(res.errors).toBeDefined()
           expect(res.errors[0].message).toBe('No authorization token')
+
+          subscription.unsubscribe()
           done()
         },
         error(e) {
@@ -524,7 +530,7 @@ describe('subscriptions', () => {
   })
 
   it("deviceUpdated shouldn't work if not authenticated", (done) => {
-    clientWithoutToken
+    const subscription = clientWithoutToken
       .subscribe({
         query: gql`
           subscription {
@@ -538,6 +544,8 @@ describe('subscriptions', () => {
         async next(res) {
           expect(res.errors).toBeDefined()
           expect(res.errors[0].message).toBe('No authorization token')
+
+          subscription.unsubscribe()
           done()
         },
         error(e) {
@@ -759,7 +767,7 @@ describe('subscriptions', () => {
   })
 
   it("valueUpdated shouldn't work if not authenticated", (done) => {
-    clientWithoutToken
+    const subscription = clientWithoutToken
       .subscribe({
         query: gql`
           subscription {
@@ -773,6 +781,8 @@ describe('subscriptions', () => {
         async next(res) {
           expect(res.errors).toBeDefined()
           expect(res.errors[0].message).toBe('No authorization token')
+
+          subscription.unsubscribe()
           done()
         },
         error(e) {
