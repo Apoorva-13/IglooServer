@@ -62,7 +62,8 @@
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
     "winston": "^3.0.0-rc1",
-    "winston-slacker": "^1.0.3"
+    "winston-slacker": "^1.0.3",
+    "rimraf": "^2.6.2"
   },
   "devDependencies": {
     "babel-eslint": "^8.1.2",
@@ -79,7 +80,6 @@
     "minimal-graphql": "^1.0.3",
     "nodemon": "^1.12.1",
     "prettier-eslint-cli": "^4.7.0",
-    "rimraf": "^2.6.2",
     "supertest": "^3.0.0"
   },
   "peerDependencies": {
