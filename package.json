@@ -7,7 +7,7 @@
     "start": "node ./build/server.js",
     "prestart": "npm run build",
     "build":
-      "node_modules/.bin/rimraf build && babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
+      "babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
     "setupDatabase": "node ./postgresql/setup.js",
     "test": "jest --coverage --bail --forceExit",
     "pretest": "npm run setupDatabase",
@@ -62,8 +62,7 @@
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
     "winston": "^3.0.0-rc1",
-    "winston-slacker": "^1.0.3",
-    "rimraf": "^2.6.2"
+    "winston-slacker": "^1.0.3"
   },
   "devDependencies": {
     "babel-eslint": "^8.1.2",
