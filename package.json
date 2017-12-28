@@ -17,7 +17,8 @@
   },
   "lint-staged": {
     "*.js": ["prettier-eslint --write", "git add"],
-    "*.json": ["prettier-eslint --write", "git add"]
+    "*.json": ["prettier-eslint --write", "git add"],
+    "*.graphql": ["prettier-eslint --write", "git add"]
   },
   "repository": {
     "type": "git",

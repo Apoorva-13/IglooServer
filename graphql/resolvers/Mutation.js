@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs'
+import OTP from 'otp.js'
 import {
   authenticated,
   generateAuthenticationToken,
@@ -6,9 +8,7 @@ import {
   create2FSecret,
   check2FCode,
   logErrorsPromise,
-} from './utilities.js'
-import bcrypt from 'bcryptjs'
-import OTP from 'otp.js'
+} from './utilities'
 
 const SALT_ROUNDS = 10
 
@@ -272,6 +272,7 @@ const MutationResolver = (
     ['boundaries', 'precision'],
     'childFloatId',
     FloatValue,
+    'FloatValue',
     pubsub,
   ),
   stringValue: genericValueMutation(
@@ -279,6 +280,7 @@ const MutationResolver = (
     ['maxChars'],
     'childStringId',
     StringValue,
+    'StringValue',
     pubsub,
   ),
   booleanValue: genericValueMutation(
@@ -286,6 +288,7 @@ const MutationResolver = (
     [],
     'childBoolId',
     BoolValue,
+    'BooleanValue',
     pubsub,
   ),
   colourValue: genericValueMutation(
@@ -293,6 +296,7 @@ const MutationResolver = (
     [],
     'childColourId',
     ColourValue,
+    'ColourValue',
     pubsub,
   ),
 })

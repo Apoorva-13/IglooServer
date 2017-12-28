@@ -545,4 +545,239 @@ describe('subscriptions', () => {
         },
       })
   })
+
+  it('valueUpdated subscription should work with floatValue', async (done) => {
+    const subscription = authenticatedClient
+      .subscribe({
+        query: gql`
+          subscription {
+            valueUpdated {
+              id
+              permission
+              relevance
+              ... on FloatValue {
+                value
+              }
+            }
+          }
+        `,
+      })
+      .subscribe({
+        async next(res) {
+          expect(res.errors).toBeUndefined()
+
+          const value = res.data.valueUpdated
+          expect(value.id).toBe(floatValueId)
+          expect(value.permission).toBe('READ_ONLY')
+          expect(value.relevance).toBe('MAIN')
+          expect(value.value).toBe(3)
+
+          subscription.unsubscribe()
+          done()
+        },
+        error(e) {
+          throw new Error(`Subscription error ${e}`)
+        },
+      })
+
+    await authenticatedClient.mutate({
+      mutation: gql`
+        mutation($id: ID!) {
+          floatValue(
+            id: $id
+            permission: READ_ONLY
+            relevance: MAIN
+            value: 3
+          ) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: floatValueId,
+      },
+    })
+  })
+
+  it('valueUpdated subscription should work with stringValue', async (done) => {
+    const subscription = authenticatedClient
+      .subscribe({
+        query: gql`
+          subscription {
+            valueUpdated {
+              id
+              permission
+              relevance
+              ... on StringValue {
+                value
+              }
+            }
+          }
+        `,
+      })
+      .subscribe({
+        async next(res) {
+          expect(res.errors).toBeUndefined()
+
+          const value = res.data.valueUpdated
+          expect(value.id).toBe(stringValueId)
+          expect(value.permission).toBe('READ_ONLY')
+          expect(value.relevance).toBe('MAIN')
+          expect(value.value).toBe('ahahaha')
+
+          subscription.unsubscribe()
+          done()
+        },
+        error(e) {
+          throw new Error(`Subscription error ${e}`)
+        },
+      })
+
+    await authenticatedClient.mutate({
+      mutation: gql`
+        mutation($id: ID!) {
+          stringValue(
+            id: $id
+            permission: READ_ONLY
+            relevance: MAIN
+            value: "ahahaha"
+          ) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: stringValueId,
+      },
+    })
+  })
+
+  it('valueUpdated subscription should work with booleanValue', async (done) => {
+    const subscription = authenticatedClient
+      .subscribe({
+        query: gql`
+          subscription {
+            valueUpdated {
+              id
+              permission
+              relevance
+              ... on BooleanValue {
+                value
+              }
+            }
+          }
+        `,
+      })
+      .subscribe({
+        async next(res) {
+          expect(res.errors).toBeUndefined()
+
+          const value = res.data.valueUpdated
+          expect(value.id).toBeDefined()
+          expect(value.permission).toBe('READ_ONLY')
+          expect(value.relevance).toBe('MAIN')
+          expect(value.value).toBe(false)
+
+          subscription.unsubscribe()
+          done()
+        },
+        error(e) {
+          throw new Error(`Subscription error ${e}`)
+        },
+      })
+
+    await authenticatedClient.mutate({
+      mutation: gql`
+        mutation($id: ID!) {
+          booleanValue(
+            id: $id
+            permission: READ_ONLY
+            relevance: MAIN
+            value: false
+          ) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: boolValueId,
+      },
+    })
+  })
+
+  it('valueUpdated subscription should work with colourValue', async (done) => {
+    const subscription = authenticatedClient
+      .subscribe({
+        query: gql`
+          subscription {
+            valueUpdated {
+              id
+              permission
+              relevance
+              ... on ColourValue {
+                value
+              }
+            }
+          }
+        `,
+      })
+      .subscribe({
+        async next(res) {
+          expect(res.errors).toBeUndefined()
+
+          const value = res.data.valueUpdated
+          expect(value.id).toBeDefined()
+          expect(value.permission).toBe('READ_ONLY')
+          expect(value.relevance).toBe('MAIN')
+          expect(value.value).toBe('#ff0000')
+
+          subscription.unsubscribe()
+          done()
+        },
+        error(e) {
+          throw new Error(`Subscription error ${e}`)
+        },
+      })
+
+    await authenticatedClient.mutate({
+      mutation: gql`
+        mutation($id: ID!) {
+          colourValue(
+            id: $id
+            permission: READ_ONLY
+            relevance: MAIN
+            value: "#ff0000"
+          ) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: colourValueId,
+      },
+    })
+  })
+
+  it("valueUpdated shouldn't work if not authenticated", (done) => {
+    clientWithoutToken
+      .subscribe({
+        query: gql`
+          subscription {
+            valueUpdated {
+              id
+            }
+          }
+        `,
+      })
+      .subscribe({
+        async next(res) {
+          expect(res.errors).toBeDefined()
+          expect(res.errors[0].message).toBe('No authorization token')
+          done()
+        },
+        error(e) {
+          throw new Error(`Subscription error ${e}`)
+        },
+      })
+  })
 })

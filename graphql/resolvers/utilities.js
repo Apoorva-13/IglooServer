@@ -170,6 +170,7 @@ const genericValueMutation = (
   childProps,
   childNameId,
   childModel,
+  __resolveType,
   pubsub,
 ) => (root, args, context) =>
   logErrorsPromise(
@@ -213,6 +214,11 @@ const genericValueMutation = (
           device: { id: newValue.dataValues.deviceId },
         }
         resolve(resolveObj)
+
+        pubsub.publish('valueUpdated', {
+          valueUpdated: { ...resolveObj, __resolveType },
+          userId: context.auth.userId,
+        })
       }
     }),
   )

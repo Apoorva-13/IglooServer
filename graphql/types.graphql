@@ -4,324 +4,326 @@ scalar Json
 
 # Payload returned after signing up
 type SignupUserPayload {
-    # user id
-    id: ID!
-    # token used to authenticate, pass it as a bearer in the authentication header
-    token: String!
+  # user id
+  id: ID!
+  # token used to authenticate, pass it as a bearer in the authentication header
+  token: String!
 }
 
 type AuthenticateUserPayload {
-    # user id
-    id: ID!
-    # token used to authenticate, pass it as a bearer in the authentication header
-    token: String!
+  # user id
+  id: ID!
+  # token used to authenticate, pass it as a bearer in the authentication header
+  token: String!
 }
 
 type UpgradeTo2FactorPayload {
-    # totp secret
-    secret: String
-    # svg for the qr code
-    qrCode: String
+  # totp secret
+  secret: String
+  # svg for the qr code
+  qrCode: String
 }
 
 type Mutation {
-    # Gets an authentication token
-    AuthenticateUser(
-        email: String!
-        password: String!
-        twoFactorCode: String
-    ): AuthenticateUserPayload
-    # Creates a new account
-    SignupUser(email: String!, password: String!): SignupUserPayload
-    # upgrades a user to 2 factor authentication
-    UpgradeTo2FactorAuthentication: UpgradeTo2FactorPayload
-    # Changes the password of the authenticated user
-    ChangePassword(newPassword: String!): AuthenticateUserPayload
-    # Creates a new Device
-    CreateDevice(
-        # Product name, for example Igloo Thermostat
-        deviceType: String
-        # Custom name gave by the end-user to the device
-        customName: String
-        tags: [String!]!
-    ): Device
-    # Creates a new FloatValue
-    CreateFloatValue(
-        deviceId: ID!
-        permission: ValuePermission!
-        relevance: ValueRelevance!
-        valueDetails: String
-        value: Float!
-        # used when the end-user reads or modifies the value
-        precision: Float
-        # [min, max]
-        boundaries: [Float!]
-    ): FloatValue
-    # Creates a StringValue
-    CreateStringValue(
-        deviceId: ID!
-        permission: ValuePermission!
-        relevance: ValueRelevance!
-        valueDetails: String
-        value: String!
-        maxChars: Int
-    ): StringValue
-    # Creates a BooleanValue
-    CreateBooleanValue(
-        deviceId: ID!
-        permission: ValuePermission!
-        relevance: ValueRelevance!
-        valueDetails: String
-        value: Boolean!
-    ): BooleanValue
-    # Creates a ColourValue
-    CreateColourValue(
-        deviceId: ID!
-        permission: ValuePermission!
-        relevance: ValueRelevance!
-        valueDetails: String
-        # hex code
-        value: String!
-    ): ColourValue
-
-    # changes user's data
-    user(email: String!): User
-    # changes device's data
-    device(
-        id: ID!
-        deviceType: String
-        customName: String
-        tags: [String!]
-    ): Device
-
-    # changes floatValue's data
-    floatValue(
-        id: ID!
-        permission: ValuePermission
-        relevance: ValueRelevance
-        valueDetails: String
-        value: Float
-        precision: Float
-        boundaries: [Float!]
-    ): FloatValue
-    # changes stringValue's data
-    stringValue(
-        id: ID!
-        permission: ValuePermission
-        relevance: ValueRelevance
-        valueDetails: String
-        value: String
-        maxChars: Int
-    ): StringValue
-    # changes booleanValue's data
-    booleanValue(
-        id: ID!
-        permission: ValuePermission
-        relevance: ValueRelevance
-        valueDetails: String
-        value: Boolean
-    ): BooleanValue
-    # changes colourValue's data
-    colourValue(
-        id: ID!
-        permission: ValuePermission
-        relevance: ValueRelevance
-        valueDetails: String
-        # hex value prefixed with #
-        value: String
-    ): ColourValue
-}
-
-input DeviceFilter {
-    OR: [DeviceFilter!]
-    AND: [DeviceFilter!]
-    customName: String
-    deviceType: String
-    tagsContain: String
-}
-
-type Query {
-    # gets user's data
-    user: User
-    #  get's device's data
-    device(id: ID!): Device
-    # get's value's data
-    value(id: ID!): Value
-
-    allDevices: [Device]
-    allValues: [Value]
-    allNotifications: [Notification]
-    allPlotNodes: [PlotNode]
-    allMaps: [Map]
-    allMapPositions: [MapPosition]
-    allFloatValues: [FloatValue]
-    allStringValues: [StringValue]
-    allPlotValues: [PlotValue]
-    allBooleanValues: [BooleanValue]
-    allColourValues: [ColourValue]
-    allMapValues: [MapValue]
-}
-
-type Subscription {
-    # subscribes to device creations
-    deviceCreated: Device
-    # subscribes to value creations
-    valueCreated: Value
-    # subscribes to value updates
-    userUpdated: User
-    # subscribes to device updates
-    deviceUpdated: Device
-}
-
-type User {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    email: String! @isUnique
-    devices: [Device!]!
-    values: [Value!]!
-}
-
-type Device {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
+  # Gets an authentication token
+  AuthenticateUser(
+    email: String!
+    password: String!
+    twoFactorCode: String
+  ): AuthenticateUserPayload
+  # Creates a new account
+  SignupUser(email: String!, password: String!): SignupUserPayload
+  # upgrades a user to 2 factor authentication
+  UpgradeTo2FactorAuthentication: UpgradeTo2FactorPayload
+  # Changes the password of the authenticated user
+  ChangePassword(newPassword: String!): AuthenticateUserPayload
+  # Creates a new Device
+  CreateDevice(
     # Product name, for example Igloo Thermostat
     deviceType: String
     # Custom name gave by the end-user to the device
     customName: String
     tags: [String!]!
-    values: [Value!]!
-    user: User!
-}
-
-enum ValuePermission {
-    READ_ONLY
-    READ_WRITE
-}
-
-enum ValueRelevance {
-    MAIN
-    NORMAL
-    ADVANCED
-    HIDDEN
-}
-
-type Notification {
-    id: ID! @isUnique
-    deviceValue: Value!
-    content: String!
-    date: DateTime!
-    visualized: Boolean!
-}
-
-type PlotNode {
-    id: ID! @isUnique
-    deviceValue: Value!
-    key: DateTime!
-    value: Float!
-}
-
-type Map {
-    id: ID! @isUnique
-    deviceValue: Value!
-    zoom: Int!
-    position: MapPosition!
-    geoJSON: Json!
-}
-
-type MapPosition {
-    id: ID! @isUnique
-    latitude: Float!
-    longitude: Float!
-    map: Map!
-}
-
-interface Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
-    valueDetails: String
-}
-
-type FloatValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  ): Device
+  # Creates a new FloatValue
+  CreateFloatValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
     valueDetails: String
     value: Float!
     # used when the end-user reads or modifies the value
     precision: Float
     # [min, max]
     boundaries: [Float!]
-}
-
-type StringValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  ): FloatValue
+  # Creates a StringValue
+  CreateStringValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
     valueDetails: String
     value: String!
     maxChars: Int
+  ): StringValue
+  # Creates a BooleanValue
+  CreateBooleanValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
+    valueDetails: String
+    value: Boolean!
+  ): BooleanValue
+  # Creates a ColourValue
+  CreateColourValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
+    valueDetails: String
+    # hex code
+    value: String!
+  ): ColourValue
+
+  # changes user's data
+  user(email: String!): User
+  # changes device's data
+  device(
+    id: ID!
+    deviceType: String
+    customName: String
+    tags: [String!]
+  ): Device
+
+  # changes floatValue's data
+  floatValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    value: Float
+    precision: Float
+    boundaries: [Float!]
+  ): FloatValue
+  # changes stringValue's data
+  stringValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    value: String
+    maxChars: Int
+  ): StringValue
+  # changes booleanValue's data
+  booleanValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    value: Boolean
+  ): BooleanValue
+  # changes colourValue's data
+  colourValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    # hex value prefixed with #
+    value: String
+  ): ColourValue
+}
+
+input DeviceFilter {
+  OR: [DeviceFilter!]
+  AND: [DeviceFilter!]
+  customName: String
+  deviceType: String
+  tagsContain: String
+}
+
+type Query {
+  # gets user's data
+  user: User
+  #  get's device's data
+  device(id: ID!): Device
+  # get's value's data
+  value(id: ID!): Value
+
+  allDevices: [Device]
+  allValues: [Value]
+  allNotifications: [Notification]
+  allPlotNodes: [PlotNode]
+  allMaps: [Map]
+  allMapPositions: [MapPosition]
+  allFloatValues: [FloatValue]
+  allStringValues: [StringValue]
+  allPlotValues: [PlotValue]
+  allBooleanValues: [BooleanValue]
+  allColourValues: [ColourValue]
+  allMapValues: [MapValue]
+}
+
+type Subscription {
+  # subscribes to device creations
+  deviceCreated: Device
+  # subscribes to value creations
+  valueCreated: Value
+  # subscribes to value updates
+  userUpdated: User
+  # subscribes to device updates
+  deviceUpdated: Device
+  # subscribes to value updates
+  valueUpdated: Value
+}
+
+type User {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  email: String! @isUnique
+  devices: [Device!]!
+  values: [Value!]!
+}
+
+type Device {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  # Product name, for example Igloo Thermostat
+  deviceType: String
+  # Custom name gave by the end-user to the device
+  customName: String
+  tags: [String!]!
+  values: [Value!]!
+  user: User!
+}
+
+enum ValuePermission {
+  READ_ONLY
+  READ_WRITE
+}
+
+enum ValueRelevance {
+  MAIN
+  NORMAL
+  ADVANCED
+  HIDDEN
+}
+
+type Notification {
+  id: ID! @isUnique
+  deviceValue: Value!
+  content: String!
+  date: DateTime!
+  visualized: Boolean!
+}
+
+type PlotNode {
+  id: ID! @isUnique
+  deviceValue: Value!
+  key: DateTime!
+  value: Float!
+}
+
+type Map {
+  id: ID! @isUnique
+  deviceValue: Value!
+  zoom: Int!
+  position: MapPosition!
+  geoJSON: Json!
+}
+
+type MapPosition {
+  id: ID! @isUnique
+  latitude: Float!
+  longitude: Float!
+  map: Map!
+}
+
+interface Value {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+}
+
+type FloatValue implements Value {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: Float!
+  # used when the end-user reads or modifies the value
+  precision: Float
+  # [min, max]
+  boundaries: [Float!]
+}
+
+type StringValue implements Value {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: String!
+  maxChars: Int
 }
 
 type PlotValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
-    valueDetails: String
-    value: [PlotNode!]!
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: [PlotNode!]!
 }
 
 type BooleanValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
-    valueDetails: String
-    value: Boolean!
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: Boolean!
 }
 
 type ColourValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
-    valueDetails: String
-    # hex value prefixed with #
-    value: String!
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  # hex value prefixed with #
+  value: String!
 }
 
 type MapValue implements Value {
-    id: ID! @isUnique
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    device: Device!
-    user: User!
-    permission: ValuePermission! @defaultValue(value: READ_WRITE)
-    relevance: ValueRelevance! @defaultValue(value: NORMAL)
-    valueDetails: String
-    value: Map
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: Map
 }
