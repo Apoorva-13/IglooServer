@@ -1,3 +1,4 @@
+"use strict"
 import { authenticated, logErrorsPromise } from './utilities.js'
 
 const QueryResolver = (

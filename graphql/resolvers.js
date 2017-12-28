@@ -10,6 +10,7 @@ import Sequelize from 'sequelize'
 const pubsub = new PubSub()
 
 require('dotenv').config()
+
 /* istanbul ignore if */
 if (!process.env.JWT_SECRET) {
   throw new Error('Could not load .env')

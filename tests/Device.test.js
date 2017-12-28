@@ -1,3 +1,4 @@
+"use strict"
 import request from 'supertest'
 import GraphQLServer from '../app.js'
 

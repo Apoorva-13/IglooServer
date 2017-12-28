@@ -18,6 +18,7 @@ const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
       }
     }),
   )
+
 const UserResolver = (
   User,
   Device,
