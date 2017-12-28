@@ -47,6 +47,7 @@ const logger = winston.createLogger({
           channel: '#alerts',
           username: 'Production Alert',
           icon_emoji: ':scream:',
+          level: 'warn',
         }),
       ]
       : []),
