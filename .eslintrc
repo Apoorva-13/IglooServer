@@ -2,7 +2,8 @@
   "rules": {
     "semi": ["error", "never"],
     "no-console": "off",
-    "no-nested-ternary": "off"
+    "no-nested-ternary": "off",
+    "linebreak-style": "off"
   },
   "env": {
     "node": true,
