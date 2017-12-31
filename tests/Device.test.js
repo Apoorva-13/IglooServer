@@ -64,8 +64,8 @@ describe('Device', () => {
       .set('accept', 'application/json')
       .set('Authorization', `Bearer ${self.token}`)
       .send({
-        query: `mutation CreateDevice($deviceType: String!, $customName: String!, $tags:[String!]!){
-                    CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags){
+        query: `mutation CreateDevice($icon: String, $deviceType: String!, $customName: String!, $tags:[String!]!){
+                    CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags, icon:$icon){
                         tags,
                         values{
                             id
@@ -75,6 +75,7 @@ describe('Device', () => {
                         updatedAt,
                         createdAt,
                         deviceType,
+                        icon,
                         user{
                             id
                             email
@@ -86,6 +87,7 @@ describe('Device', () => {
           deviceType: 'Lamp',
           customName: 'Lampada',
           tags: ['yellow'],
+          icon: 'iconUrl',
         },
       })
     console.log(res.text)
@@ -98,6 +100,7 @@ describe('Device', () => {
     expect(parsedRes.data.CreateDevice.values).toEqual([])
     expect(parsedRes.data.CreateDevice.customName).toBe('Lampada')
     expect(parsedRes.data.CreateDevice.deviceType).toBe('Lamp')
+    expect(parsedRes.data.CreateDevice.icon).toBe('iconUrl')
     expect(parsedRes.data.CreateDevice.user).toEqual({
       id: self.userId,
       email: 'userTest2@email.com',
@@ -106,7 +109,7 @@ describe('Device', () => {
     done()
   })
 
-  it('should be able to create a device without tags', (done) => {
+  it('should be able to create a device without tags and without icon', (done) => {
     request(GraphQLServer)
       .post('/graphql')
       .set('content-type', 'application/json')
@@ -124,6 +127,7 @@ describe('Device', () => {
                         updatedAt,
                         createdAt,
                         deviceType,
+                        icon,
                         user{
                             id
                             email
@@ -147,6 +151,7 @@ describe('Device', () => {
         expect(parsedRes.data.CreateDevice.values).toEqual([])
         expect(parsedRes.data.CreateDevice.customName).toBe('Lampada')
         expect(parsedRes.data.CreateDevice.deviceType).toBe('Lamp')
+        expect(parsedRes.data.CreateDevice.icon).toBe(null)
         expect(parsedRes.data.CreateDevice.user).toEqual({
           id: self.userId2,
           email: 'userTest3@email.com',
@@ -345,14 +350,15 @@ describe('Device', () => {
       .set('accept', 'application/json')
       .set('Authorization', `Bearer ${self.token}`)
       .send({
-        query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!){
-                            device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags){
+        query: `mutation device($id:ID!, $deviceType: String!, $customName:String!, $tags:[String!]!, $icon:String){
+                            device(id:$id, deviceType:$deviceType, customName:$customName, tags:$tags, icon:$icon){
                                 id
                                 updatedAt
                                 createdAt
                                 customName
                                 tags
                                 deviceType
+                                icon
                                 user{
                                     id
                                     email
@@ -365,6 +371,7 @@ describe('Device', () => {
           deviceType: 'Street Lamp',
           customName: 'Lampione',
           tags: ['street', 'lights'],
+          icon: 'newIconUrl',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -373,6 +380,7 @@ describe('Device', () => {
     expect(parsedRes.data.device.customName).toBe('Lampione')
     expect(parsedRes.data.device.deviceType).toBe('Street Lamp')
     expect(parsedRes.data.device.tags).toEqual(['street', 'lights'])
+    expect(parsedRes.data.device.icon).toBe('newIconUrl')
     expect(parsedRes.data.device.updatedAt).toBeDefined()
     expect(parsedRes.data.device.createdAt).toBeDefined()
     expect(parsedRes.data.device.user).toEqual({

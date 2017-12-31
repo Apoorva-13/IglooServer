@@ -49,6 +49,9 @@ const databaseDefinition = (sequelize) => {
     customName: {
       type: Sequelize.STRING,
     },
+    icon: {
+      type: Sequelize.STRING,
+    },
     tags: {
       type: Sequelize.ARRAY(Sequelize.STRING),
     },
