@@ -44,6 +44,7 @@ type Mutation {
     # Custom name gave by the end-user to the device
     customName: String
     tags: [String!]!
+    icon: String
   ): Device
   # Creates a new FloatValue
   CreateFloatValue(
@@ -92,6 +93,7 @@ type Mutation {
     deviceType: String
     customName: String
     tags: [String!]
+    icon: String
   ): Device
 
   # changes floatValue's data
@@ -195,6 +197,7 @@ type Device {
   tags: [String!]!
   values: [Value!]!
   user: User!
+  icon: String
 }
 
 enum ValuePermission {

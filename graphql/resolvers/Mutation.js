@@ -153,6 +153,7 @@ const MutationResolver = (
           customName: args.customName,
           deviceType: args.deviceType,
           tags: args.tags,
+          icon: args.icon,
           userId: context.auth.userId,
         })
         const {
@@ -163,6 +164,7 @@ const MutationResolver = (
           customName,
           userId,
           tags,
+          icon,
         } = newDevice.dataValues
         const values = [] // values cannot be set when creating the device so no need to fetch them
 
@@ -174,6 +176,7 @@ const MutationResolver = (
           customName,
           tags,
           values,
+          icon,
           user: {
             id: userId,
           },
