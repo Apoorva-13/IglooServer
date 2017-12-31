@@ -8,16 +8,8 @@ require('dotenv').config()
 if (!process.env.JWT_SECRET) {
   throw new Error('Could not load .env')
 }
-const {
-  HOST, DATABASE, DB_USERNAME, PASSWORD,
-} = process.env
 
-const sequelize = new Sequelize({
-  host: HOST,
-  port: 5432,
-  database: DATABASE,
-  username: DB_USERNAME,
-  password: PASSWORD,
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   ssl: true,
   dialect: 'postgres',
   dialectOptions: {
