@@ -3,6 +3,7 @@ const Sequelize = require('sequelize')
 const databaseDefinition = (sequelize) => {
   const ValuePermission = Sequelize.ENUM('READ_ONLY', 'READ_WRITE')
   const ValueRelevance = Sequelize.ENUM('MAIN', 'NORMAL', 'ADVANCED', 'HIDDEN')
+  const TileSize = Sequelize.ENUM('NORMAL', 'WIDE', 'TALL', 'LARGE')
   const selfId = {
     id: {
       type: Sequelize.UUID,
@@ -69,6 +70,12 @@ const databaseDefinition = (sequelize) => {
     },
     relevance: {
       type: ValueRelevance,
+    },
+    tileSize: {
+      type: TileSize,
+    },
+    customName: {
+      type: Sequelize.STRING,
     },
   })
 
