@@ -304,6 +304,8 @@ describe('Value', function () {
           permission: 'READ_WRITE',
           relevance: 'VISIBLE',
           valueDetails: '',
+          customName: 'TestName',
+          tileSize: 'WIDE',
         }
         for (const i in specificProps) {
           queryVariables[specificProps[i].name] = specificProps[i].value
@@ -319,6 +321,8 @@ describe('Value', function () {
                             $deviceId: ID!
                             $permission: ValuePermission!
                             $valueDetails: String
+                            $tileSize: TileSize
+                            $customName: String
                             ${specificProps
     .map(prop => `$${prop.name}: ${prop.type}`)
     .join('\n')}
@@ -327,6 +331,8 @@ describe('Value', function () {
                                 deviceId: $deviceId,
                                 permission: $permission,
                                 valueDetails: $valueDetails,
+                                customName: $customName,
+                                tileSize: $tileSize
                                 ${specificProps
     .map(prop => `${prop.name}: $${prop.name}`)
     .join('\n')}
@@ -343,6 +349,8 @@ describe('Value', function () {
                                 permission
                                 relevance
                                 valueDetails
+                                customName
+                                tileSize
                                 ${specificProps
     .map(prop => `${prop.name}`)
     .join('\n')}
@@ -350,7 +358,6 @@ describe('Value', function () {
                         }`,
             variables: queryVariables,
           })
-        console.log(res.text)
         const parsedRes = JSON.parse(res.text)
         expect(parsedRes.errors).toBeUndefined()
         expect(parsedRes.data[mutationName].id).toBeTruthy()
@@ -360,6 +367,8 @@ describe('Value', function () {
         expect(parsedRes.data[mutationName].user.email).toBe(email)
         expect(parsedRes.data[mutationName].permission).toBe('READ_WRITE')
         expect(parsedRes.data[mutationName].relevance).toBe('VISIBLE')
+        expect(parsedRes.data[mutationName].customName).toBe('TestName')
+        expect(parsedRes.data[mutationName].tileSize).toBe('WIDE')
         expect(parsedRes.data[mutationName].valueDetails).toBe('')
         for (const i in specificProps) {
           expect(parsedRes.data[mutationName][specificProps[i].name]).toEqual(specificProps[i].value)
@@ -583,6 +592,8 @@ describe('Value', function () {
                                             permission
                                             relevance
                                             valueDetails
+                                            customName
+                                            tileSize
                                             ...on FloatValue{
                                                 floatValue: value
                                                 precision
@@ -614,6 +625,8 @@ describe('Value', function () {
         expect(parsedRes.data.value.user.email).toBe(email)
         expect(parsedRes.data.value.permission).toBe('READ_WRITE')
         expect(parsedRes.data.value.relevance).toBe('VISIBLE')
+        expect(parsedRes.data.value.customName).toBe('TestName')
+        expect(parsedRes.data.value.tileSize).toBe('WIDE')
         expect(parsedRes.data.value.valueDetails).toBe('')
         if (mutationName.includes('Float')) {
           expect(parsedRes.data.value.floatValue).toBe(specificProps[0].value)
@@ -730,7 +743,10 @@ describe('Value', function () {
                                 email
                             }
                             permission
+                            relevance
                             valueDetails
+                            customName
+                            tileSize
                             ${specificProps
     .map(prop => `${prop.name}`)
     .join('\n')}
@@ -747,6 +763,9 @@ describe('Value', function () {
         expect(parsedRes.data[updateMutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[updateMutationName].user.email).toBe(email)
         expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
+        expect(parsedRes.data[updateMutationName].relevance).toBe('HIDDEN')
+        expect(parsedRes.data[updateMutationName].customName).toBe('TestName')
+        expect(parsedRes.data[updateMutationName].tileSize).toBe('WIDE')
         expect(parsedRes.data[updateMutationName].valueDetails).toBe('')
         for (const i in specificProps) {
           expect(parsedRes.data[updateMutationName][specificProps[i].name]).toEqual(specificProps[i].newValue)
@@ -811,6 +830,8 @@ describe('Value', function () {
                                             }
                                             permission
                                             valueDetails
+                                            customName
+                                            tileSize
                                             ${updatedProp.name}
                                         }
                                     }`,
@@ -826,6 +847,8 @@ describe('Value', function () {
           expect(parsedRes.data[updateMutationName].user.email).toBe(email)
           expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
           expect(parsedRes.data[updateMutationName].valueDetails).toBe('')
+          expect(parsedRes.data[updateMutationName].customName).toBe('TestName')
+          expect(parsedRes.data[updateMutationName].tileSize).toBe('WIDE')
 
           expect(parsedRes.data[updateMutationName][updatedProp.name]).toEqual(updatedProp.value)
 

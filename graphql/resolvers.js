@@ -24,6 +24,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialectOptions: {
     ssl: true,
   },
+  logging: false,
 })
 
 const {

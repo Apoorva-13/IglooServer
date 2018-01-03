@@ -3,7 +3,7 @@ const gql = require('graphql-tag')
 require('../server')
 
 const GRAPHQL_PORT = process.env.PORT || 3000
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 200000
 
 describe('subscriptions', () => {
   const clientWithoutToken = minimalGraphql(
