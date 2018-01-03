@@ -104,8 +104,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
           {
             name: 'precision',
@@ -138,8 +138,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -160,8 +160,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
           {
             name: 'maxChars',
@@ -188,8 +188,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -210,8 +210,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token,
@@ -232,8 +232,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -254,8 +254,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token,
@@ -276,8 +276,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -302,7 +302,7 @@ describe('Value', function () {
         const queryVariables = {
           deviceId,
           permission: 'READ_WRITE',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
           valueDetails: '',
         }
         for (const i in specificProps) {
@@ -359,7 +359,7 @@ describe('Value', function () {
         expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[mutationName].user.email).toBe(email)
         expect(parsedRes.data[mutationName].permission).toBe('READ_WRITE')
-        expect(parsedRes.data[mutationName].relevance).toBe('MAIN')
+        expect(parsedRes.data[mutationName].relevance).toBe('VISIBLE')
         expect(parsedRes.data[mutationName].valueDetails).toBe('')
         for (const i in specificProps) {
           expect(parsedRes.data[mutationName][specificProps[i].name]).toEqual(specificProps[i].value)
@@ -402,7 +402,7 @@ describe('Value', function () {
           deviceId: self.deviceId2,
           value: 5,
           permission: 'READ_ONLY',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -437,7 +437,7 @@ describe('Value', function () {
           deviceId: '88b2fb06-be2f-482a-8c88-59d90566992d', // fake id
           value: 5,
           permission: 'READ_ONLY',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -613,7 +613,7 @@ describe('Value', function () {
         expect(parsedRes.data.value.device.id).toBe(deviceId)
         expect(parsedRes.data.value.user.email).toBe(email)
         expect(parsedRes.data.value.permission).toBe('READ_WRITE')
-        expect(parsedRes.data.value.relevance).toBe('MAIN')
+        expect(parsedRes.data.value.relevance).toBe('VISIBLE')
         expect(parsedRes.data.value.valueDetails).toBe('')
         if (mutationName.includes('Float')) {
           expect(parsedRes.data.value.floatValue).toBe(specificProps[0].value)
