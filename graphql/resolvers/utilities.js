@@ -132,7 +132,13 @@ const CreateGenericValue = (
         reject('You are not allowed to edit details about this device')
       } else {
         const {
-          deviceId, valueDetails, permission, relevance, value,
+          deviceId,
+          valueDetails,
+          permission,
+          relevance,
+          value,
+          tileSize,
+          customName,
         } = args
 
         const childGeneric = getPropsIfDefined(args, childProps)
@@ -145,6 +151,8 @@ const CreateGenericValue = (
             valueDetails,
             permission,
             relevance,
+            tileSize: tileSize || 'NORMAL',
+            customName,
             [childName]: {
               userId: context.auth.userId,
               value,
@@ -175,6 +183,8 @@ const CreateGenericValue = (
           relevance: newValue.relevance,
           valueDetails: newValue.valueDetails,
           value: newValue[childName].value,
+          tileSize: newValue.tileSize,
+          customName: newValue.customName,
           __resolveType:
               childName === 'childFloat'
                 ? 'FloatValue'
@@ -234,6 +244,8 @@ const genericValueMutation = (
           'permission',
           'relevance',
           'valueDetails',
+          'tileSize',
+          'customName',
         ])
         const newValue =
           Object.keys(valueUpdate).length === 0
