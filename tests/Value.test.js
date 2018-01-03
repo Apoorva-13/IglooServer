@@ -104,8 +104,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
           {
             name: 'precision',
@@ -138,8 +138,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -160,8 +160,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
           {
             name: 'maxChars',
@@ -188,8 +188,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -210,8 +210,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token,
@@ -232,8 +232,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -254,8 +254,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token,
@@ -276,8 +276,8 @@ describe('Value', function () {
           {
             name: 'relevance',
             type: 'ValueRelevance!',
-            value: 'MAIN',
-            newValue: 'NORMAL',
+            value: 'VISIBLE',
+            newValue: 'HIDDEN',
           },
         ],
         token: self.token2,
@@ -302,7 +302,7 @@ describe('Value', function () {
         const queryVariables = {
           deviceId,
           permission: 'READ_WRITE',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
           valueDetails: '',
           customName: 'TestName',
           tileSize: 'WIDE',
@@ -366,7 +366,7 @@ describe('Value', function () {
         expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[mutationName].user.email).toBe(email)
         expect(parsedRes.data[mutationName].permission).toBe('READ_WRITE')
-        expect(parsedRes.data[mutationName].relevance).toBe('MAIN')
+        expect(parsedRes.data[mutationName].relevance).toBe('VISIBLE')
         expect(parsedRes.data[mutationName].customName).toBe('TestName')
         expect(parsedRes.data[mutationName].tileSize).toBe('WIDE')
         expect(parsedRes.data[mutationName].valueDetails).toBe('')
@@ -411,7 +411,7 @@ describe('Value', function () {
           deviceId: self.deviceId2,
           value: 5,
           permission: 'READ_ONLY',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -446,7 +446,7 @@ describe('Value', function () {
           deviceId: '88b2fb06-be2f-482a-8c88-59d90566992d', // fake id
           value: 5,
           permission: 'READ_ONLY',
-          relevance: 'MAIN',
+          relevance: 'VISIBLE',
         },
       })
     const parsedRes = JSON.parse(res.text)
@@ -624,7 +624,7 @@ describe('Value', function () {
         expect(parsedRes.data.value.device.id).toBe(deviceId)
         expect(parsedRes.data.value.user.email).toBe(email)
         expect(parsedRes.data.value.permission).toBe('READ_WRITE')
-        expect(parsedRes.data.value.relevance).toBe('MAIN')
+        expect(parsedRes.data.value.relevance).toBe('VISIBLE')
         expect(parsedRes.data.value.customName).toBe('TestName')
         expect(parsedRes.data.value.tileSize).toBe('WIDE')
         expect(parsedRes.data.value.valueDetails).toBe('')
@@ -763,7 +763,7 @@ describe('Value', function () {
         expect(parsedRes.data[updateMutationName].device.id).toBe(deviceId)
         expect(parsedRes.data[updateMutationName].user.email).toBe(email)
         expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
-        expect(parsedRes.data[updateMutationName].relevance).toBe('NORMAL')
+        expect(parsedRes.data[updateMutationName].relevance).toBe('HIDDEN')
         expect(parsedRes.data[updateMutationName].customName).toBe('TestName')
         expect(parsedRes.data[updateMutationName].tileSize).toBe('WIDE')
         expect(parsedRes.data[updateMutationName].valueDetails).toBe('')

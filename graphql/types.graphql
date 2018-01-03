@@ -222,10 +222,9 @@ enum ValuePermission {
 }
 
 enum ValueRelevance {
-  MAIN
-  NORMAL
-  ADVANCED
+  VISIBLE
   HIDDEN
+  INVISIBLE
 }
 
 enum TileSize {

@@ -196,7 +196,7 @@ describe('subscriptions', () => {
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_WRITE')
-          expect(value.relevance).toBe('NORMAL')
+          expect(value.relevance).toBe('VISIBLE')
           expect(value.value).toBe(4)
 
           subscription.unsubscribe()
@@ -213,7 +213,7 @@ describe('subscriptions', () => {
           CreateFloatValue(
             deviceId: $deviceId
             permission: READ_WRITE
-            relevance: NORMAL
+            relevance: VISIBLE
             value: 4
           ) {
             id
@@ -250,7 +250,7 @@ describe('subscriptions', () => {
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_WRITE')
-          expect(value.relevance).toBe('NORMAL')
+          expect(value.relevance).toBe('VISIBLE')
           expect(value.value).toBe('ehiehie')
 
           subscription.unsubscribe()
@@ -267,7 +267,7 @@ describe('subscriptions', () => {
           CreateStringValue(
             deviceId: $deviceId
             permission: READ_WRITE
-            relevance: NORMAL
+            relevance: VISIBLE
             value: "ehiehie"
           ) {
             id
@@ -304,7 +304,7 @@ describe('subscriptions', () => {
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_WRITE')
-          expect(value.relevance).toBe('NORMAL')
+          expect(value.relevance).toBe('VISIBLE')
           expect(value.value).toBe(true)
 
           subscription.unsubscribe()
@@ -321,7 +321,7 @@ describe('subscriptions', () => {
           CreateBooleanValue(
             deviceId: $deviceId
             permission: READ_WRITE
-            relevance: NORMAL
+            relevance: VISIBLE
             value: true
           ) {
             id
@@ -358,7 +358,7 @@ describe('subscriptions', () => {
           const value = res.data.valueCreated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_WRITE')
-          expect(value.relevance).toBe('NORMAL')
+          expect(value.relevance).toBe('VISIBLE')
           expect(value.value).toBe('#00ff00')
 
           subscription.unsubscribe()
@@ -375,7 +375,7 @@ describe('subscriptions', () => {
           CreateColourValue(
             deviceId: $deviceId
             permission: READ_WRITE
-            relevance: NORMAL
+            relevance: VISIBLE
             value: "#00ff00"
           ) {
             id
@@ -577,7 +577,7 @@ describe('subscriptions', () => {
           const value = res.data.valueUpdated
           expect(value.id).toBe(floatValueId)
           expect(value.permission).toBe('READ_ONLY')
-          expect(value.relevance).toBe('MAIN')
+          expect(value.relevance).toBe('INVISIBLE')
           expect(value.value).toBe(3)
 
           subscription.unsubscribe()
@@ -594,7 +594,7 @@ describe('subscriptions', () => {
           floatValue(
             id: $id
             permission: READ_ONLY
-            relevance: MAIN
+            relevance: INVISIBLE
             value: 3
           ) {
             id
@@ -630,7 +630,7 @@ describe('subscriptions', () => {
           const value = res.data.valueUpdated
           expect(value.id).toBe(stringValueId)
           expect(value.permission).toBe('READ_ONLY')
-          expect(value.relevance).toBe('MAIN')
+          expect(value.relevance).toBe('INVISIBLE')
           expect(value.value).toBe('ahahaha')
 
           subscription.unsubscribe()
@@ -647,7 +647,7 @@ describe('subscriptions', () => {
           stringValue(
             id: $id
             permission: READ_ONLY
-            relevance: MAIN
+            relevance: INVISIBLE
             value: "ahahaha"
           ) {
             id
@@ -683,7 +683,7 @@ describe('subscriptions', () => {
           const value = res.data.valueUpdated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_ONLY')
-          expect(value.relevance).toBe('MAIN')
+          expect(value.relevance).toBe('INVISIBLE')
           expect(value.value).toBe(false)
 
           subscription.unsubscribe()
@@ -700,7 +700,7 @@ describe('subscriptions', () => {
           booleanValue(
             id: $id
             permission: READ_ONLY
-            relevance: MAIN
+            relevance: INVISIBLE
             value: false
           ) {
             id
@@ -736,7 +736,7 @@ describe('subscriptions', () => {
           const value = res.data.valueUpdated
           expect(value.id).toBeDefined()
           expect(value.permission).toBe('READ_ONLY')
-          expect(value.relevance).toBe('MAIN')
+          expect(value.relevance).toBe('INVISIBLE')
           expect(value.value).toBe('#ff0000')
 
           subscription.unsubscribe()
@@ -753,7 +753,7 @@ describe('subscriptions', () => {
           colourValue(
             id: $id
             permission: READ_ONLY
-            relevance: MAIN
+            relevance: INVISIBLE
             value: "#ff0000"
           ) {
             id
