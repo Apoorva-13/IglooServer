@@ -6,8 +6,7 @@
     "dev": "nodemon ./server.js --exec babel-node -e js,graphql,env",
     "start": "node ./build/server.js",
     "prestart": "npm run build",
-    "build":
-      "babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
+    "build": "babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
     "setupDatabase": "node ./postgresql/setup.js",
     "test": "jest --coverage --bail --forceExit",
     "pretest": "npm run setupDatabase",
@@ -16,9 +15,18 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.js": ["prettier-eslint --write", "git add"],
-    "*.json": ["prettier-eslint --write", "git add"],
-    "*.graphql": ["prettier-eslint --write", "git add"]
+    "*.js": [
+      "prettier-eslint --write",
+      "git add"
+    ],
+    "*.json": [
+      "prettier-eslint --write",
+      "git add"
+    ],
+    "*.graphql": [
+      "prettier-eslint --write",
+      "git add"
+    ]
   },
   "repository": {
     "type": "git",
@@ -47,7 +55,7 @@
     "cors": "^2.8.4",
     "coveralls": "^3.0.0",
     "dotenv": "^4.0.0",
-    "express": "4.13.4",
+    "express": "4.16.0",
     "express-jwt": "^5.3.0",
     "graphql-subscriptions": "^0.5.5",
     "graphql-tools": "^1.0.0",
