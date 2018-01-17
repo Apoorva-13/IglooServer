@@ -64,27 +64,54 @@ const DeviceResolver = (
           })
           resolve(values.map((value) => {
             if (value.dataValues.childFloat) {
+              const valueDate = +new Date(value.dataValues.updatedAt)
+              const floatValueDate = +new Date(value.dataValues.childFloat.dataValues.updatedAt)
               return {
                 ...value.dataValues.childFloat.dataValues,
                 ...value.dataValues,
+                updatedAt:
+                    valueDate > floatValueDate
+                      ? value.dataValues.updatedAt
+                      : value.dataValues.childFloat.dataValues.updatedAt,
                 __resolveType: 'FloatValue',
               }
             } else if (value.dataValues.childString) {
+              const valueDate = +new Date(value.dataValues.updatedAt)
+              const stringValueDate = +new Date(value.dataValues.childString.dataValues.updatedAt)
+
               return {
                 ...value.dataValues.childString.dataValues,
                 ...value.dataValues,
+                updatedAt:
+                    valueDate > stringValueDate
+                      ? value.dataValues.updatedAt
+                      : value.dataValues.childString.dataValues.updatedAt,
                 __resolveType: 'StringValue',
               }
             } else if (value.dataValues.childBool) {
+              const valueDate = +new Date(value.dataValues.updatedAt)
+              const boolValueDate = +new Date(value.dataValues.childBool.dataValues.updatedAt)
+
               return {
                 ...value.dataValues.childBool.dataValues,
                 ...value.dataValues,
+                updatedAt:
+                    valueDate > boolValueDate
+                      ? value.dataValues.updatedAt
+                      : value.dataValues.childBool.dataValues.updatedAt,
                 __resolveType: 'BooleanValue',
               }
             }
+            const valueDate = +new Date(value.dataValues.updatedAt)
+            const colourValueDate = +new Date(value.dataValues.childColour.dataValues.updatedAt)
+
             return {
               ...value.dataValues.childColour.dataValues,
               ...value.dataValues,
+              updatedAt:
+                  valueDate > colourValueDate
+                    ? value.dataValues.updatedAt
+                    : value.dataValues.childColour.dataValues.updatedAt,
               __resolveType: 'ColourValue',
             }
           }))

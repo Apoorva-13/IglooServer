@@ -85,9 +85,16 @@ const QueryResolver = (
         } else if (valueFound.userId !== context.auth.userId) {
           reject('You are not allowed to access details about this resource')
         } else if (valueFound.dataValues.childFloat) {
+          const valueDate = +new Date(valueFound.dataValues.updatedAt)
+          const floatValueDate = +new Date(valueFound.dataValues.childFloat.dataValues.updatedAt)
+
           resolve({
             ...valueFound.dataValues.childFloat.dataValues, // childFloat first to use main Value id
             ...valueFound.dataValues,
+            updatedAt:
+              valueDate > floatValueDate
+                ? valueFound.dataValues.updatedAt
+                : valueFound.dataValues.childFloat.dataValues.updatedAt,
             user: {
               id: valueFound.dataValues.userId,
             },
@@ -97,9 +104,16 @@ const QueryResolver = (
             __resolveType: 'FloatValue',
           })
         } else if (valueFound.dataValues.childString) {
+          const valueDate = +new Date(valueFound.dataValues.updatedAt)
+          const stringValueDate = +new Date(valueFound.dataValues.childString.dataValues.updatedAt)
+
           resolve({
             ...valueFound.dataValues.childString.dataValues,
             ...valueFound.dataValues,
+            updatedAt:
+              valueDate > stringValueDate
+                ? valueFound.dataValues.updatedAt
+                : valueFound.dataValues.childString.dataValues.updatedAt,
             user: {
               id: valueFound.dataValues.userId,
             },
@@ -109,9 +123,16 @@ const QueryResolver = (
             __resolveType: 'StringValue',
           })
         } else if (valueFound.dataValues.childBool) {
+          const valueDate = +new Date(valueFound.dataValues.updatedAt)
+          const boolValueDate = +new Date(valueFound.dataValues.childBool.dataValues.updatedAt)
+
           resolve({
             ...valueFound.dataValues.childBool.dataValues,
             ...valueFound.dataValues,
+            updatedAt:
+              valueDate > boolValueDate
+                ? valueFound.dataValues.updatedAt
+                : valueFound.dataValues.childBool.dataValues.updatedAt,
             user: {
               id: valueFound.dataValues.userId,
             },
@@ -121,9 +142,16 @@ const QueryResolver = (
             __resolveType: 'BooleanValue',
           })
         } else {
+          const valueDate = +new Date(valueFound.dataValues.updatedAt)
+          const colourValueDate = +new Date(valueFound.dataValues.childColour.dataValues.updatedAt)
+
           resolve({
             ...valueFound.dataValues.childColour.dataValues,
             ...valueFound.dataValues,
+            updatedAt:
+              valueDate > colourValueDate
+                ? valueFound.dataValues.updatedAt
+                : valueFound.dataValues.childColour.dataValues.updatedAt,
             user: {
               id: valueFound.dataValues.userId,
             },
