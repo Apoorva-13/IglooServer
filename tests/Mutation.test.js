@@ -68,6 +68,31 @@ describe('Mutation', () => {
         done()
       })
   })
+  it('should not be able to signup if the email is invalid', (done) => {
+    request(GraphQLServer)
+      .post('/graphql')
+      .set('content-type', 'application/json')
+      .set('accept', 'application/json')
+      .send({
+        query: `mutation SignupUser($email: String!, $password: String!) {
+                        SignupUser(email: $email, password: $password) {
+                            id
+                            token
+                        }
+                    }
+                `,
+        variables: {
+          email: 'fakeEmail',
+          password: 'password',
+        },
+      })
+      .then((res) => {
+        const parsedRes = JSON.parse(res.text)
+        expect(parsedRes.errors).toBeTruthy()
+        expect(parsedRes.errors[0].message).toBe('Invalid email')
+        done()
+      })
+  })
 
   it('should be able to authenticate', (done) => {
     request(GraphQLServer)

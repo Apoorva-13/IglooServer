@@ -69,11 +69,12 @@ const MutationResolver = (
         reject('A user with this email already exists')
       } else {
         const encryptedPass = bcrypt.hashSync(args.password, SALT_ROUNDS)
+        try {
+          const newUser = await User.create({
+            email: args.email,
+            password: encryptedPass,
+          })
 
-        User.create({
-          email: args.email,
-          password: encryptedPass,
-        }).then((newUser) => {
           resolve({
             id: newUser.dataValues.id,
             token: generateAuthenticationToken(
@@ -81,7 +82,14 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
-        })
+        } catch (e) {
+          if (e.errors[0].validatorKey === 'isEmail') {
+            reject('Invalid email')
+          } else {
+            /* istanbul ignore next */
+            throw e
+          }
+        }
       }
     })
   },
