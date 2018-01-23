@@ -160,7 +160,7 @@ const MutationResolver = (
         const newDevice = await Device.create({
           customName: args.customName,
           deviceType: args.deviceType,
-          tags: args.tags,
+          tags: args.tags || [],
           icon: args.icon,
           userId: context.auth.userId,
         })

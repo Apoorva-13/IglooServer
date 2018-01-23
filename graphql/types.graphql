@@ -43,7 +43,7 @@ type Mutation {
     deviceType: String
     # Custom name gave by the end-user to the device
     customName: String
-    tags: [String!]!
+    tags: [String!]
     icon: String
   ): Device
   # Creates a new FloatValue

@@ -115,8 +115,8 @@ describe('Device', () => {
       .set('accept', 'application/json')
       .set('Authorization', `Bearer ${self.token2}`)
       .send({
-        query: `mutation CreateDevice($deviceType: String!, $customName: String!, $tags:[String!]!){
-                    CreateDevice(deviceType: $deviceType, customName: $customName, tags: $tags){
+        query: `mutation CreateDevice($deviceType: String!, $customName: String!){
+                    CreateDevice(deviceType: $deviceType, customName: $customName){
                         tags,
                         values{
                             id
@@ -137,7 +137,6 @@ describe('Device', () => {
         variables: {
           deviceType: 'Lamp',
           customName: 'Lampada',
-          tags: [],
         },
       })
       .then((res) => {
