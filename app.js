@@ -9,6 +9,30 @@ import bodyParser from 'body-parser'
 import schema from './graphql/schema'
 import expressJwt from 'express-jwt'
 import cors from 'cors'
+import Sequelize from 'sequelize'
+import createLoaders from './graphql/loaders'
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  ssl: true,
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: true,
+  },
+  logging: false,
+})
+
+const {
+  User,
+  Device,
+  Value,
+  BoolValue,
+  FloatValue,
+  StringValue,
+  PlotValue,
+  PlotNode,
+  MapValue,
+  ColourValue,
+} = require('./postgresql/databaseDefinition')(sequelize)
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 /* istanbul ignore next */
@@ -27,6 +51,18 @@ graphQLServer.use(
     schema,
     context: {
       auth: req.user,
+      loaders: createLoaders(
+        User,
+        Device,
+        Value,
+        BoolValue,
+        FloatValue,
+        StringValue,
+        PlotValue,
+        PlotNode,
+        MapValue,
+        ColourValue,
+      ),
     },
   })),
 )

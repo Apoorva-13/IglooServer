@@ -1,6 +1,6 @@
 import { authenticated, logErrorsPromise } from './utilities'
 
-const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
+const retrieveUserScalarProp = prop => (root, args, context) =>
   logErrorsPromise(
     'retrieveScalarProp',
     106,
@@ -9,7 +9,7 @@ const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
       if (context.auth.userId !== root.id) {
         reject('You are not allowed to access details about this user')
       } else {
-        const userFound = await User.find({ where: { id: root.id } })
+        const userFound = await context.loaders.userLoader.load(root.id)
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
         } else {
@@ -28,9 +28,9 @@ const UserResolver = (
   BoolValue,
   ColourValue,
 ) => ({
-  email: retrieveUserScalarProp(User, 'email'),
-  createdAt: retrieveUserScalarProp(User, 'createdAt'),
-  updatedAt: retrieveUserScalarProp(User, 'updatedAt'),
+  email: retrieveUserScalarProp('email'),
+  createdAt: retrieveUserScalarProp('createdAt'),
+  updatedAt: retrieveUserScalarProp('updatedAt'),
   devices(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',
