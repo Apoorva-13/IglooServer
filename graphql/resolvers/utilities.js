@@ -215,8 +215,12 @@ const logErrorsPromise = (name, code, callback) =>
     try {
       await callback(resolve, reject)
     } catch (e) /* istanbul ignore next */ {
-      logger.error(e, { label: name, code })
-      reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
+      if (e.parent.routine === 'string_to_uuid') {
+        reject(new Error('The ID you provided is not a valid ID, check for typing mistakes'))
+      } else {
+        logger.error(JSON.stringify(e, null, 2), { label: name, code })
+        reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
+      }
     }
   })
 
