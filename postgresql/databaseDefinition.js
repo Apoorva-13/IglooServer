@@ -79,6 +79,22 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  const Notification = sequelize.define('notification', {
+    ...selfId,
+    ...otherId('userId', User),
+    ...otherId('deviceId', Device),
+    content: {
+      type: Sequelize.STRING,
+    },
+    date: {
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.NOW,
+    },
+    visualized: {
+      type: Sequelize.BOOLEAN,
+    },
+  })
+
   const BoolValue = sequelize.define('boolValue', {
     ...selfId,
     ...otherId('userId', User),
@@ -181,6 +197,7 @@ const databaseDefinition = (sequelize) => {
     PlotNode,
     MapValue,
     ColourValue,
+    Notification,
   }
 }
 

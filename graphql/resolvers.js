@@ -38,6 +38,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 } = require('../postgresql/databaseDefinition')(sequelize)
 
 const resolvers = {
@@ -51,6 +52,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    Notification,
   ),
   Device: DeviceResolver(
     Device,
@@ -63,6 +65,7 @@ const resolvers = {
     PlotNode,
     MapValue,
     ColourValue,
+    Notification,
   ),
   Mutation: MutationResolver(
     User,
@@ -72,6 +75,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    Notification,
     pubsub,
     JWT_SECRET,
   ),

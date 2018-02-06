@@ -20,6 +20,7 @@ const MutationResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  Notification,
   pubsub,
   JWT_SECRET,
 ) => ({
@@ -310,6 +311,57 @@ const MutationResolver = (
     'ColourValue',
     pubsub,
   ),
+  CreateNotification(root, args, context) {
+    return logErrorsPromise(
+      'create notification mutation',
+      122,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: args.deviceId },
+        })
+        if (!deviceFound) {
+          reject("Device doesn't exist. Use `CreateDevice` to create one")
+        } else if (deviceFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const newNotification = await Notification.create({
+            ...args,
+            visualized: false,
+            userId: context.auth.userId,
+            date: new Date(),
+          })
+
+          const {
+            visualized,
+            content,
+            date,
+            userId,
+            deviceId,
+            id,
+          } = newNotification.dataValues
+
+          const resolveValue = {
+            id,
+            visualized,
+            content,
+            date,
+            user: {
+              id: userId,
+            },
+            device: {
+              id: deviceId,
+            },
+          }
+
+          resolve(resolveValue)
+          pubsub.publish('notificationCreated', {
+            notificationCreated: resolveValue,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
 })
 
 export default MutationResolver
