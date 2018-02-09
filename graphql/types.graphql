@@ -161,6 +161,8 @@ type Mutation {
     date: DateTime
     visualized: Boolean
   ): Notification
+
+  deleteNotification(id: ID!): ID
 }
 
 input DeviceFilter {

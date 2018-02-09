@@ -411,6 +411,32 @@ const MutationResolver = (
       }),
     )
   },
+  deleteNotification(root, args, context) {
+    return logErrorsPromise(
+      'delete notification mutation',
+      124,
+      authenticated(context, async (resolve, reject) => {
+        const notificationFound = await Notification.find({
+          where: { id: args.id },
+        })
+
+        if (!notificationFound) {
+          reject('The requested resource does not exist')
+        } else if (notificationFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          await notificationFound.destroy()
+
+          resolve(args.id)
+
+          pubsub.publish('notificationUpdated', {
+            notificationUpdated: args.id,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
 })
 
 export default MutationResolver
