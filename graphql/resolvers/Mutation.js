@@ -429,8 +429,8 @@ const MutationResolver = (
 
           resolve(args.id)
 
-          pubsub.publish('notificationUpdated', {
-            notificationUpdated: args.id,
+          pubsub.publish('notificationDeleted', {
+            notificationDeleted: args.id,
             userId: context.auth.userId,
           })
         }

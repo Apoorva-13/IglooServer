@@ -14,5 +14,9 @@ const subscriptionResolver = pubsub => ({
     'notificationUpdated',
     pubsub,
   ),
+  notificationDeleted: subscriptionFilterOnlyMine(
+    'notificationDeleted',
+    pubsub,
+  ),
 })
 export default subscriptionResolver
