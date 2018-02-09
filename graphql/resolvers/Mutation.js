@@ -8,6 +8,7 @@ import {
   create2FSecret,
   check2FCode,
   logErrorsPromise,
+  getPropsIfDefined,
 } from './utilities'
 
 const SALT_ROUNDS = 10
@@ -356,6 +357,54 @@ const MutationResolver = (
           resolve(resolveValue)
           pubsub.publish('notificationCreated', {
             notificationCreated: resolveValue,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
+  notification(root, args, context) {
+    return logErrorsPromise(
+      'notification mutation',
+      123,
+      authenticated(context, async (resolve, reject) => {
+        const notificationFound = await Notification.find({
+          where: { id: args.id },
+        })
+
+        if (!notificationFound) {
+          reject('The requested resource does not exist')
+        } else if (notificationFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          const updateQuery = getPropsIfDefined(args, [
+            'content',
+            'date',
+            'visualized',
+          ])
+
+          const {
+            date,
+            visualized,
+            content,
+            id,
+            userId,
+            deviceId,
+          } = (await notificationFound.update(updateQuery)).dataValues
+
+          const resolveValue = {
+            date,
+            visualized,
+            content,
+            id,
+            user: { id: userId },
+            device: { id: deviceId },
+          }
+
+          resolve(resolveValue)
+
+          pubsub.publish('notificationUpdated', {
+            notificationUpdated: resolveValue,
             userId: context.auth.userId,
           })
         }

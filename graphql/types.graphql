@@ -49,9 +49,8 @@ type Mutation {
   # Creates a new notification
   CreateNotification(
     deviceId: ID!
-    content: String! # optional if you want to change the date
-  ): # date: DateTime
-  Notification
+    content: String! # optional if you want to change the date # date: DateTime
+  ): Notification
 
   # Creates a new FloatValue
   CreateFloatValue(
@@ -155,6 +154,13 @@ type Mutation {
     customName: String
     tileSize: TileSize
   ): ColourValue
+
+  notification(
+    id: ID!
+    content: String
+    date: DateTime
+    visualized: Boolean
+  ): Notification
 }
 
 input DeviceFilter {
@@ -200,6 +206,8 @@ type Subscription {
   deviceUpdated: Device
   # subscribes to value updates
   valueUpdated: Value
+  # subscribes to notification updates
+  notificationUpdated: Notification
 }
 
 type User {

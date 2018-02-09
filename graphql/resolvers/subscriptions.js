@@ -10,5 +10,9 @@ const subscriptionResolver = pubsub => ({
   userUpdated: subscriptionFilterOnlyMine('userUpdated', pubsub),
   deviceUpdated: subscriptionFilterOnlyMine('deviceUpdated', pubsub),
   valueUpdated: subscriptionFilterOnlyMine('valueUpdated', pubsub),
+  notificationUpdated: subscriptionFilterOnlyMine(
+    'notificationUpdated',
+    pubsub,
+  ),
 })
 export default subscriptionResolver
