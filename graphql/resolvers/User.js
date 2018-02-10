@@ -27,6 +27,7 @@ const UserResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  Notification,
 ) => ({
   email: retrieveUserScalarProp(User, 'email'),
   createdAt: retrieveUserScalarProp(User, 'createdAt'),
@@ -43,7 +44,25 @@ const UserResolver = (
           const devices = await Device.findAll({
             where: { userId: root.id },
           })
+
           resolve(devices)
+        }
+      }),
+    )
+  },
+  notifications(root, args, context) {
+    return logErrorsPromise(
+      'User devices resolver',
+      119,
+      authenticated(context, async (resolve, reject) => {
+        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+        if (context.auth.userId !== root.id) {
+          reject('You are not allowed to access details about this user')
+        } else {
+          const notifications = await Notification.findAll({
+            where: { userId: root.id },
+          })
+          resolve(notifications)
         }
       }),
     )

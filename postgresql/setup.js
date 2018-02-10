@@ -29,6 +29,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 } = require('./databaseDefinition')(sequelize)
 
 const setup = async () => {
@@ -43,6 +44,7 @@ const setup = async () => {
     await MapValue.sync({ force: true })
     await ColourValue.sync({ force: true })
     await Value.sync({ force: true })
+    await Notification.sync({ force: true })
 
     log(chalk.green('ALL WELL'))
     sequelize.close()

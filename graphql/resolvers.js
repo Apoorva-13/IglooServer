@@ -6,6 +6,7 @@ import MutationResolver from './resolvers/Mutation'
 import QueryResolver from './resolvers/Query'
 import DeviceResolver from './resolvers/Device'
 import SubscriptionsResolver from './resolvers/subscriptions'
+import NotificationResolver from './resolvers/Notification'
 
 const pubsub = new PubSub()
 
@@ -38,6 +39,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 } = require('../postgresql/databaseDefinition')(sequelize)
 
 const resolvers = {
@@ -51,6 +53,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    Notification,
   ),
   Device: DeviceResolver(
     Device,
@@ -63,6 +66,7 @@ const resolvers = {
     PlotNode,
     MapValue,
     ColourValue,
+    Notification,
   ),
   Mutation: MutationResolver(
     User,
@@ -72,6 +76,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    Notification,
     pubsub,
     JWT_SECRET,
   ),
@@ -97,6 +102,7 @@ const resolvers = {
           : root.childBool ? 'BooleanValue' : 'ColourValue'
     },
   },
+  Notification: NotificationResolver(Notification, User, Device),
 }
 
 export default resolvers

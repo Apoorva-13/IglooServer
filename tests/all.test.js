@@ -1,5 +1,10 @@
 import request from 'supertest'
 import GraphQLServer from '../app'
+import DeviceTests from './Device'
+import MutationTests from './Mutation'
+import NotificationsTest from './Notifications'
+import UserTests from './User'
+import ValueTests from './Value'
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000 // ensures that tests don't fail due to slow connection
 
@@ -13,3 +18,9 @@ describe('Graphiql', () => {
       })
   })
 })
+
+DeviceTests(GraphQLServer)
+MutationTests(GraphQLServer)
+NotificationsTest(GraphQLServer)
+UserTests(GraphQLServer)
+ValueTests(GraphQLServer)

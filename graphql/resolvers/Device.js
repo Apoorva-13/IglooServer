@@ -15,6 +15,7 @@ const DeviceResolver = (
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 ) => ({
   createdAt: retrieveScalarProp(Device, 'createdAt'),
   updatedAt: retrieveScalarProp(Device, 'updatedAt'),
@@ -137,6 +138,31 @@ const DeviceResolver = (
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: deviceFound.userId })
+        }
+      }),
+    )
+  },
+
+  notifications(root, args, context) {
+    return logErrorsPromise(
+      'User devices resolver',
+      119,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: root.id },
+        })
+        /* istanbul ignore if */
+        if (!deviceFound) {
+          reject('The requested resource does not exist')
+        } else if (deviceFound.userId !== context.auth.userId) {
+          /* istanbul ignore next */
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const notifications = await Notification.findAll({
+            where: { deviceId: root.id },
+          })
+
+          resolve(notifications)
         }
       }),
     )
