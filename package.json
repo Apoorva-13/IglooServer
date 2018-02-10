@@ -12,7 +12,9 @@
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "lint-staged": {
     "*.js": [
@@ -70,7 +72,8 @@
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
     "winston": "^3.0.0-rc1",
-    "winston-slacker": "^1.0.3"
+    "winston-slacker": "^1.0.3",
+    "snyk": "^1.69.7"
   },
   "devDependencies": {
     "babel-eslint": "^8.1.2",
@@ -91,5 +94,6 @@
   },
   "peerDependencies": {
     "graphql": "^0.11.7"
-  }
+  },
+  "snyk": true
 }
