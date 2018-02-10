@@ -8,6 +8,7 @@ import {
   create2FSecret,
   check2FCode,
   logErrorsPromise,
+  getPropsIfDefined,
 } from './utilities'
 
 const SALT_ROUNDS = 10
@@ -20,6 +21,7 @@ const MutationResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  Notification,
   pubsub,
   JWT_SECRET,
 ) => ({
@@ -310,6 +312,131 @@ const MutationResolver = (
     'ColourValue',
     pubsub,
   ),
+  CreateNotification(root, args, context) {
+    return logErrorsPromise(
+      'create notification mutation',
+      122,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: args.deviceId },
+        })
+        if (!deviceFound) {
+          reject("Device doesn't exist. Use `CreateDevice` to create one")
+        } else if (deviceFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const newNotification = await Notification.create({
+            ...args,
+            visualized: false,
+            userId: context.auth.userId,
+            date: new Date(),
+          })
+
+          const {
+            visualized,
+            content,
+            date,
+            userId,
+            deviceId,
+            id,
+          } = newNotification.dataValues
+
+          const resolveValue = {
+            id,
+            visualized,
+            content,
+            date,
+            user: {
+              id: userId,
+            },
+            device: {
+              id: deviceId,
+            },
+          }
+
+          resolve(resolveValue)
+          pubsub.publish('notificationCreated', {
+            notificationCreated: resolveValue,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
+  notification(root, args, context) {
+    return logErrorsPromise(
+      'notification mutation',
+      123,
+      authenticated(context, async (resolve, reject) => {
+        const notificationFound = await Notification.find({
+          where: { id: args.id },
+        })
+
+        if (!notificationFound) {
+          reject('The requested resource does not exist')
+        } else if (notificationFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          const updateQuery = getPropsIfDefined(args, [
+            'content',
+            'date',
+            'visualized',
+          ])
+
+          const {
+            date,
+            visualized,
+            content,
+            id,
+            userId,
+            deviceId,
+          } = (await notificationFound.update(updateQuery)).dataValues
+
+          const resolveValue = {
+            date,
+            visualized,
+            content,
+            id,
+            user: { id: userId },
+            device: { id: deviceId },
+          }
+
+          resolve(resolveValue)
+
+          pubsub.publish('notificationUpdated', {
+            notificationUpdated: resolveValue,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
+  deleteNotification(root, args, context) {
+    return logErrorsPromise(
+      'delete notification mutation',
+      124,
+      authenticated(context, async (resolve, reject) => {
+        const notificationFound = await Notification.find({
+          where: { id: args.id },
+        })
+
+        if (!notificationFound) {
+          reject('The requested resource does not exist')
+        } else if (notificationFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          await notificationFound.destroy()
+
+          resolve(args.id)
+
+          pubsub.publish('notificationDeleted', {
+            notificationDeleted: args.id,
+            userId: context.auth.userId,
+          })
+        }
+      }),
+    )
+  },
 })
 
 export default MutationResolver

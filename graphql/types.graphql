@@ -46,6 +46,12 @@ type Mutation {
     tags: [String!]
     icon: String
   ): Device
+  # Creates a new notification
+  CreateNotification(
+    deviceId: ID!
+    content: String! # optional if you want to change the date # date: DateTime
+  ): Notification
+
   # Creates a new FloatValue
   CreateFloatValue(
     deviceId: ID!
@@ -148,6 +154,15 @@ type Mutation {
     customName: String
     tileSize: TileSize
   ): ColourValue
+
+  notification(
+    id: ID!
+    content: String
+    date: DateTime
+    visualized: Boolean
+  ): Notification
+
+  deleteNotification(id: ID!): ID
 }
 
 input DeviceFilter {
@@ -185,12 +200,18 @@ type Subscription {
   deviceCreated: Device
   # subscribes to value creations
   valueCreated: Value
+  # subscribes to notification creations
+  notificationCreated: Notification
   # subscribes to value updates
   userUpdated: User
   # subscribes to device updates
   deviceUpdated: Device
   # subscribes to value updates
   valueUpdated: Value
+  # subscribes to notification updates
+  notificationUpdated: Notification
+  # subscribes to notification deletes
+  notificationDeleted: ID
 }
 
 type User {
@@ -200,6 +221,7 @@ type User {
   email: String! @isUnique
   devices: [Device!]!
   values: [Value!]!
+  notifications: [Notification!]!
 }
 
 type Device {
@@ -214,6 +236,7 @@ type Device {
   values: [Value!]!
   user: User!
   icon: String
+  notifications: [Notification!]!
 }
 
 enum ValuePermission {
@@ -236,7 +259,8 @@ enum TileSize {
 
 type Notification {
   id: ID! @isUnique
-  deviceValue: Value!
+  device: Device!
+  user: User!
   content: String!
   date: DateTime!
   visualized: Boolean!

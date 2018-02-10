@@ -9,7 +9,7 @@
     "build":
       "babel server.js app.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
     "setupDatabase": "node ./postgresql/setup.js",
-    "test": "jest --coverage --bail --forceExit",
+    "test": "jest --forceExit --c=jest.config.json",
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
@@ -58,7 +58,7 @@
     "moment": "^2.19.2",
     "otp.js": "^1.1.0",
     "passport": "^0.4.0",
-    "pg": "g.4.1",
+    "pg": "7.4.1",
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
