@@ -6,6 +6,7 @@ import MutationResolver from './resolvers/Mutation'
 import QueryResolver from './resolvers/Query'
 import DeviceResolver from './resolvers/Device'
 import SubscriptionsResolver from './resolvers/subscriptions'
+import NotificationResolver from './resolvers/Notification'
 
 const pubsub = new PubSub()
 
@@ -101,6 +102,7 @@ const resolvers = {
           : root.childBool ? 'BooleanValue' : 'ColourValue'
     },
   },
+  Notification: NotificationResolver(Notification, User, Device),
 }
 
 export default resolvers
