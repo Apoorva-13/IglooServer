@@ -5,6 +5,30 @@ import { createServer } from 'http'
 import schema from './graphql/schema'
 import graphQLServer from './app'
 import { logger } from './graphql/resolvers/utilities'
+import Sequelize from 'sequelize'
+import createLoaders from './graphql/loaders'
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  ssl: true,
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: true,
+  },
+  logging: false,
+})
+
+const {
+  User,
+  Device,
+  Value,
+  BoolValue,
+  FloatValue,
+  StringValue,
+  PlotValue,
+  PlotNode,
+  MapValue,
+  ColourValue,
+} = require('./postgresql/databaseDefinition')(sequelize)
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -43,6 +67,26 @@ httpServer.listen(GRAPHQL_PORT, () => {
           return false
         }
       },
+      onOperation: (message, params, webSocket) => ({
+        context: {
+          ...params.context,
+          loaders: createLoaders(
+            {
+              User,
+              Device,
+              Value,
+              BoolValue,
+              FloatValue,
+              StringValue,
+              PlotValue,
+              PlotNode,
+              MapValue,
+              ColourValue,
+            },
+            false,
+          ),
+        },
+      }),
     },
     {
       server: httpServer,

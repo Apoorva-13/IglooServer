@@ -51,7 +51,7 @@ graphQLServer.use(
     schema,
     context: {
       auth: req.user,
-      loaders: createLoaders(
+      loaders: createLoaders({
         User,
         Device,
         Value,
@@ -62,7 +62,7 @@ graphQLServer.use(
         PlotNode,
         MapValue,
         ColourValue,
-      ),
+      }),
     },
   })),
 )

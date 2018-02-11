@@ -5,37 +5,44 @@ const _ = require('underscore')
 const { Op } = Sequelize
 
 module.exports = (
-  User,
-  Device,
-  Value,
-  BoolValue,
-  FloatValue,
-  StringValue,
-  PlotValue,
-  PlotNode,
-  MapValue,
-  ColourValue,
+  {
+    User,
+    Device,
+    Value,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    PlotValue,
+    PlotNode,
+    MapValue,
+    ColourValue,
+  },
+  cache = true,
 ) => {
   const LoaderFactory = Model =>
-    new DataLoader(keys =>
-      new Promise(async (resolve, reject) => {
-        const queryResponse = await Model.findAll({
-          where: { id: { [Op.in]: keys } },
-        })
-        const devices = queryResponse.map(res => res.dataValues)
+    new DataLoader(
+      keys =>
+        new Promise(async (resolve, reject) => {
+          console.log(`dataLoader keys: ${JSON.stringify(keys, null, 2)}`)
+          const queryResponse = await Model.findAll({
+            where: { id: { [Op.in]: keys } },
+          })
+          const items = queryResponse.map(res => res.dataValues)
 
-        // prefill the array with null values, so that not found items will return null
-        const devicesOrderedByKey = _.range(keys.length).map(() => null)
+          // prefill the array with null values, so that not found items will return null
+          const itemsOrderedByKey = _.range(keys.length).map(() => null)
 
-        // take every item found an put it in the right place in the array
-        for (let i = 0; i < devices.length; i++) {
-          const index = keys.indexOf(devices[i].id)
-          if (index !== -1) {
-            devicesOrderedByKey[index] = devices[i]
+          // take every item found an put it in the right place in the array
+          for (let i = 0; i < items.length; i++) {
+            const index = keys.indexOf(items[i].id)
+            if (index !== -1) {
+              itemsOrderedByKey[index] = items[i]
+            }
           }
-        }
-        resolve(devicesOrderedByKey)
-      }))
+          resolve(itemsOrderedByKey)
+        }),
+      { cache },
+    )
 
   const deviceLoader = LoaderFactory(Device)
   const userLoader = LoaderFactory(User)
