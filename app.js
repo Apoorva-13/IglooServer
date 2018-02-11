@@ -32,6 +32,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 } = require('./postgresql/databaseDefinition')(sequelize)
 
 const GRAPHQL_PORT = process.env.PORT || 3000
@@ -62,6 +63,7 @@ graphQLServer.use(
         PlotNode,
         MapValue,
         ColourValue,
+        Notification,
       }),
     },
   })),

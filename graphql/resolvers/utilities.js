@@ -78,12 +78,11 @@ const generateAuthenticationToken = (userId, JWT_SECRET) =>
     'HS512',
   )
 
-const retrieveScalarProp = (Model, prop) => (root, args, context) =>
+const retrieveScalarProp = (loaderName, prop) => (root, args, context) =>
   new Promise(authenticated(context, async (resolve, reject) => {
     try {
-      const resourceFound = await Model.find({
-        where: { id: root.id },
-      })
+      const resourceFound = await context.loaders[loaderName].find.load(root.id)
+
       /* istanbul ignore next */
       if (!resourceFound) {
         reject('The requested resource does not exist')

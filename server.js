@@ -28,6 +28,7 @@ const {
   PlotNode,
   MapValue,
   ColourValue,
+  Notification,
 } = require('./postgresql/databaseDefinition')(sequelize)
 
 require('dotenv').config()
@@ -82,6 +83,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
               PlotNode,
               MapValue,
               ColourValue,
+              Notification,
             },
             false,
           ),

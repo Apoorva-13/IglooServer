@@ -17,12 +17,12 @@ const DeviceResolver = (
   ColourValue,
   Notification,
 ) => ({
-  createdAt: retrieveScalarProp(Device, 'createdAt'),
-  updatedAt: retrieveScalarProp(Device, 'updatedAt'),
-  deviceType: retrieveScalarProp(Device, 'deviceType'),
-  customName: retrieveScalarProp(Device, 'customName'),
-  tags: retrieveScalarProp(Device, 'tags'),
-  icon: retrieveScalarProp(Device, 'icon'),
+  createdAt: retrieveScalarProp('deviceLoader', 'createdAt'),
+  updatedAt: retrieveScalarProp('deviceLoader', 'updatedAt'),
+  deviceType: retrieveScalarProp('deviceLoader', 'deviceType'),
+  customName: retrieveScalarProp('deviceLoader', 'customName'),
+  tags: retrieveScalarProp('deviceLoader', 'tags'),
+  icon: retrieveScalarProp('deviceLoader', 'icon'),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',
@@ -125,9 +125,7 @@ const DeviceResolver = (
       'Device user resolver',
       111,
       authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
+        const deviceFound = await context.loaders.deviceLoader.find.load(root.id)
         /* istanbul ignore if */
         if (!deviceFound) {
           reject('The requested resource does not exist')
@@ -148,9 +146,8 @@ const DeviceResolver = (
       'User devices resolver',
       119,
       authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
+        const deviceFound = await context.loaders.deviceLoader.find.load(root.id)
+
         /* istanbul ignore if */
         if (!deviceFound) {
           reject('The requested resource does not exist')
@@ -158,9 +155,7 @@ const DeviceResolver = (
           /* istanbul ignore next */
           reject('You are not allowed to access details about this resource')
         } else {
-          const notifications = await Notification.findAll({
-            where: { deviceId: root.id },
-          })
+          const notifications = await context.loaders.notificationLoader.findAllByDeviceId.load(root.id)
 
           resolve(notifications)
         }

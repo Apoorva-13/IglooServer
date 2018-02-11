@@ -5,9 +5,9 @@ import {
 } from './utilities'
 
 const UserResolver = (Notification, User, Device) => ({
-  content: retrieveScalarProp(Notification, 'content'),
-  date: retrieveScalarProp(Notification, 'date'),
-  visualized: retrieveScalarProp(Notification, 'visualized'),
+  content: retrieveScalarProp('notificationLoader', 'content'),
+  date: retrieveScalarProp('notificationLoader', 'date'),
+  visualized: retrieveScalarProp('notificationLoader', 'visualized'),
   user(root, args, context) {
     return logErrorsPromise(
       'Notification user resolver',

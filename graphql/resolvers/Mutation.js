@@ -368,9 +368,7 @@ const MutationResolver = (
       'notification mutation',
       123,
       authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: args.id },
-        })
+        const notificationFound = context.loaders.notificationLoader.find.load(args.id)
 
         if (!notificationFound) {
           reject('The requested resource does not exist')

@@ -9,7 +9,7 @@ const retrieveUserScalarProp = prop => (root, args, context) =>
       if (context.auth.userId !== root.id) {
         reject('You are not allowed to access details about this user')
       } else {
-        const userFound = await context.loaders.userLoader.load(root.id)
+        const userFound = await context.loaders.userLoader.find.load(root.id)
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
         } else {
@@ -41,9 +41,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const devices = await Device.findAll({
-            where: { userId: root.id },
-          })
+          const devices = await context.loaders.deviceLoader.findAllByUserId.load(root.id)
 
           resolve(devices)
         }
@@ -59,9 +57,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const notifications = await Notification.findAll({
-            where: { userId: root.id },
-          })
+          const notifications = await context.loaders.notificationLoader.findAllByUserId.load(root.id)
           resolve(notifications)
         }
       }),
