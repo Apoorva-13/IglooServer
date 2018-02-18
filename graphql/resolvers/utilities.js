@@ -111,14 +111,7 @@ const getPropsIfDefined = (args, props) => {
 }
 
 // generic resolver for CreateXValue mutations
-const CreateGenericValue = (
-  Device,
-  Value,
-  childProps,
-  childName,
-  childModel,
-  pubsub,
-) => (root, args, context) =>
+const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
   new Promise(authenticated(context, async (resolve, reject) => {
     // looks for the device, if the device is owned by the user
     // creates a Value in the database and returns
@@ -131,70 +124,20 @@ const CreateGenericValue = (
       } else if (deviceFound.userId !== context.auth.userId) {
         reject('You are not allowed to edit details about this device')
       } else {
-        const {
-          deviceId,
-          valueDetails,
-          permission,
-          relevance,
-          value,
-          tileSize,
-          customName,
-        } = args
-
-        const childGeneric = getPropsIfDefined(args, childProps)
-
-        // creates the value and the associated FloatValue/StringValue/...
-        const newValue = await Value.create(
-          {
-            userId: context.auth.userId,
-            deviceId,
-            valueDetails,
-            permission,
-            relevance,
-            tileSize: tileSize || 'NORMAL',
-            customName,
-            [childName]: {
-              userId: context.auth.userId,
-              value,
-              ...childGeneric,
-            },
-          },
-          {
-            include: [
-              {
-                model: childModel,
-                as: childName,
-              },
-            ],
-          },
-        )
+        const newValue = (await Model.create({
+          ...args,
+          tileSize: args.tileSize || 'NORMAL',
+          userId: context.auth.userId,
+        })).dataValues
 
         const resolveObj = {
-          id: newValue.id,
-          createdAt: newValue[childName].createdAt,
-          updatedAt: newValue[childName].updatedAt,
-          device: {
-            id: newValue.deviceId,
-          },
+          ...newValue,
           user: {
             id: newValue.userId,
           },
-          permission: newValue.permission,
-          relevance: newValue.relevance,
-          valueDetails: newValue.valueDetails,
-          value: newValue[childName].value,
-          tileSize: newValue.tileSize,
-          customName: newValue.customName,
-          __resolveType:
-              childName === 'childFloat'
-                ? 'FloatValue'
-                : childName === 'childString'
-                  ? 'StringValue'
-                  : childName === 'childBool' ? 'BooleanValue' : 'ColourValue',
-        }
-        // loads in resolveObj all the required props from args
-        for (let i = 0; i < childProps.length; i += 1) {
-          resolveObj[childProps[i]] = newValue[childName][childProps[i]]
+          device: {
+            id: newValue.deviceId,
+          },
         }
 
         pubsub.publish('valueCreated', {
@@ -225,7 +168,7 @@ const logErrorsPromise = (name, code, callback) =>
   })
 
 const genericValueMutation = (
-  Value,
+  Model,
   childProps,
   childNameId,
   childModel,
@@ -236,7 +179,7 @@ const genericValueMutation = (
     'genericValue mutation',
     117,
     authenticated(context, async (resolve, reject) => {
-      const valueFound = await Value.find({ where: { id: args.id } })
+      const valueFound = await Model.find({ where: { id: args.id } })
       if (!valueFound) {
         reject('The requested resource does not exist')
       } else if (valueFound.userId !== context.auth.userId) {
@@ -316,6 +259,138 @@ const subscriptionFilterOnlyMine = (subscriptionName, pubsub) => ({
   },
 })
 
+// races promises returning the first resolve or all the rejects if none resolves
+const firstResolve = promises =>
+  new Promise((resolve, reject) => {
+    const errors = []
+    let count = 0
+    let resolved = false
+    promises.forEach((promise, idx) => {
+      promise
+        .then((found) => {
+          if (!resolved) {
+            resolved = true
+            resolve(found)
+          }
+        })
+        .catch((err) => {
+          errors[idx] = err
+          count += 1
+          if (count === promises.length) {
+            reject(errors)
+          }
+        })
+    })
+  })
+
+const findAllValues = (
+  {
+    BoolValue, FloatValue, StringValue, ColourValue,
+  },
+  query,
+  userId,
+) => {
+  const booleanValues = BoolValue.findAll(query)
+  const floatValues = FloatValue.findAll(query)
+  const stringValues = StringValue.findAll(query)
+  const colourValues = ColourValue.findAll(query)
+
+  return Promise.all([
+    booleanValues,
+    floatValues,
+    stringValues,
+    colourValues,
+  ]).then(([booleanValues, floatValues, stringValues, colourValues]) => [
+    ...booleanValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'BooleanValue',
+      }))
+      .filter(value => value.userId === userId),
+    ...floatValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'FloatValue',
+      }))
+      .filter(value => value.userId === userId),
+    ...stringValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringValue',
+      }))
+      .filter(value => value.userId === userId),
+    ...colourValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'ColourValue',
+      }))
+      .filter(value => value.userId === userId),
+  ])
+}
+
+// try refactoring this with firstResolve
+const findValue = (
+  {
+    BoolValue, FloatValue, StringValue, ColourValue,
+  },
+  query,
+  userId,
+) => {
+  const booleanValue = BoolValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'BooleanValue',
+      }
+      : value))
+  const floatValue = FloatValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'FloatValue',
+      }
+      : value))
+  const stringValue = StringValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringValue',
+      }
+      : value))
+  const colourValue = ColourValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'ColourValue',
+      }
+      : value))
+
+  return Promise.all([booleanValue, floatValue, stringValue, colourValue])
+    .then(values => values.reduce((acc, val) => val || acc, null))
+    .then((value) => {
+      if (!value) throw new Error('The requested resource does not exist')
+      else if (value.userId !== userId) {
+        throw new Error('You are not allowed to access details about this resource')
+      } else return value
+    })
+}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -328,4 +403,6 @@ module.exports = {
   logErrorsPromise,
   subscriptionFilterOnlyMine,
   logger,
+  findAllValues,
+  findValue,
 }

@@ -201,38 +201,10 @@ const MutationResolver = (
       }),
     )
   },
-  CreateFloatValue: CreateGenericValue(
-    Device,
-    Value,
-    ['precision', 'boundaries'],
-    'childFloat',
-    FloatValue,
-    pubsub,
-  ),
-  CreateStringValue: CreateGenericValue(
-    Device,
-    Value,
-    ['maxChars'],
-    'childString',
-    StringValue,
-    pubsub,
-  ),
-  CreateBooleanValue: CreateGenericValue(
-    Device,
-    Value,
-    [],
-    'childBool',
-    BoolValue,
-    pubsub,
-  ),
-  CreateColourValue: CreateGenericValue(
-    Device,
-    Value,
-    [],
-    'childColour',
-    ColourValue,
-    pubsub,
-  ),
+  CreateFloatValue: CreateGenericValue(Device, FloatValue, pubsub),
+  CreateStringValue: CreateGenericValue(Device, StringValue, pubsub),
+  CreateBooleanValue: CreateGenericValue(Device, BoolValue, pubsub),
+  CreateColourValue: CreateGenericValue(Device, ColourValue, pubsub),
   user(root, args, context) {
     return logErrorsPromise(
       'user mutation',

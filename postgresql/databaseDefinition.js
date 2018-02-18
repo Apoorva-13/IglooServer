@@ -58,7 +58,23 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  const Value = sequelize.define('value', {
+  const Notification = sequelize.define('notification', {
+    ...selfId,
+    ...otherId('userId', User),
+    ...otherId('deviceId', Device),
+    content: {
+      type: Sequelize.STRING,
+    },
+    date: {
+      type: Sequelize.DATE,
+      defaultValue: Sequelize.NOW,
+    },
+    visualized: {
+      type: Sequelize.BOOLEAN,
+    },
+  })
+
+  const Value = {
     ...selfId,
     ...otherId('userId', User),
     ...otherId('deviceId', Device),
@@ -77,35 +93,17 @@ const databaseDefinition = (sequelize) => {
     customName: {
       type: Sequelize.STRING,
     },
-  })
-
-  const Notification = sequelize.define('notification', {
-    ...selfId,
-    ...otherId('userId', User),
-    ...otherId('deviceId', Device),
-    content: {
-      type: Sequelize.STRING,
-    },
-    date: {
-      type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW,
-    },
-    visualized: {
-      type: Sequelize.BOOLEAN,
-    },
-  })
+  }
 
   const BoolValue = sequelize.define('boolValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
     value: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
     },
   })
   const FloatValue = sequelize.define('floatValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
     value: {
       type: Sequelize.FLOAT,
       allowNull: false,
@@ -118,8 +116,7 @@ const databaseDefinition = (sequelize) => {
     },
   })
   const StringValue = sequelize.define('stringValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
     value: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -129,8 +126,7 @@ const databaseDefinition = (sequelize) => {
     },
   })
   const PlotValue = sequelize.define('plotValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
   })
   const PlotNode = sequelize.define('plotNode', {
     ...selfId,
@@ -146,8 +142,7 @@ const databaseDefinition = (sequelize) => {
     },
   })
   const MapValue = sequelize.define('mapValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
     latitude: {
       type: Sequelize.FLOAT,
     },
@@ -160,36 +155,15 @@ const databaseDefinition = (sequelize) => {
     },
   })
   const ColourValue = sequelize.define('colourValue', {
-    ...selfId,
-    ...otherId('userId', User),
+    ...Value,
     value: {
       type: Sequelize.STRING,
     },
   })
 
-  Value.belongsTo(BoolValue, {
-    as: 'childBool',
-  })
-  Value.belongsTo(FloatValue, {
-    as: 'childFloat',
-  })
-  Value.belongsTo(StringValue, {
-    as: 'childString',
-  })
-  Value.belongsTo(PlotValue, {
-    as: 'childPlot',
-  })
-  Value.belongsTo(MapValue, {
-    as: 'childMap',
-  })
-  Value.belongsTo(ColourValue, {
-    as: 'childColour',
-  })
-
   return {
     User,
     Device,
-    Value,
     BoolValue,
     FloatValue,
     StringValue,

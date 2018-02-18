@@ -7,6 +7,8 @@ import QueryResolver from './resolvers/Query'
 import DeviceResolver from './resolvers/Device'
 import SubscriptionsResolver from './resolvers/subscriptions'
 import NotificationResolver from './resolvers/Notification'
+import ValueResolver from './resolvers/Value'
+import ValueResolvers from './resolvers/Values'
 
 const pubsub = new PubSub()
 
@@ -89,19 +91,21 @@ const resolvers = {
     ColourValue,
   ),
   Subscription: SubscriptionsResolver(pubsub),
-  Value: {
-    __resolveType(root) {
-      /* istanbul ignore else */
-      if (root.__resolveType) return root.__resolveType
-
-      /* istanbul ignore next - this should never happen */
-      return root.childFloat
-        ? 'FloatValue'
-        : root.childString
-          ? 'StringValue'
-          : root.childBool ? 'BooleanValue' : 'ColourValue'
-    },
-  },
+  Value: ValueResolver({
+    BoolValue,
+    FloatValue,
+    StringValue,
+    PlotValue,
+    PlotNode,
+    MapValue,
+    ColourValue,
+  }),
+  ...ValueResolvers({
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+  }),
   Notification: NotificationResolver(Notification, User, Device),
 }
 

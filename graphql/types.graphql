@@ -269,6 +269,8 @@ type Notification {
 type PlotNode {
   id: ID! @isUnique
   deviceValue: Value!
+  plotValue: PlotValue!
+  user: User!
   key: DateTime!
   value: Float!
 }

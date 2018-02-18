@@ -21,7 +21,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 const {
   User,
   Device,
-  Value,
   BoolValue,
   FloatValue,
   StringValue,
@@ -43,7 +42,6 @@ const setup = async () => {
     await PlotNode.sync({ force: true })
     await MapValue.sync({ force: true })
     await ColourValue.sync({ force: true })
-    await Value.sync({ force: true })
     await Notification.sync({ force: true })
 
     log(chalk.green('ALL WELL'))
