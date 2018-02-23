@@ -179,43 +179,21 @@ const genericValueMutation = (
     'genericValue mutation',
     117,
     authenticated(context, async (resolve, reject) => {
-      const valueFound = await Model.find({ where: { id: args.id } })
+      const valueFound = await childModel.find({ where: { id: args.id } })
       if (!valueFound) {
         reject('The requested resource does not exist')
       } else if (valueFound.userId !== context.auth.userId) {
         reject('You are not allowed to update this resource')
-      } else if (!valueFound[childNameId]) {
-        reject('This Value has the wrong type, please use the correct mutation')
       } else {
-        const valueUpdate = getPropsIfDefined(args, [
-          'permission',
-          'relevance',
-          'valueDetails',
-          'tileSize',
-          'customName',
-        ])
-        const newValue =
-          Object.keys(valueUpdate).length === 0
-            ? valueFound
-            : await valueFound.update(valueUpdate)
-
-        const childValueFound = await childModel.find({
-          where: { id: valueFound[childNameId] },
-        })
-        const childValueUpdate = getPropsIfDefined(args, [
-          'value',
-          ...childProps,
-        ])
-        const newChildValue =
-          Object.keys(childValueUpdate).length === 0
-            ? childValueFound
-            : await childValueFound.update(childValueUpdate)
-
+        const newValue = await valueFound.update(args)
         const resolveObj = {
-          ...newChildValue.dataValues,
           ...newValue.dataValues,
-          user: { id: newChildValue.dataValues.userId },
-          device: { id: newValue.dataValues.deviceId },
+          user: {
+            id: newValue.dataValues.userId,
+          },
+          device: {
+            id: newValue.dataValues.deviceId,
+          },
         }
         resolve(resolveObj)
 
@@ -273,6 +251,8 @@ const firstResolve = promises =>
             resolve(found)
           }
         })
+        /* istanbul ignore next */
+
         .catch((err) => {
           errors[idx] = err
           count += 1

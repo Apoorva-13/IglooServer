@@ -55,6 +55,7 @@ const retrieveValueScalarProp = (SequelizeValues, prop) => (root, context) =>
           }
         })))
         .then(propFound => resolve(propFound))
+        /* istanbul ignore next */
         .catch((e) => {
           // choose the correct error, because normally most models
           // will reject with NOT_EXIST, simply because the value
@@ -112,6 +113,7 @@ const ValueResolver = SequelizeValues => ({
 
         firstResolve(modelFetches)
           .then(typeFound => resolve(typeFound))
+          /* istanbul ignore next */
           .catch((e) => {
             // choose the correct error, because normally most models
             // will reject with NOT_EXIST, simply because the value
