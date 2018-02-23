@@ -371,6 +371,32 @@ const findValue = (
     })
 }
 
+const genericValueDelete = Model => (root, args, context) => {
+  // STILL TO IMPLEMENT
+  // the following is the code to delete a notification copy-pasted as reference
+  //  logErrorsPromise(
+  //   'generic value delete',
+  //   125,
+  //   authenticated(context, async (resolve, reject) => {
+  //     const notificationFound = await Notification.find({
+  //       where: { id: args.id },
+  //     })
+  //     if (!notificationFound) {
+  //       reject('The requested resource does not exist')
+  //     } else if (notificationFound.userId !== context.auth.userId) {
+  //       reject('You are not allowed to update this resource')
+  //     } else {
+  //       await notificationFound.destroy()
+  //       resolve(args.id)
+  //       pubsub.publish('notificationDeleted', {
+  //         notificationDeleted: args.id,
+  //         userId: context.auth.userId,
+  //       })
+  //     }
+  //   }),
+  // )
+}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
