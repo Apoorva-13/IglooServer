@@ -934,7 +934,7 @@ module.exports = (GraphQLServer) => {
         })
       const parsedRes = JSON.parse(res.text)
       expect(parsedRes.errors).toBeDefined()
-      expect(parsedRes.errors[0].message).toBe('This Value has the wrong type, please use the correct mutation')
+      expect(parsedRes.errors[0].message).toBe('The requested resource does not exist')
       done()
     })
   })
