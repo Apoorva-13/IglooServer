@@ -9,6 +9,7 @@ import {
   check2FCode,
   logErrorsPromise,
   getPropsIfDefined,
+  genericDelete,
 } from './utilities'
 
 const SALT_ROUNDS = 10
@@ -383,32 +384,15 @@ const MutationResolver = (
       }),
     )
   },
-  deleteNotification(root, args, context) {
-    return logErrorsPromise(
-      'delete notification mutation',
-      124,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: args.id },
-        })
-
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          reject('You are not allowed to update this resource')
-        } else {
-          await notificationFound.destroy()
-
-          resolve(args.id)
-
-          pubsub.publish('notificationDeleted', {
-            notificationDeleted: args.id,
-            userId: context.auth.userId,
-          })
-        }
-      }),
-    )
-  },
+  deleteNotification: genericDelete(
+    Notification,
+    'notificationDeleted',
+    pubsub,
+  ),
+  deleteFloatValue: genericDelete(FloatValue, 'valueDeleted', pubsub),
+  deleteStringValue: genericDelete(StringValue, 'valueDeleted', pubsub),
+  deleteBooleanValue: genericDelete(BoolValue, 'valueDeleted', pubsub),
+  deleteColourValue: genericDelete(ColourValue, 'valueDeleted', pubsub),
 })
 
 export default MutationResolver

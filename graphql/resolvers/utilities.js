@@ -371,31 +371,33 @@ const findValue = (
     })
 }
 
-const genericValueDelete = Model => (root, args, context) => {
-  // STILL TO IMPLEMENT
-  // the following is the code to delete a notification copy-pasted as reference
-  //  logErrorsPromise(
-  //   'generic value delete',
-  //   125,
-  //   authenticated(context, async (resolve, reject) => {
-  //     const notificationFound = await Notification.find({
-  //       where: { id: args.id },
-  //     })
-  //     if (!notificationFound) {
-  //       reject('The requested resource does not exist')
-  //     } else if (notificationFound.userId !== context.auth.userId) {
-  //       reject('You are not allowed to update this resource')
-  //     } else {
-  //       await notificationFound.destroy()
-  //       resolve(args.id)
-  //       pubsub.publish('notificationDeleted', {
-  //         notificationDeleted: args.id,
-  //         userId: context.auth.userId,
-  //       })
-  //     }
-  //   }),
-  // )
-}
+const genericDelete = (Model, subscriptionName, pubsub) => (
+  root,
+  args,
+  context,
+) => logErrorsPromise(
+  'delete mutation',
+  124,
+  authenticated(context, async (resolve, reject) => {
+    const entityFound = await Model.find({
+      where: { id: args.id },
+    })
+
+    if (!entityFound) {
+      reject('The requested resource does not exist')
+    } else if (entityFound.userId !== context.auth.userId) {
+      reject('You are not allowed to update this resource')
+    } else {
+      await entityFound.destroy()
+
+      pubsub.publish(subscriptionName, {
+        [subscriptionName]: args.id,
+        userId: context.auth.userId,
+      })
+      resolve(args.id)
+    }
+  }),
+)
 
 module.exports = {
   authenticated,
@@ -411,4 +413,5 @@ module.exports = {
   logger,
   findAllValues,
   findValue,
+  genericDelete,
 }

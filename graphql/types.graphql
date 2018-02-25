@@ -216,6 +216,8 @@ type Subscription {
   valueUpdated: Value
   # subscribes to notification updates
   notificationUpdated: Notification
+  # subscribes to value deleted
+  valueDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
 }
