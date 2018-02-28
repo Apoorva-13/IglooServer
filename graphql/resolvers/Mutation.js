@@ -9,6 +9,7 @@ import {
   check2FCode,
   logErrorsPromise,
   getPropsIfDefined,
+  genericDelete,
 } from './utilities'
 
 const SALT_ROUNDS = 10
@@ -383,32 +384,94 @@ const MutationResolver = (
       }),
     )
   },
-  deleteNotification(root, args, context) {
-    return logErrorsPromise(
-      'delete notification mutation',
-      124,
+  deleteNotification: genericDelete(
+    Notification,
+    'notificationDeleted',
+    pubsub,
+  ),
+  deleteFloatValue: genericDelete(FloatValue, 'valueDeleted', pubsub),
+  deleteStringValue: genericDelete(StringValue, 'valueDeleted', pubsub),
+  deleteBooleanValue: genericDelete(BoolValue, 'valueDeleted', pubsub),
+  deleteColourValue: genericDelete(ColourValue, 'valueDeleted', pubsub),
+  deleteDevice: (root, args, context) =>
+    logErrorsPromise(
+      'delete device mutation',
+      126,
       authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
+        const deviceFound = await Device.find({
           where: { id: args.id },
         })
 
-        if (!notificationFound) {
+        if (!deviceFound) {
           reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
+        } else if (deviceFound.userId !== context.auth.userId) {
           reject('You are not allowed to update this resource')
         } else {
-          await notificationFound.destroy()
+          const deleteChild = Model =>
+            Model.destroy({
+              where: {
+                deviceId: args.id,
+              },
+            })
 
-          resolve(args.id)
+          await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
 
-          pubsub.publish('notificationDeleted', {
-            notificationDeleted: args.id,
+          await deviceFound.destroy()
+
+          pubsub.publish('deviceDeleted', {
+            deviceDeleted: args.id,
             userId: context.auth.userId,
           })
+          resolve(args.id)
         }
       }),
-    )
-  },
+    ),
+  // deleteUser: (root, args, context) =>
+  //   logErrorsPromise(
+  //     'delete device mutation',
+  //     126,
+  //     authenticated(context, async (resolve, reject) => {
+  //       const userFound = await User.find({
+  //         where: { id: context.auth.userId },
+  //       })
+
+  //       if (!userFound) {
+  //         reject('The requested resource does not exist')
+  //       } else if (!bcrypt.compareSync(args.password, userFound.password)) {
+  //         reject('Wrong password')
+  //       } else if (
+  //         !userFound.twoFactorSecret ||
+  //         check2FCode(args.twoFactorCode, userFound.twoFactorSecret)
+  //       ) {
+  //         const deleteChild = Model =>
+  //           Model.destroy({
+  //             where: {
+  //               userId: context.auth.userId,
+  //             },
+  //           })
+
+  //         await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
+
+  //         // removing the devices before having cleaned the values errors
+  //         // due to relationships on the sql database
+  //         await Device.destroy({
+  //           where: {
+  //             userId: context.auth.userId,
+  //           },
+  //         })
+
+  //         await userFound.destroy()
+
+  //         pubsub.publish('userDeleted', {
+  //           userDeleted: context.auth.userId,
+  //           userId: context.auth.userId,
+  //         })
+  //         resolve(context.auth.userId)
+  //       } else {
+  //         reject('Wrong two factor code')
+  //       }
+  //     }),
+  //   ),
 })
 
 export default MutationResolver

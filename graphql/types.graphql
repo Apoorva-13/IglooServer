@@ -163,6 +163,12 @@ type Mutation {
   ): Notification
 
   deleteNotification(id: ID!): ID
+  deleteFloatValue(id: ID!): ID
+  deleteStringValue(id: ID!): ID
+  deleteBooleanValue(id: ID!): ID
+  deleteColourValue(id: ID!): ID
+  deleteDevice(id: ID!): ID
+  deleteUser(password: String!, twoFactorCode: String): ID
 }
 
 input DeviceFilter {
@@ -210,6 +216,10 @@ type Subscription {
   valueUpdated: Value
   # subscribes to notification updates
   notificationUpdated: Notification
+  # subscribes to value deleted
+  valueDeleted: ID
+  # subscribes to device deleted
+  deviceDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
 }

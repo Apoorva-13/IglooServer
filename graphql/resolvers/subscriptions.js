@@ -18,5 +18,6 @@ const subscriptionResolver = pubsub => ({
     'notificationDeleted',
     pubsub,
   ),
+  valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
 })
 export default subscriptionResolver

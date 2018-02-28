@@ -371,6 +371,34 @@ const findValue = (
     })
 }
 
+const genericDelete = (Model, subscriptionName, pubsub) => (
+  root,
+  args,
+  context,
+) => logErrorsPromise(
+  'delete mutation',
+  124,
+  authenticated(context, async (resolve, reject) => {
+    const entityFound = await Model.find({
+      where: { id: args.id },
+    })
+
+    if (!entityFound) {
+      reject('The requested resource does not exist')
+    } else if (entityFound.userId !== context.auth.userId) {
+      reject('You are not allowed to update this resource')
+    } else {
+      await entityFound.destroy()
+
+      pubsub.publish(subscriptionName, {
+        [subscriptionName]: args.id,
+        userId: context.auth.userId,
+      })
+      resolve(args.id)
+    }
+  }),
+)
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -385,4 +413,5 @@ module.exports = {
   logger,
   findAllValues,
   findValue,
+  genericDelete,
 }
