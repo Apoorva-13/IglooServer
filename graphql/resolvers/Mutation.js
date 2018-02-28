@@ -393,6 +393,39 @@ const MutationResolver = (
   deleteStringValue: genericDelete(StringValue, 'valueDeleted', pubsub),
   deleteBooleanValue: genericDelete(BoolValue, 'valueDeleted', pubsub),
   deleteColourValue: genericDelete(ColourValue, 'valueDeleted', pubsub),
+  deleteDevice: (root, args, context) =>
+    logErrorsPromise(
+      'delete device mutation',
+      126,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: args.id },
+        })
+
+        if (!deviceFound) {
+          reject('The requested resource does not exist')
+        } else if (deviceFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          const deleteChild = Model =>
+            Model.destroy({
+              where: {
+                deviceId: args.id,
+              },
+            }).then(a => console.log('deleted', a))
+
+          await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
+
+          await deviceFound.destroy()
+
+          pubsub.publish('deviceDeleted', {
+            deviceDeleted: args.id,
+            userId: context.auth.userId,
+          })
+          resolve(args.id)
+        }
+      }),
+    ),
 })
 
 export default MutationResolver
