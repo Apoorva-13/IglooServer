@@ -412,7 +412,7 @@ const MutationResolver = (
               where: {
                 deviceId: args.id,
               },
-            }).then(a => console.log('deleted', a))
+            })
 
           await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
 
@@ -426,6 +426,52 @@ const MutationResolver = (
         }
       }),
     ),
+  // deleteUser: (root, args, context) =>
+  //   logErrorsPromise(
+  //     'delete device mutation',
+  //     126,
+  //     authenticated(context, async (resolve, reject) => {
+  //       const userFound = await User.find({
+  //         where: { id: context.auth.userId },
+  //       })
+
+  //       if (!userFound) {
+  //         reject('The requested resource does not exist')
+  //       } else if (!bcrypt.compareSync(args.password, userFound.password)) {
+  //         reject('Wrong password')
+  //       } else if (
+  //         !userFound.twoFactorSecret ||
+  //         check2FCode(args.twoFactorCode, userFound.twoFactorSecret)
+  //       ) {
+  //         const deleteChild = Model =>
+  //           Model.destroy({
+  //             where: {
+  //               userId: context.auth.userId,
+  //             },
+  //           })
+
+  //         await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
+
+  //         // removing the devices before having cleaned the values errors
+  //         // due to relationships on the sql database
+  //         await Device.destroy({
+  //           where: {
+  //             userId: context.auth.userId,
+  //           },
+  //         })
+
+  //         await userFound.destroy()
+
+  //         pubsub.publish('userDeleted', {
+  //           userDeleted: context.auth.userId,
+  //           userId: context.auth.userId,
+  //         })
+  //         resolve(context.auth.userId)
+  //       } else {
+  //         reject('Wrong two factor code')
+  //       }
+  //     }),
+  //   ),
 })
 
 export default MutationResolver

@@ -168,7 +168,7 @@ type Mutation {
   deleteBooleanValue(id: ID!): ID
   deleteColourValue(id: ID!): ID
   deleteDevice(id: ID!): ID
-  deleteUser(password: String!): ID
+  deleteUser(password: String!, twoFactorCode: String): ID
 }
 
 input DeviceFilter {
