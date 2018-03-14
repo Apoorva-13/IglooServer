@@ -8,6 +8,7 @@ const UserResolver = (Notification, User, Device) => ({
   content: retrieveScalarProp(Notification, 'content'),
   date: retrieveScalarProp(Notification, 'date'),
   visualized: retrieveScalarProp(Notification, 'visualized'),
+  snackbarVisualized: retrieveScalarProp(Notification, 'snackbarVisualized'),
   user(root, args, context) {
     return logErrorsPromise(
       'Notification user resolver',

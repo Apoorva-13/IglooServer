@@ -160,11 +160,16 @@ const MutationResolver = (
       'CreateDevice',
       104,
       authenticated(context, async (resolve) => {
+        const index =
+          args.index ||
+          (await Device.count({ where: { userId: context.auth.userId } }))
+
         const newDevice = await Device.create({
           customName: args.customName,
           deviceType: args.deviceType,
           tags: args.tags || [],
           icon: args.icon,
+          index,
           userId: context.auth.userId,
         })
         const {
@@ -301,6 +306,7 @@ const MutationResolver = (
           const newNotification = await Notification.create({
             ...args,
             visualized: false,
+            snackbarVisualized: false,
             userId: context.auth.userId,
             date: new Date(),
           })
