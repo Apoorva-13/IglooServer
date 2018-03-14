@@ -56,6 +56,9 @@ const databaseDefinition = (sequelize) => {
     tags: {
       type: Sequelize.ARRAY(Sequelize.STRING),
     },
+    index: {
+      type: Sequelize.INTEGER,
+    },
   })
 
   const Notification = sequelize.define('notification', {

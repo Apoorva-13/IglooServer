@@ -24,6 +24,7 @@ const DeviceResolver = (
   customName: retrieveScalarProp(Device, 'customName'),
   tags: retrieveScalarProp(Device, 'tags'),
   icon: retrieveScalarProp(Device, 'icon'),
+  index: retrieveScalarProp(Device, 'index'),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',

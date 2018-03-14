@@ -43,6 +43,7 @@ const UserResolver = (
         } else {
           const devices = await Device.findAll({
             where: { userId: root.id },
+            order: [['index', 'ASC']],
           })
 
           resolve(devices)
