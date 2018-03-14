@@ -72,6 +72,9 @@ const databaseDefinition = (sequelize) => {
     visualized: {
       type: Sequelize.BOOLEAN,
     },
+    snackbarVisualized: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const Value = {

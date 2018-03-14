@@ -301,6 +301,7 @@ const MutationResolver = (
           const newNotification = await Notification.create({
             ...args,
             visualized: false,
+            snackbarVisualized: false,
             userId: context.auth.userId,
             date: new Date(),
           })

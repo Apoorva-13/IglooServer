@@ -160,6 +160,7 @@ type Mutation {
     content: String
     date: DateTime
     visualized: Boolean
+    snackbarVisualized: Boolean
   ): Notification
 
   deleteNotification(id: ID!): ID
@@ -274,6 +275,7 @@ type Notification {
   content: String!
   date: DateTime!
   visualized: Boolean!
+  snackbarVisualized: Boolean!
 }
 
 type PlotNode {
