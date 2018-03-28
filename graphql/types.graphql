@@ -166,10 +166,7 @@ type Mutation {
   ): Notification
 
   deleteNotification(id: ID!): ID
-  deleteFloatValue(id: ID!): ID
-  deleteStringValue(id: ID!): ID
-  deleteBooleanValue(id: ID!): ID
-  deleteColourValue(id: ID!): ID
+  deleteValue(id: ID!): ID
   deleteDevice(id: ID!): ID
   deleteUser(password: String!, twoFactorCode: String): ID
 }
