@@ -24,9 +24,12 @@ const FloatValueResolver = Model => ({
 const StringValueResolver = Model => ({
   ...GenericResolver(Model),
   maxChars: retrieveScalarProp(Model, 'maxChars'),
+  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
 })
-
-const ColourValueResolver = GenericResolver
+const ColourValueResolver = Model => ({
+  ...GenericResolver(Model),
+  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
+})
 
 export default ({
   BoolValue, FloatValue, StringValue, ColourValue,

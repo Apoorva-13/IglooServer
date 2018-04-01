@@ -130,6 +130,9 @@ const databaseDefinition = (sequelize) => {
     maxChars: {
       type: Sequelize.INTEGER,
     },
+    allowedValues: {
+      type: Sequelize.ARRAY(Sequelize.STRING),
+    },
   })
   const PlotValue = sequelize.define('plotValue', {
     ...Value,
@@ -164,6 +167,9 @@ const databaseDefinition = (sequelize) => {
     ...Value,
     value: {
       type: Sequelize.STRING,
+    },
+    allowedValues: {
+      type: Sequelize.ARRAY(Sequelize.STRING),
     },
   })
 
