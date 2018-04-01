@@ -63,6 +63,16 @@ const MutationResolver = (
       },
     )
   },
+
+  GeneratePermanentAccessToken(root, args) {
+    return logErrorsPromise(
+      'AuthenticateUser',
+      103,
+      authenticated(context, async (resolve, reject) => {
+        const token = {}
+      }),
+    )
+  },
   // checks if a user with that email already exists
   // if not it creates one and returnes an access token
   SignupUser(root, args) {
