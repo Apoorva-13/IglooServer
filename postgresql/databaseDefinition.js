@@ -99,6 +99,9 @@ const databaseDefinition = (sequelize) => {
     customName: {
       type: Sequelize.STRING,
     },
+    position: {
+      type: Sequelize.ARRAY(Sequelize.FLOAT),
+    },
   }
 
   const BoolValue = sequelize.define('boolValue', {
@@ -152,13 +155,7 @@ const databaseDefinition = (sequelize) => {
   })
   const MapValue = sequelize.define('mapValue', {
     ...Value,
-    latitude: {
-      type: Sequelize.FLOAT,
-    },
-    longitude: {
-      type: Sequelize.FLOAT,
-    },
-    map: {
+    value: {
       type: Sequelize.JSON,
       allowNull: false,
     },

@@ -291,21 +291,6 @@ type PlotNode {
   value: Float!
 }
 
-type Map {
-  id: ID! @isUnique
-  deviceValue: Value!
-  zoom: Int!
-  position: MapPosition!
-  geoJSON: Json!
-}
-
-type MapPosition {
-  id: ID! @isUnique
-  latitude: Float!
-  longitude: Float!
-  map: Map!
-}
-
 interface Value {
   id: ID! @isUnique
   createdAt: DateTime!
@@ -317,6 +302,7 @@ interface Value {
   valueDetails: String
   tileSize: TileSize!
   customName: String
+  position: [Float!] # latitude and longitude
 }
 
 type FloatValue implements Value {
@@ -335,6 +321,7 @@ type FloatValue implements Value {
   boundaries: [Float!]
   tileSize: TileSize!
   customName: String
+  position: [Float!] # latitude and longitude
 }
 
 type StringValue implements Value {
@@ -351,6 +338,7 @@ type StringValue implements Value {
   tileSize: TileSize!
   customName: String
   allowedValues: [String!]
+  position: [Float!] # latitude and longitude
 }
 
 type PlotValue implements Value {
@@ -365,6 +353,7 @@ type PlotValue implements Value {
   value: [PlotNode!]!
   tileSize: TileSize!
   customName: String
+  position: [Float!] # latitude and longitude
 }
 
 type BooleanValue implements Value {
@@ -379,6 +368,7 @@ type BooleanValue implements Value {
   value: Boolean!
   tileSize: TileSize!
   customName: String
+  position: [Float!] # latitude and longitude
 }
 
 type ColourValue implements Value {
@@ -395,6 +385,7 @@ type ColourValue implements Value {
   tileSize: TileSize!
   customName: String
   allowedValues: [String!]
+  position: [Float!] # latitude and longitude
 }
 
 type MapValue implements Value {
@@ -406,7 +397,8 @@ type MapValue implements Value {
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
-  value: Map
+  value: Json! # GEOJson
   tileSize: TileSize!
   customName: String
+  position: [Float!] # latitude and longitude
 }
