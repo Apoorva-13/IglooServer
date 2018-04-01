@@ -195,8 +195,6 @@ type Query {
   allValues: [Value]
   allNotifications: [Notification]
   allPlotNodes: [PlotNode]
-  allMaps: [Map]
-  allMapPositions: [MapPosition]
   allFloatValues: [FloatValue]
   allStringValues: [StringValue]
   allPlotValues: [PlotValue]
