@@ -21,6 +21,7 @@ const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
 
 const UserResolver = (
   User,
+  PermanentToken,
   Device,
   Value,
   FloatValue,
@@ -89,6 +90,24 @@ const UserResolver = (
             },
             context.auth.userId,
           ))
+        }
+      }),
+    )
+  },
+  permanentTokens(root, args, context) {
+    return logErrorsPromise(
+      'user permanentTokens',
+      127,
+      authenticated(context, async (resolve, reject) => {
+        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+        if (context.auth.userId !== root.id) {
+          reject('You are not allowed to access details about this user')
+        } else {
+          const tokens = await PermanentToken.findAll({
+            where: { userId: root.id },
+          })
+
+          resolve(tokens)
         }
       }),
     )

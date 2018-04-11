@@ -3,6 +3,7 @@ import OTP from 'otp.js'
 import {
   authenticated,
   generateAuthenticationToken,
+  generatePermanentAuthenticationToken,
   CreateGenericValue,
   genericValueMutation,
   create2FSecret,
@@ -16,6 +17,7 @@ const SALT_ROUNDS = 10
 
 const MutationResolver = (
   User,
+  PermanentToken,
   Device,
   Value,
   FloatValue,
@@ -64,12 +66,50 @@ const MutationResolver = (
     )
   },
 
-  GeneratePermanentAccessToken(root, args) {
+  GeneratePermanentAccessToken(root, args, context) {
     return logErrorsPromise(
-      'AuthenticateUser',
-      103,
+      'GeneratePermanentAccessToken',
+      125,
       authenticated(context, async (resolve, reject) => {
-        const token = {}
+        if (args.name === '') {
+          reject('Empty name is not allowed')
+        } else {
+          const databaseToken = await PermanentToken.create({
+            customName: args.customName,
+            userId: context.auth.userId,
+          })
+
+          resolve({
+            id: databaseToken.id,
+            token: generatePermanentAuthenticationToken(
+              context.auth.userId,
+              databaseToken.id,
+              'DEVICE',
+              JWT_SECRET,
+            ),
+          })
+        }
+      }),
+    )
+  },
+
+  DeletePermanentAccesToken(root, args, context) {
+    return logErrorsPromise(
+      'DeletePermanentAccesToken',
+      126,
+      authenticated(context, async (resolve, reject) => {
+        const databaseToken = await PermanentToken.find({
+          where: { id: args.id },
+        })
+        if (!databaseToken) {
+          reject("This token doesn't exist")
+        } else if (databaseToken.userId !== context.auth.userId) {
+          reject('This token is not yours')
+        } else {
+          await databaseToken.destroy()
+
+          resolve(args.id)
+        }
       }),
     )
   },
@@ -96,6 +136,7 @@ const MutationResolver = (
             ),
           })
         } catch (e) {
+          console.log(e)
           if (e.errors[0].validatorKey === 'isEmail') {
             reject('Invalid email')
           } else {

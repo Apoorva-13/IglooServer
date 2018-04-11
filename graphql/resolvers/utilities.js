@@ -73,18 +73,25 @@ const generateAuthenticationToken = (userId, JWT_SECRET) =>
         .add({ days: JWT_EXPIRE_DAYS })
         .unix(),
       userId,
-      access: 'OWNER',
+      accessLevel: 'OWNER',
+      tokenType: 'TEMPORARY',
     },
     JWT_SECRET,
     'HS512',
   )
 
-const generatePermanentAuthenticationToken = (userId, tokenId, JWT_SECRET) =>
+const generatePermanentAuthenticationToken = (
+  userId,
+  tokenId,
+  accessLevel,
+  JWT_SECRET,
+) =>
   jwt.encode(
     {
       userId,
       tokenId,
-      access: 'DEVICE',
+      accessLevel: accessLevel || 'DEVICE',
+      tokenType: 'PERMANENT',
     },
     JWT_SECRET,
     'HS512',

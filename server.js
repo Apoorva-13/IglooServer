@@ -33,6 +33,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
           return false
         }
         try {
+          // FIXME: does this check that the token was not forged?
           const decodedJwt = jwt.decode(
             connectionParams.Authorization.substring(7),
             process.env.JWT_SECRET,

@@ -29,6 +29,7 @@ const {
   MapValue,
   ColourValue,
   Notification,
+  PermanentToken,
 } = require('./databaseDefinition')(sequelize)
 
 const setup = async () => {
@@ -43,6 +44,7 @@ const setup = async () => {
     await MapValue.sync({ force: true })
     await ColourValue.sync({ force: true })
     await Notification.sync({ force: true })
+    await PermanentToken.sync({ force: true })
 
     log(chalk.green('ALL WELL'))
     sequelize.close()
