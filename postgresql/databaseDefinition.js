@@ -41,6 +41,15 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  const PermanentToken = sequelize.define('permanentToken', {
+    ...selfId,
+    ...otherId('userId', User),
+    customName: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+  })
+
   const Device = sequelize.define('device', {
     ...selfId,
     ...otherId('userId', User),
@@ -175,6 +184,7 @@ const databaseDefinition = (sequelize) => {
 
   return {
     User,
+    PermanentToken,
     Device,
     BoolValue,
     FloatValue,

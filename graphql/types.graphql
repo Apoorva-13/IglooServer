@@ -31,6 +31,9 @@ type Mutation {
     password: String!
     twoFactorCode: String
   ): AuthenticateUserPayload
+  # Generates a permanent access token
+  GeneratePermanentAccessToken(customName: String!): AuthenticateUserPayload
+  DeletePermanentAccesToken(id: ID!): ID
   # Creates a new account
   SignupUser(email: String!, password: String!): SignupUserPayload
   # upgrades a user to 2 factor authentication
@@ -236,6 +239,13 @@ type User {
   devices: [Device!]!
   values: [Value!]!
   notifications: [Notification!]!
+  permanentTokens: [PermanentToken!]!
+}
+
+type PermanentToken {
+  id: ID!
+  user: User!
+  customName: String!
 }
 
 type Device {

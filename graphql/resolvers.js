@@ -32,6 +32,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 
 const {
   User,
+  PermanentToken,
   Device,
   Value,
   BoolValue,
@@ -49,6 +50,7 @@ const resolvers = {
   Json: GraphQLToolsTypes.JSON({ name: 'Json' }),
   User: UserResolver(
     User,
+    PermanentToken,
     Device,
     Value,
     FloatValue,
@@ -72,6 +74,7 @@ const resolvers = {
   ),
   Mutation: MutationResolver(
     User,
+    PermanentToken,
     Device,
     Value,
     FloatValue,
