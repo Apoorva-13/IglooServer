@@ -24,6 +24,8 @@ const MutationResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  PlotValue,
+  PlotNode,
   Notification,
   pubsub,
   JWT_SECRET,
@@ -262,6 +264,7 @@ const MutationResolver = (
   CreateStringValue: CreateGenericValue(Device, StringValue, pubsub),
   CreateBooleanValue: CreateGenericValue(Device, BoolValue, pubsub),
   CreateColourValue: CreateGenericValue(Device, ColourValue, pubsub),
+  CreatePlotValue: CreateGenericValue(Device, PlotValue, pubsub),
   user(root, args, context) {
     return logErrorsPromise(
       'user mutation',
