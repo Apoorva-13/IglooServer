@@ -119,6 +119,12 @@ type Mutation {
 
     threshold: Float
   ): PlotValue
+  CreatePlotNode(
+    plotId: ID!
+    # default is now
+    timestamp: DateTime
+    value: Float!
+  ): PlotNode
 
   # changes user's data
   user(email: String!): User
