@@ -27,7 +27,10 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   logging: false,
 })
 
-const { PermanentToken } = require('./postgresql/databaseDefinition')(sequelize)
+const {
+  PermanentToken,
+  WebPushSubscription,
+} = require('./postgresql/databaseDefinition')(sequelize)
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 /* istanbul ignore next */
@@ -84,21 +87,54 @@ graphQLServer.get('/graphiql', (req, res, next) => {
   })(req, res, next)
 })
 
-// FIXME: this should be stored in SQL
-const subscriptionStorage = {}
+graphQLServer.use(
+  '/webPushSubscribe',
+  expressJwt({
+    secret: process.env.JWT_SECRET,
+    credentialsRequired: false,
+    isRevoked: async (req, payload, done) => {
+      if (payload.tokenType === 'TEMPORARY') done(null, false)
+      try {
+        const DatabaseToken = await PermanentToken.find({
+          where: { id: payload.tokenId },
+        })
+        return done(
+          null,
+          !(DatabaseToken && DatabaseToken.userId === payload.userId),
+        )
+      } catch (e) {
+        done('Internal error')
+      }
+    },
+  }),
+)
 
-graphQLServer.post('/webPushSubscribe', (req, res) => {
-  const notificationSubscription = req.body
+graphQLServer.post('/webPushSubscribe', async (req, res) => {
+  if (req.user) {
+    const notificationSubscription = req.body
 
-  if (
-    Object.keys(subscriptionStorage).indexOf(notificationSubscription.endpoint) === -1
-  ) {
-    subscriptionStorage[
-      notificationSubscription.endpoint
-    ] = notificationSubscription
+    const oldSubscription = await WebPushSubscription.find({
+      where: { endpoint: notificationSubscription.endpoint },
+    })
+
+    const newSubscription = {
+      endpoint: notificationSubscription.endpoint,
+      expirationTime: notificationSubscription.expirationTime,
+      p256dh: notificationSubscription.keys.p256dh,
+      auth: notificationSubscription.keys.auth,
+      userId: req.user.userId,
+    }
+
+    if (!oldSubscription) {
+      await WebPushSubscription.create(newSubscription)
+    } else {
+      oldSubscription.update(newSubscription)
+    }
+
+    res.send('ok')
+  } else {
+    res.status(401).send('Missing valid authentication token')
   }
-
-  res.send('ok')
 })
 
 export default graphQLServer

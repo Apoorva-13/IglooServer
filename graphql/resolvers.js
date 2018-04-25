@@ -43,6 +43,7 @@ const {
   MapValue,
   ColourValue,
   Notification,
+  WebPushSubscription,
 } = require('../postgresql/databaseDefinition')(sequelize)
 
 const resolvers = {
@@ -85,6 +86,7 @@ const resolvers = {
     PlotValue,
     PlotNode,
     Notification,
+    WebPushSubscription,
     pubsub,
     JWT_SECRET,
   ),

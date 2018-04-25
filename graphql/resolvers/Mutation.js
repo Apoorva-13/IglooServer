@@ -39,6 +39,7 @@ const MutationResolver = (
   PlotValue,
   PlotNode,
   Notification,
+  WebPushSubscription,
   pubsub,
   JWT_SECRET,
 ) => ({
@@ -446,22 +447,24 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
 
-          const notificationSubscription = {
-            endpoint:
-              'https://fcm.googleapis.com/fcm/send/fwXXiNgHdsU:APA91bE6L9A_AaGQBzAzI-Q6kj-5rhAwLTB6Yxunblqz_p2_E-YgEANHOAlslEieLoPdESXAuaIi9-RI7VfiiOmn-nLyq1yM3gdEDL684tOD9besAGMDV8o8s5VcqP-V5f_JZaCDlOeK',
-            expirationTime: null,
-            keys: {
-              p256dh:
-                'BLHqr4wUrtqMdZxN_9jAoBDK1Bs_z1N0swxk-u5YAPhZQn5H5-YewmEo8ZY6QYUGuWQBPWkemqW8dg94W7T9Zhs',
-              auth: 'LapFtvT9Rwd-fWcQXGkRMA',
-            },
-          }
-          webpush.sendNotification(
-            notificationSubscription,
-            JSON.stringify({
-              content,
-            }),
-          )
+          const notificationSubscriptions = await WebPushSubscription.findAll({
+            where: { userId: context.auth.userId },
+          })
+
+          notificationSubscriptions.map(notificationSubscription =>
+            webpush.sendNotification(
+              {
+                endpoint: notificationSubscription.endpoint,
+                expirationTime: notificationSubscription.expirationTime,
+                keys: {
+                  p256dh: notificationSubscription.p256dh,
+                  auth: notificationSubscription.auth,
+                },
+              },
+              JSON.stringify({
+                content,
+              }),
+            ))
         }
       }),
     )
