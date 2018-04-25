@@ -61,6 +61,7 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
+    "web-push": "^3.3.0",
     "winston": "^3.0.0-rc1",
     "winston-slacker": "^1.0.3"
   },

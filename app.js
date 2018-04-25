@@ -10,6 +10,13 @@ import schema from './graphql/schema'
 import expressJwt from 'express-jwt'
 import cors from 'cors'
 import Sequelize from 'sequelize'
+import webpush from 'web-push'
+
+webpush.setVapidDetails(
+  'http://igloo.witlab.io/',
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY,
+)
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
   ssl: true,
@@ -31,9 +38,9 @@ const WEBSOCKET_URL =
 const graphQLServer = express()
 
 graphQLServer.use(cors())
+graphQLServer.use(bodyParser.json())
 graphQLServer.use(
   '/graphql',
-  bodyParser.json(),
   expressJwt({
     secret: process.env.JWT_SECRET,
     credentialsRequired: false,
@@ -75,6 +82,23 @@ graphQLServer.get('/graphiql', (req, res, next) => {
     endpointURL: '/graphql',
     subscriptionsEndpoint: WEBSOCKET_URL,
   })(req, res, next)
+})
+
+// FIXME: this should be stored in SQL
+const subscriptionStorage = {}
+
+graphQLServer.post('/webPushSubscribe', (req, res) => {
+  const notificationSubscription = req.body
+
+  if (
+    Object.keys(subscriptionStorage).indexOf(notificationSubscription.endpoint) === -1
+  ) {
+    subscriptionStorage[
+      notificationSubscription.endpoint
+    ] = notificationSubscription
+  }
+
+  res.send('ok')
 })
 
 export default graphQLServer

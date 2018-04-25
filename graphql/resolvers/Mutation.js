@@ -12,7 +12,19 @@ import {
   getPropsIfDefined,
   genericDelete,
 } from './utilities'
+import webpush from 'web-push'
 
+require('dotenv').config()
+/* istanbul ignore if */
+if (!process.env.JWT_SECRET) {
+  throw new Error('Could not load .env')
+}
+
+webpush.setVapidDetails(
+  'http://igloo.witlab.io/',
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY,
+)
 const SALT_ROUNDS = 10
 
 const MutationResolver = (
@@ -433,6 +445,23 @@ const MutationResolver = (
             notificationCreated: resolveValue,
             userId: context.auth.userId,
           })
+
+          const notificationSubscription = {
+            endpoint:
+              'https://fcm.googleapis.com/fcm/send/fwXXiNgHdsU:APA91bE6L9A_AaGQBzAzI-Q6kj-5rhAwLTB6Yxunblqz_p2_E-YgEANHOAlslEieLoPdESXAuaIi9-RI7VfiiOmn-nLyq1yM3gdEDL684tOD9besAGMDV8o8s5VcqP-V5f_JZaCDlOeK',
+            expirationTime: null,
+            keys: {
+              p256dh:
+                'BLHqr4wUrtqMdZxN_9jAoBDK1Bs_z1N0swxk-u5YAPhZQn5H5-YewmEo8ZY6QYUGuWQBPWkemqW8dg94W7T9Zhs',
+              auth: 'LapFtvT9Rwd-fWcQXGkRMA',
+            },
+          }
+          webpush.sendNotification(
+            notificationSubscription,
+            JSON.stringify({
+              content,
+            }),
+          )
         }
       }),
     )
