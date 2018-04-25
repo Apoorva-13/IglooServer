@@ -46,6 +46,7 @@ const DeviceResolver = (
               FloatValue,
               StringValue,
               ColourValue,
+              PlotValue,
             },
             {
               where: { deviceId: deviceFound.id },

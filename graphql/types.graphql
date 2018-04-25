@@ -104,6 +104,27 @@ type Mutation {
     tileSize: TileSize
     allowedValues: [String!]
   ): ColourValue
+  # Creates a new FloatValue
+  CreatePlotValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
+    valueDetails: String
+    # used when the end-user reads or modifies the value
+    precision: Float
+    # [min, max]
+    boundaries: [Float!]
+    customName: String
+    tileSize: TileSize
+
+    threshold: Float
+  ): PlotValue
+  CreatePlotNode(
+    plotId: ID!
+    # default is now
+    timestamp: DateTime
+    value: Float!
+  ): PlotNode
 
   # changes user's data
   user(email: String!): User
@@ -163,6 +184,18 @@ type Mutation {
     tileSize: TileSize
     allowedValues: [String!]
   ): ColourValue
+  plotValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    threshold: Float
+    precision: Float
+    boundaries: [Float!]
+    customName: String
+    tileSize: TileSize
+  ): PlotValue
+  plotNode(id: ID!, value: Float, timestamp: DateTime): PlotNode
 
   notification(
     id: ID!
@@ -176,6 +209,7 @@ type Mutation {
   deleteValue(id: ID!): ID
   deleteDevice(id: ID!): ID
   deleteUser(password: String!, twoFactorCode: String): ID
+  deletePlotNode(id: ID!): ID
 }
 
 input DeviceFilter {
@@ -294,10 +328,10 @@ type Notification {
 
 type PlotNode {
   id: ID! @isUnique
-  deviceValue: Value!
-  plotValue: PlotValue!
+  device: Device!
+  plot: PlotValue!
   user: User!
-  key: DateTime!
+  timestamp: DateTime!
   value: Float!
 }
 
@@ -373,8 +407,14 @@ type PlotValue implements Value {
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
   value: [PlotNode!]!
+  # used when the end-user reads or modifies the value
+  precision: Float
+  # [min, max]
+  boundaries: [Float!]
   tileSize: TileSize!
   customName: String
+
+  threshold: Float
 }
 
 type BooleanValue implements Value {

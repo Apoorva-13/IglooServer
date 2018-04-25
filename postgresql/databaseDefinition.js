@@ -145,16 +145,26 @@ const databaseDefinition = (sequelize) => {
   })
   const PlotValue = sequelize.define('plotValue', {
     ...Value,
+    precision: {
+      type: Sequelize.FLOAT,
+    },
+    threshold: {
+      type: Sequelize.FLOAT,
+    },
+    boundaries: {
+      type: Sequelize.ARRAY(Sequelize.FLOAT),
+    },
   })
   const PlotNode = sequelize.define('plotNode', {
     ...selfId,
     ...otherId('userId', User),
-    ...otherId('plotValueId', PlotValue),
+    ...otherId('deviceId', Device),
+    ...otherId('plotId', PlotValue),
     value: {
       type: Sequelize.FLOAT,
       allowNull: false,
     },
-    key: {
+    timestamp: {
       type: Sequelize.DATE,
       allowNull: false,
     },

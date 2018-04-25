@@ -57,6 +57,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    PlotValue,
     Notification,
   ),
   Device: DeviceResolver(
@@ -81,6 +82,8 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    PlotValue,
+    PlotNode,
     Notification,
     pubsub,
     JWT_SECRET,
@@ -108,6 +111,8 @@ const resolvers = {
     FloatValue,
     StringValue,
     ColourValue,
+    PlotValue,
+    PlotNode,
   }),
   Notification: NotificationResolver(Notification, User, Device),
 }

@@ -186,14 +186,11 @@ const logErrorsPromise = (name, code, callback) =>
     }
   })
 
-const genericValueMutation = (
-  Model,
-  childProps,
-  childNameId,
-  childModel,
-  __resolveType,
-  pubsub,
-) => (root, args, context) =>
+const genericValueMutation = (childModel, __resolveType, pubsub) => (
+  root,
+  args,
+  context,
+) =>
   logErrorsPromise(
     'genericValue mutation',
     117,
@@ -284,7 +281,7 @@ const firstResolve = promises =>
 
 const findAllValues = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue,
+    BoolValue, FloatValue, StringValue, ColourValue, PlotValue,
   },
   query,
   userId,
@@ -293,13 +290,15 @@ const findAllValues = (
   const floatValues = FloatValue.findAll(query)
   const stringValues = StringValue.findAll(query)
   const colourValues = ColourValue.findAll(query)
+  const plotValues = PlotValue.findAll(query)
 
   return Promise.all([
     booleanValues,
     floatValues,
     stringValues,
     colourValues,
-  ]).then(([booleanValues, floatValues, stringValues, colourValues]) => [
+    plotValues,
+  ]).then(([booleanValues, floatValues, stringValues, colourValues, plotValues]) => [
     ...booleanValues
       .map(value => ({
         ...value.dataValues,
@@ -330,6 +329,14 @@ const findAllValues = (
         user: { id: value.dataValues.userId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'ColourValue',
+      }))
+      .filter(value => value.userId === userId),
+    ...plotValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'PlotValue',
       }))
       .filter(value => value.userId === userId),
   ])
