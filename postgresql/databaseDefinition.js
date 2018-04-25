@@ -50,6 +50,23 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  const WebPushSubscription = sequelize.define('webPushNotification', {
+    ...selfId,
+    ...otherId('userId', User),
+    endpoint: {
+      type: Sequelize.STRING(2000),
+    },
+    expirationTime: {
+      type: Sequelize.DATE,
+    },
+    p256dh: {
+      type: Sequelize.STRING,
+    },
+    auth: {
+      type: Sequelize.STRING,
+    },
+  })
+
   const Device = sequelize.define('device', {
     ...selfId,
     ...otherId('userId', User),
@@ -204,6 +221,7 @@ const databaseDefinition = (sequelize) => {
     MapValue,
     ColourValue,
     Notification,
+    WebPushSubscription,
   }
 }
 

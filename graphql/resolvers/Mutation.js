@@ -12,7 +12,19 @@ import {
   getPropsIfDefined,
   genericDelete,
 } from './utilities'
+import webpush from 'web-push'
 
+require('dotenv').config()
+/* istanbul ignore if */
+if (!process.env.JWT_SECRET) {
+  throw new Error('Could not load .env')
+}
+
+webpush.setVapidDetails(
+  'http://igloo.witlab.io/',
+  process.env.PUBLIC_VAPID_KEY,
+  process.env.PRIVATE_VAPID_KEY,
+)
 const SALT_ROUNDS = 10
 
 const MutationResolver = (
@@ -27,6 +39,7 @@ const MutationResolver = (
   PlotValue,
   PlotNode,
   Notification,
+  WebPushSubscription,
   pubsub,
   JWT_SECRET,
 ) => ({
@@ -433,6 +446,25 @@ const MutationResolver = (
             notificationCreated: resolveValue,
             userId: context.auth.userId,
           })
+
+          const notificationSubscriptions = await WebPushSubscription.findAll({
+            where: { userId: context.auth.userId },
+          })
+
+          notificationSubscriptions.map(notificationSubscription =>
+            webpush.sendNotification(
+              {
+                endpoint: notificationSubscription.endpoint,
+                expirationTime: notificationSubscription.expirationTime,
+                keys: {
+                  p256dh: notificationSubscription.p256dh,
+                  auth: notificationSubscription.auth,
+                },
+              },
+              JSON.stringify({
+                content,
+              }),
+            ))
         }
       }),
     )

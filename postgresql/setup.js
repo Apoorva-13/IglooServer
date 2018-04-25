@@ -30,6 +30,7 @@ const {
   ColourValue,
   Notification,
   PermanentToken,
+  WebPushSubscription,
 } = require('./databaseDefinition')(sequelize)
 
 const setup = async () => {
@@ -45,6 +46,7 @@ const setup = async () => {
     await ColourValue.sync({ force: true })
     await Notification.sync({ force: true })
     await PermanentToken.sync({ force: true })
+    await WebPushSubscription.sync({ force: true })
 
     log(chalk.green('ALL WELL'))
     sequelize.close()
