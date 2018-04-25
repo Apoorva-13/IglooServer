@@ -349,38 +349,42 @@ const MutationResolver = (
       }),
     )
   },
-  floatValue: genericValueMutation(
-    Value,
-    ['boundaries', 'precision'],
-    'childFloatId',
-    FloatValue,
-    'FloatValue',
-    pubsub,
-  ),
-  stringValue: genericValueMutation(
-    Value,
-    ['maxChars'],
-    'childStringId',
-    StringValue,
-    'StringValue',
-    pubsub,
-  ),
-  booleanValue: genericValueMutation(
-    Value,
-    [],
-    'childBoolId',
-    BoolValue,
-    'BooleanValue',
-    pubsub,
-  ),
-  colourValue: genericValueMutation(
-    Value,
-    [],
-    'childColourId',
-    ColourValue,
-    'ColourValue',
-    pubsub,
-  ),
+  floatValue: genericValueMutation(FloatValue, 'FloatValue', pubsub),
+  stringValue: genericValueMutation(StringValue, 'StringValue', pubsub),
+  booleanValue: genericValueMutation(BoolValue, 'BooleanValue', pubsub),
+  colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
+  plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
+  plotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreatePlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await PlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.update(args)
+
+          const resolveObj = {
+            ...newNode.dataValues,
+            user: {
+              id: newNode.dataValues.userId,
+            },
+            device: {
+              id: newNode.dataValues.deviceId,
+            },
+            plot: {
+              id: newNode.dataValues.plotId,
+            },
+          }
+          resolve(resolveObj)
+        }
+      }),
+    )
+  },
   CreateNotification(root, args, context) {
     return logErrorsPromise(
       'create notification mutation',
@@ -491,7 +495,14 @@ const MutationResolver = (
       'delete mutation',
       124,
       authenticated(context, async (resolve, reject) => {
-        const modelsList = [FloatValue, StringValue, ColourValue, BoolValue]
+        // TODO: remove also plotnodes with PlotValues
+        const modelsList = [
+          FloatValue,
+          StringValue,
+          ColourValue,
+          BoolValue,
+          PlotValue,
+        ]
         for (let i = 0; i < modelsList.length; i++) {
           const Model = modelsList[i]
           const entityFound = await Model.find({
@@ -551,6 +562,26 @@ const MutationResolver = (
         }
       }),
     ),
+  deletePlotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreatePlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await PlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.destroy()
+
+          resolve(args.id)
+        }
+      }),
+    )
+  },
+  // TODO: implement this
   // deleteUser: (root, args, context) =>
   //   logErrorsPromise(
   //     'delete device mutation',

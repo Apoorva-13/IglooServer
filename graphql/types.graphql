@@ -184,6 +184,18 @@ type Mutation {
     tileSize: TileSize
     allowedValues: [String!]
   ): ColourValue
+  plotValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    threshold: Float
+    precision: Float
+    boundaries: [Float!]
+    customName: String
+    tileSize: TileSize
+  ): PlotValue
+  plotNode(id: ID!, value: Float, timestamp: DateTime): PlotNode
 
   notification(
     id: ID!
@@ -197,6 +209,7 @@ type Mutation {
   deleteValue(id: ID!): ID
   deleteDevice(id: ID!): ID
   deleteUser(password: String!, twoFactorCode: String): ID
+  deletePlotNode(id: ID!): ID
 }
 
 input DeviceFilter {

@@ -186,14 +186,11 @@ const logErrorsPromise = (name, code, callback) =>
     }
   })
 
-const genericValueMutation = (
-  Model,
-  childProps,
-  childNameId,
-  childModel,
-  __resolveType,
-  pubsub,
-) => (root, args, context) =>
+const genericValueMutation = (childModel, __resolveType, pubsub) => (
+  root,
+  args,
+  context,
+) =>
   logErrorsPromise(
     'genericValue mutation',
     117,
