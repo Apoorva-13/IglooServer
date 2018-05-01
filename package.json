@@ -33,6 +33,7 @@
   "homepage": "https://github.com/hellowitlab/iglooQL",
   "dependencies": {
     "apollo-server-express": "^1.0.2",
+    "aws-sdk": "^2.229.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -44,6 +45,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.17.2",
     "chalk": "^2.3.0",
+    "connect-busboy": "^0.0.2",
     "cors": "^2.8.4",
     "coveralls": "^3.0.0",
     "dotenv": "^4.0.0",
@@ -61,6 +63,7 @@
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.8",
     "subscriptions-transport-ws": "^0.9.4",
+    "uuid": "^3.2.1",
     "web-push": "^3.3.0",
     "winston": "^3.0.0-rc1",
     "winston-slacker": "^1.0.3"
