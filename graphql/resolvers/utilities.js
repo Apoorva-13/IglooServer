@@ -5,7 +5,6 @@ import OTP from 'otp.js'
 import fortuna from 'javascript-fortuna'
 import { withFilter } from 'graphql-subscriptions'
 import winston from 'winston'
-import WinstonSlacker from 'winston-slacker'
 
 require('dotenv').config()
 
@@ -40,17 +39,6 @@ const logger = winston.createLogger({
       filename: 'logs.log',
       format: combine(timestamp(), printf(formatString)), // do not colorize file logs
     }),
-    ...(process.env.NODE_ENV === 'production'
-      ? [
-        new WinstonSlacker({
-          webhook: process.env.SLACK_WEBHOOK,
-          channel: '#alerts',
-          username: 'Production Alert',
-          icon_emoji: ':scream:',
-          level: 'warn',
-        }),
-      ]
-      : []),
   ],
 })
 
