@@ -228,6 +228,8 @@ type Query {
   # get's value's data
   value(id: ID!): Value
 
+  verifyPassword(password: String!): Boolean
+
   allDevices: [Device]
   allValues: [Value]
   allNotifications: [Notification]

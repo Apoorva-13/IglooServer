@@ -91,6 +91,7 @@ const resolvers = {
     JWT_SECRET,
   ),
   Query: QueryResolver(
+    User,
     Device,
     Value,
     FloatValue,
