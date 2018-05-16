@@ -5,6 +5,8 @@ import { createServer } from 'http'
 import schema from './graphql/schema'
 import graphQLServer from './app'
 import { logger } from './graphql/resolvers/utilities'
+import { socketToDeviceMap } from './graphql/resolvers/utilities'
+import { Device } from './postgresql/databaseConnection'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -26,7 +28,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
       execute,
       subscribe,
       schema,
-      onConnect: (connectionParams) => {
+      onConnect: (connectionParams, websocket) => {
         if (!connectionParams.Authorization) {
           return false
         } else if (!connectionParams.Authorization.startsWith('Bearer ')) {
@@ -38,11 +40,17 @@ httpServer.listen(GRAPHQL_PORT, () => {
             connectionParams.Authorization.substring(7),
             process.env.JWT_SECRET,
           )
-          return { auth: decodedJwt }
+          return { auth: decodedJwt, websocket }
         } catch (e) /* istanbul ignore next */ {
           logger.error(e, { label: 'subscriptionServer', code: 119 })
           return false
         }
+      },
+      onDisconnect: (websocket) => {
+        Device.update(
+          { online: false },
+          { where: { id: socketToDeviceMap[websocket] } },
+        ).catch(console.log)
       },
     },
     {

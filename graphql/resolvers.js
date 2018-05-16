@@ -1,6 +1,5 @@
 import { PubSub } from 'graphql-subscriptions'
 import GraphQLToolsTypes from 'graphql-tools-types'
-import Sequelize from 'sequelize'
 import UserResolver from './resolvers/User'
 import MutationResolver from './resolvers/Mutation'
 import QueryResolver from './resolvers/Query'
@@ -9,28 +8,7 @@ import SubscriptionsResolver from './resolvers/subscriptions'
 import NotificationResolver from './resolvers/Notification'
 import ValueResolver from './resolvers/Value'
 import ValueResolvers from './resolvers/Values'
-
-const pubsub = new PubSub()
-
-require('dotenv').config()
-
-/* istanbul ignore if */
-if (!process.env.JWT_SECRET) {
-  throw new Error('Could not load .env')
-}
-
-const { JWT_SECRET } = process.env
-
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  ssl: true,
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: true,
-  },
-  logging: false,
-})
-
-const {
+import {
   User,
   PermanentToken,
   Device,
@@ -44,7 +22,18 @@ const {
   ColourValue,
   Notification,
   WebPushSubscription,
-} = require('../postgresql/databaseDefinition')(sequelize)
+} from '../postgresql/databaseConnection'
+
+const pubsub = new PubSub()
+
+require('dotenv').config()
+
+/* istanbul ignore if */
+if (!process.env.JWT_SECRET) {
+  throw new Error('Could not load .env')
+}
+
+const { JWT_SECRET } = process.env
 
 const resolvers = {
   DateTime: GraphQLToolsTypes.Date({ name: 'DateTime' }),
@@ -99,7 +88,7 @@ const resolvers = {
     BoolValue,
     ColourValue,
   ),
-  Subscription: SubscriptionsResolver(pubsub),
+  Subscription: SubscriptionsResolver(pubsub, Device),
   Value: ValueResolver({
     BoolValue,
     FloatValue,

@@ -1,6 +1,6 @@
-import { subscriptionFilterOnlyMine } from './utilities'
+import { subscriptionFilterOnlyMine, socketToDeviceMap } from './utilities'
 
-const subscriptionResolver = pubsub => ({
+const subscriptionResolver = (pubsub, Device) => ({
   deviceCreated: subscriptionFilterOnlyMine('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOnlyMine('valueCreated', pubsub),
   notificationCreated: subscriptionFilterOnlyMine(
@@ -20,5 +20,32 @@ const subscriptionResolver = pubsub => ({
   ),
   valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
   deviceDeleted: subscriptionFilterOnlyMine('deviceDeleted', pubsub),
+  keepOnline: {
+    subscribe: async (root, args, context, info) => {
+      if (context.auth) {
+        // sets the online status of the passed device as true
+        const deviceFound = await Device.find({
+          where: { id: args.deviceId },
+        })
+
+        if (!deviceFound) {
+          throw new Error("Device doesn't exist. Use `CreateDevice` to create one")
+        } else if (deviceFound.userId !== context.auth.userId) {
+          throw new Error('You are not allowed to access details about this resource')
+        } else {
+          const newDevice = await deviceFound.update({ online: true })
+          pubsub.publish('deviceUpdated', {
+            deviceUpdated: newDevice.dataValues,
+            userId: context.auth.userId,
+          })
+        }
+
+        socketToDeviceMap[context.websocket] = args.deviceId
+
+        return pubsub.asyncIterator('bogusIterator') // this iterator will never send any data
+      }
+      throw new Error('No authorization token')
+    },
+  },
 })
 export default subscriptionResolver
