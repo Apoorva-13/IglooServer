@@ -168,7 +168,7 @@ const logErrorsPromise = (name, code, callback) =>
       if (e.parent && e.parent.routine === 'string_to_uuid') {
         reject(new Error('The ID you provided is not a valid ID, check for typing mistakes'))
       } else {
-        logger.error(JSON.stringify(e, null, 2), { label: name, code })
+        logger.error(e.toString(), { label: name, code })
         reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
       }
     }
