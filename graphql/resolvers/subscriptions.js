@@ -19,5 +19,6 @@ const subscriptionResolver = pubsub => ({
     pubsub,
   ),
   valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
+  deviceDeleted: subscriptionFilterOnlyMine('deviceDeleted', pubsub),
 })
 export default subscriptionResolver
