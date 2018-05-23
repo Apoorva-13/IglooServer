@@ -1,4 +1,3 @@
-import { PubSub } from 'graphql-subscriptions'
 import GraphQLToolsTypes from 'graphql-tools-types'
 import UserResolver from './resolvers/User'
 import MutationResolver from './resolvers/Mutation'
@@ -23,8 +22,7 @@ import {
   Notification,
   WebPushSubscription,
 } from '../postgresql/databaseConnection'
-
-const pubsub = new PubSub()
+import { pubsub } from '../shared'
 
 require('dotenv').config()
 

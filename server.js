@@ -7,6 +7,7 @@ import graphQLServer from './app'
 import { logger } from './graphql/resolvers/utilities'
 import { socketToDeviceMap } from './graphql/resolvers/utilities'
 import { Device } from './postgresql/databaseConnection'
+import { pubsub } from './shared'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -46,11 +47,14 @@ httpServer.listen(GRAPHQL_PORT, () => {
           return false
         }
       },
-      onDisconnect: (websocket) => {
-        Device.update(
-          { online: false },
-          { where: { id: socketToDeviceMap[websocket] } },
-        ).catch(console.log)
+      onDisconnect: async (websocket) => {
+        const { deviceId, userId } = socketToDeviceMap[websocket]
+        await Device.update({ online: false }, { where: { id: deviceId } })
+
+        pubsub.publish('deviceUpdated', {
+          deviceUpdated: { id: deviceId },
+          userId,
+        })
       },
     },
     {

@@ -40,7 +40,10 @@ const subscriptionResolver = (pubsub, Device) => ({
           })
         }
 
-        socketToDeviceMap[context.websocket] = args.deviceId
+        socketToDeviceMap[context.websocket] = {
+          deviceId: args.deviceId,
+          userId: context.auth.userId,
+        }
 
         return pubsub.asyncIterator('bogusIterator') // this iterator will never send any data
       }
