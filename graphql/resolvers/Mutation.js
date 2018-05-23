@@ -410,7 +410,13 @@ const MutationResolver = (
         const deviceFound = await Device.find({
           where: { id: args.deviceId },
         })
-        if (!deviceFound) {
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+
+        if (!userFound) {
+          reject('This user was deleted')
+        } else if (!deviceFound) {
           reject("Device doesn't exist. Use `CreateDevice` to create one")
         } else if (deviceFound.userId !== context.auth.userId) {
           reject('You are not allowed to access details about this resource')
@@ -451,26 +457,28 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
 
-          const notificationSubscriptions = await WebPushSubscription.findAll({
-            where: { userId: context.auth.userId },
-          })
+          if (!userFound.quietMode) {
+            const notificationSubscriptions = await WebPushSubscription.findAll({
+              where: { userId: context.auth.userId },
+            })
 
-          notificationSubscriptions.map(notificationSubscription =>
-            webpush.sendNotification(
-              {
-                endpoint: notificationSubscription.endpoint,
-                expirationTime: notificationSubscription.expirationTime,
-                keys: {
-                  p256dh: notificationSubscription.p256dh,
-                  auth: notificationSubscription.auth,
+            notificationSubscriptions.map(notificationSubscription =>
+              webpush.sendNotification(
+                {
+                  endpoint: notificationSubscription.endpoint,
+                  expirationTime: notificationSubscription.expirationTime,
+                  keys: {
+                    p256dh: notificationSubscription.p256dh,
+                    auth: notificationSubscription.auth,
+                  },
                 },
-              },
-              JSON.stringify({
-                content,
-                date,
-                device: deviceFound,
-              }),
-            ))
+                JSON.stringify({
+                  content,
+                  date,
+                  device: deviceFound,
+                }),
+              ))
+          }
         }
       }),
     )
