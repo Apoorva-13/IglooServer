@@ -141,7 +141,12 @@ type Mutation {
   ): PlotNode
 
   # changes user's data
-  user(email: String!): User
+  user(
+    email: String
+    timezone: String
+    language: String
+    quietMode: Boolean
+  ): User
   # changes device's data
   device(
     id: ID!
@@ -305,6 +310,9 @@ type User {
   values: [Value!]!
   notifications: [Notification!]!
   permanentTokens: [PermanentToken!]!
+  quietMode: Boolean
+  language: String
+  timezone: String
 }
 
 type PermanentToken {
