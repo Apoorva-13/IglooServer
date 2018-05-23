@@ -39,6 +39,15 @@ const databaseDefinition = (sequelize) => {
     twoFactorSecret: {
       type: Sequelize.STRING,
     },
+    language: {
+      type: Sequelize.STRING,
+    },
+    timezone: {
+      type: Sequelize.STRING,
+    },
+    quietMode: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {
