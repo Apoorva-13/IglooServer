@@ -36,6 +36,7 @@ const MutationResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  MapValue,
   PlotValue,
   PlotNode,
   Notification,
@@ -277,6 +278,7 @@ const MutationResolver = (
   CreateStringValue: CreateGenericValue(Device, StringValue, pubsub),
   CreateBooleanValue: CreateGenericValue(Device, BoolValue, pubsub),
   CreateColourValue: CreateGenericValue(Device, ColourValue, pubsub),
+  CreateMapValue: CreateGenericValue(Device, MapValue, pubsub),
   CreatePlotValue: CreateGenericValue(Device, PlotValue, pubsub),
   CreatePlotNode(root, args, context) {
     return logErrorsPromise(
@@ -366,6 +368,7 @@ const MutationResolver = (
   stringValue: genericValueMutation(StringValue, 'StringValue', pubsub),
   booleanValue: genericValueMutation(BoolValue, 'BooleanValue', pubsub),
   colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
+  mapValue: genericValueMutation(MapValue, 'MapValue', pubsub),
   plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
   plotNode(root, args, context) {
     return logErrorsPromise(
@@ -534,6 +537,7 @@ const MutationResolver = (
           ColourValue,
           BoolValue,
           PlotValue,
+          MapValue,
         ]
         for (let i = 0; i < modelsList.length; i++) {
           const Model = modelsList[i]
@@ -582,7 +586,16 @@ const MutationResolver = (
               },
             })
 
-          await Promise.all([FloatValue, StringValue, ColourValue, BoolValue, Notification].map(deleteChild))
+          await Promise.all([
+            FloatValue,
+            StringValue,
+            ColourValue,
+            BoolValue,
+            MapValue,
+            PlotValue,
+            PlotNode,
+            Notification,
+          ].map(deleteChild))
 
           await deviceFound.destroy()
 

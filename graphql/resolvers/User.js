@@ -29,6 +29,7 @@ const UserResolver = (
   BoolValue,
   ColourValue,
   PlotValue,
+  MapValue,
   Notification,
 ) => ({
   email: retrieveUserScalarProp(User, 'email'),
@@ -86,6 +87,7 @@ const UserResolver = (
               StringValue,
               ColourValue,
               PlotValue,
+              MapValue,
             },
             {
               where: { userId: root.id },

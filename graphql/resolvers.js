@@ -48,6 +48,7 @@ const resolvers = {
     BoolValue,
     ColourValue,
     PlotValue,
+    MapValue,
     Notification,
   ),
   Device: DeviceResolver(
@@ -72,6 +73,7 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    MapValue,
     PlotValue,
     PlotNode,
     Notification,
