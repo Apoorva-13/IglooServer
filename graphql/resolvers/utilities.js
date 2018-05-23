@@ -414,6 +414,8 @@ const genericDelete = (Model, subscriptionName, pubsub) => (
     }),
   )
 
+const socketToDeviceMap = {}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -430,4 +432,5 @@ module.exports = {
   findValue,
   genericDelete,
   generatePermanentAuthenticationToken,
+  socketToDeviceMap,
 }

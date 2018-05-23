@@ -9,32 +9,21 @@ import bodyParser from 'body-parser'
 import schema from './graphql/schema'
 import expressJwt from 'express-jwt'
 import cors from 'cors'
-import Sequelize from 'sequelize'
 import webpush from 'web-push'
 import { pipeStreamToS3, getObjectOwner } from './s3helpers'
 import Busboy from 'connect-busboy'
 import AWS from 'aws-sdk'
 import path from 'path'
+import {
+  PermanentToken,
+  WebPushSubscription,
+} from './postgresql/databaseConnection'
 
 webpush.setVapidDetails(
   'http://igloo.witlab.io/',
   process.env.PUBLIC_VAPID_KEY,
   process.env.PRIVATE_VAPID_KEY,
 )
-
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  ssl: true,
-  dialect: 'postgres',
-  dialectOptions: {
-    ssl: true,
-  },
-  logging: false,
-})
-
-const {
-  PermanentToken,
-  WebPushSubscription,
-} = require('./postgresql/databaseDefinition')(sequelize)
 
 const GRAPHQL_PORT = process.env.PORT || 3000
 /* istanbul ignore next */

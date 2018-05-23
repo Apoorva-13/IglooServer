@@ -85,6 +85,9 @@ const databaseDefinition = (sequelize) => {
     index: {
       type: Sequelize.INTEGER,
     },
+    online: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const Notification = sequelize.define('notification', {

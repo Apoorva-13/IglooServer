@@ -265,6 +265,8 @@ type Subscription {
   deviceDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
+  # keeps the device's status set as online
+  keepOnline(deviceId: ID!): Boolean
 }
 
 type User {
@@ -298,6 +300,7 @@ type Device {
   user: User!
   icon: String
   notifications: [Notification!]!
+  online: Boolean
 }
 
 enum ValuePermission {
