@@ -142,6 +142,9 @@ const MutationResolver = (
           const newUser = await User.create({
             email: args.email,
             password: encryptedPass,
+            quietMode: false,
+            language: 'en-GB',
+            timezone: '+00:00_Greenwich',
           })
 
           resolve({
@@ -328,9 +331,7 @@ const MutationResolver = (
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
         } else {
-          const newUser = await userFound.update({
-            email: args.email,
-          })
+          const newUser = await userFound.update(args)
           resolve(newUser.dataValues)
 
           pubsub.publish('userUpdated', {
@@ -466,6 +467,8 @@ const MutationResolver = (
               },
               JSON.stringify({
                 content,
+                date,
+                device: deviceFound,
               }),
             ))
         }
