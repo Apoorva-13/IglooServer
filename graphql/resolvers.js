@@ -89,6 +89,8 @@ const resolvers = {
     StringValue,
     BoolValue,
     ColourValue,
+    PlotValue,
+    MapValue,
   ),
   Subscription: SubscriptionsResolver(pubsub, Device),
   Value: ValueResolver({

@@ -9,6 +9,8 @@ const QueryResolver = (
   StringValue,
   BoolValue,
   ColourValue,
+  PlotValue,
+  MapValue,
 ) => ({
   user(root, args, context) {
     return new Promise(authenticated(context, (resolve) => {
@@ -63,6 +65,8 @@ const QueryResolver = (
             FloatValue,
             StringValue,
             ColourValue,
+            PlotValue,
+            MapValue,
           },
           { where: { id: args.id } },
           context.auth.userId,
