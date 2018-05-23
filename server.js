@@ -48,13 +48,15 @@ httpServer.listen(GRAPHQL_PORT, () => {
         }
       },
       onDisconnect: async (websocket) => {
-        const { deviceId, userId } = socketToDeviceMap[websocket]
-        await Device.update({ online: false }, { where: { id: deviceId } })
+        if (socketToDeviceMap.hasOwnProperty(websocket)) {
+          const { deviceId, userId } = socketToDeviceMap[websocket]
+          await Device.update({ online: false }, { where: { id: deviceId } })
 
-        pubsub.publish('deviceUpdated', {
-          deviceUpdated: { id: deviceId },
-          userId,
-        })
+          pubsub.publish('deviceUpdated', {
+            deviceUpdated: { id: deviceId },
+            userId,
+          })
+        }
       },
     },
     {
