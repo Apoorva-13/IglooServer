@@ -104,6 +104,20 @@ type Mutation {
     tileSize: TileSize
     allowedValues: [String!]
   ): ColourValue
+  # Creates a MapValue
+  CreateMapValue(
+    deviceId: ID!
+    permission: ValuePermission!
+    relevance: ValueRelevance!
+    valueDetails: String
+    customName: String
+    tileSize: TileSize
+    # GEOJson
+    value: String
+    latitude: Float
+    longitude: Float
+    height: Float
+  ): MapValue
   # Creates a new FloatValue
   CreatePlotValue(
     deviceId: ID!
@@ -184,6 +198,19 @@ type Mutation {
     tileSize: TileSize
     allowedValues: [String!]
   ): ColourValue
+  mapValue(
+    id: ID!
+    permission: ValuePermission
+    relevance: ValueRelevance
+    valueDetails: String
+    customName: String
+    tileSize: TileSize
+    # GEOJson
+    value: String
+    latitude: Float
+    longitude: Float
+    height: Float
+  ): MapValue
   plotValue(
     id: ID!
     permission: ValuePermission
@@ -461,7 +488,10 @@ type MapValue implements Value {
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
-  value: Map
+  value: String
+  latitude: Float
+  longitude: Float
+  height: Float
   tileSize: TileSize!
   customName: String
 }

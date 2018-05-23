@@ -269,7 +269,7 @@ const firstResolve = promises =>
 
 const findAllValues = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue, PlotValue,
+    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
   },
   query,
   userId,
@@ -279,6 +279,7 @@ const findAllValues = (
   const stringValues = StringValue.findAll(query)
   const colourValues = ColourValue.findAll(query)
   const plotValues = PlotValue.findAll(query)
+  const mapValues = MapValue.findAll(query)
 
   return Promise.all([
     booleanValues,
@@ -286,7 +287,15 @@ const findAllValues = (
     stringValues,
     colourValues,
     plotValues,
-  ]).then(([booleanValues, floatValues, stringValues, colourValues, plotValues]) => [
+    mapValues,
+  ]).then(([
+    booleanValues,
+    floatValues,
+    stringValues,
+    colourValues,
+    plotValues,
+    mapValues,
+  ]) => [
     ...booleanValues
       .map(value => ({
         ...value.dataValues,
@@ -327,13 +336,21 @@ const findAllValues = (
         __resolveType: 'PlotValue',
       }))
       .filter(value => value.userId === userId),
+    ...mapValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'MapValue',
+      }))
+      .filter(value => value.userId === userId),
   ])
 }
 
 // try refactoring this with firstResolve
 const findValue = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue,
+    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
   },
   query,
   userId,
@@ -375,7 +392,34 @@ const findValue = (
       }
       : value))
 
-  return Promise.all([booleanValue, floatValue, stringValue, colourValue])
+  const mapValue = MapValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'MapValue',
+      }
+      : value))
+
+  const plotValue = PlotValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'PlotValue',
+      }
+      : value))
+
+  return Promise.all([
+    booleanValue,
+    floatValue,
+    stringValue,
+    colourValue,
+    mapValue,
+    plotValue,
+  ])
     .then(values => values.reduce((acc, val) => val || acc, null))
     .then((value) => {
       if (!value) throw new Error('The requested resource does not exist')

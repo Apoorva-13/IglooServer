@@ -153,7 +153,7 @@ const databaseDefinition = (sequelize) => {
   const StringValue = sequelize.define('stringValue', {
     ...Value,
     value: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: false,
     },
     maxChars: {
@@ -197,9 +197,11 @@ const databaseDefinition = (sequelize) => {
     longitude: {
       type: Sequelize.FLOAT,
     },
-    map: {
-      type: Sequelize.JSON,
-      allowNull: false,
+    height: {
+      type: Sequelize.FLOAT,
+    },
+    value: {
+      type: Sequelize.TEXT,
     },
   })
   const ColourValue = sequelize.define('colourValue', {
