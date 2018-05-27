@@ -112,8 +112,10 @@ app.post('/webPushSubscribe', async (req, res) => {
 AWS.config.update({ region: 'eu-west-1' })
 const s3 = new AWS.S3()
 
-app.post('/fileupload', Busboy(), async (req, res) => {
+app.post('/fileupload', Busboy(), async (req, res, err) => {
   if (req.user) {
+    let handled = false
+
     req.pipe(req.busboy)
 
     req.busboy.on('error', (err) => {
@@ -121,6 +123,7 @@ app.post('/fileupload', Busboy(), async (req, res) => {
     })
 
     req.busboy.on('file', async (fieldname, file, filename) => {
+      handled = true
       const extension = path.extname(filename)
       const newObject = await pipeStreamToS3(
         s3,
@@ -130,6 +133,10 @@ app.post('/fileupload', Busboy(), async (req, res) => {
         req.user.userId,
       )
       res.send(newObject.key)
+    })
+
+    req.busboy.on('finish', async () => {
+      if (!handled) res.status(400).send('No file attached')
     })
   } else {
     res.status(401).send('Missing valid authentication token')

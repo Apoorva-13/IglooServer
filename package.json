@@ -83,6 +83,8 @@
     "minimal-graphql": "^1.0.3",
     "nodemon": "^1.12.1",
     "prettier-eslint-cli": "^4.7.0",
+    "request": "^2.87.0",
+    "request-promise-native": "^1.0.5",
     "supertest": "^3.0.0"
   },
   "peerDependencies": {

@@ -155,7 +155,6 @@ const MutationResolver = (
             ),
           })
         } catch (e) {
-          console.log(e)
           if (e.errors[0].validatorKey === 'isEmail') {
             reject('Invalid email')
           } else {
