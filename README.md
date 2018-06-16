@@ -1,3 +1,18 @@
-# Igloo GraphQL [![Build](https://travis-ci.org/hellowitlab/iglooQL.svg?branch=master)](https://travis-ci.org/hellowitlab/iglooQL) [![Coverage Status](https://coveralls.io/repos/github/hellowitlab/iglooQL/badge.svg)](https://coveralls.io/github/hellowitlab/iglooQL?branch=master)
+# Igloo Houston
+Igloo Houston is the back-end service of Igloo Cloud Framework.
 
-GraphQL backend for the Igloo Platform, powered by Apollo
+This service is still in development, some features may be missing. If your Igloo-based project needs a missing feature in order to work, please check for future updates or help us by contributing.
+## Getting started
+TBD
+#### Prerequisites
+TBD
+#### Installing
+TBD
+## Documentation
+TBD
+## Contributing
+TBD
+## Acknowledgments
+TBD
+## License
+See the [LICENSE](https://github.com/hellowitlab/iglooHouston/blob/master/LICENSE) file for license rights and limitations (MIT).
