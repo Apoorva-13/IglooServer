@@ -82,4 +82,17 @@ describe('images', () => {
         done()
       })
   })
+
+  it('should be able to retrieve images', async (done) => {
+    const res = await request.get({
+      url: `http://localhost:3000/file/${imageId}`,
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    })
+
+    console.log(res)
+
+    done()
+  })
 })
