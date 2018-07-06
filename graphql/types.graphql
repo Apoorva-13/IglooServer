@@ -234,12 +234,12 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
-    value: Float!
+    value: Float
     # used when displaying or changing the value in Igloo Aurora
     precision: Float
     # [min, max]
@@ -255,12 +255,12 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
-    value: String!
+    value: String
     # max length of the string
     maxChars: Int
     # name of the value, displayed in Igloo Aurora
@@ -276,12 +276,12 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
-    value: Boolean!
+    value: Boolean
     # name of the value, displayed in Igloo Aurora
     customName: String
     # tile size in Igloo Aurora
@@ -293,13 +293,13 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
     # hex code
-    value: String!
+    value: String
     # name of the value, displayed in Igloo Aurora
     customName: String
     # tile size in Igloo Aurora
@@ -313,9 +313,9 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
@@ -334,9 +334,9 @@ type Mutation {
     # value id
     id: ID!
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
-    permission: ValuePermission!
+    permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    relevance: ValueRelevance
     # additional details about the value
     valueDetails: String
     # used when the end-user reads or modifies the value
