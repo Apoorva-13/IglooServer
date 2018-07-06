@@ -35,12 +35,14 @@ AWS_SECRET_ACCESS_KEY=
 
 The JWT secret can be whatever password you like, we suggest you [generate a random one](https://www.lastpass.com/password-generator). You can generate the VAPID key pair with [this web app](https://web-push-codelab.glitch.me/). The database URL is a PostgreSQL connection URL with this schema `postgresql://user:password@domain:port/dbname`. The Bucket name is the name of your S3 bucket.
 
-##### Obtaining S3 credentials
+##### Obtaining credentials
 - Create credentials: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/getting-your-credentials.html
 	- create the new account, with access type *programmatic access*
-	- attach to the account the policy AmazonS3FullAccess
+	- attach to the account the policy AmazonS3FullAccess and the policy AmazonSESFullAccess
 - Save credentials locally: https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/loading-node-credentials-shared.html
 - copy the credentials in the `.env` file
+
+TODO: SES setup and S3 setup
 
 #### Database
 To create the database structure needed just run the `setupDatabase` script:

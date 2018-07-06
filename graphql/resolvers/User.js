@@ -38,6 +38,8 @@ const UserResolver = (
   quietMode: retrieveUserScalarProp(User, 'quietMode'),
   language: retrieveUserScalarProp(User, 'language'),
   timezone: retrieveUserScalarProp(User, 'timezone'),
+  devMode: retrieveUserScalarProp(User, 'devMode'),
+  nightMode: retrieveUserScalarProp(User, 'nightMode'),
   devices(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',

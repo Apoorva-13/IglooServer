@@ -48,6 +48,12 @@ const databaseDefinition = (sequelize) => {
     quietMode: {
       type: Sequelize.BOOLEAN,
     },
+    devMode: {
+      type: Sequelize.BOOLEAN,
+    },
+    nightMode: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {

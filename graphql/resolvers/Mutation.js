@@ -144,7 +144,9 @@ const MutationResolver = (
             password: encryptedPass,
             quietMode: false,
             language: 'en-GB',
-            timezone: '+00:00_Greenwich',
+            timezone: '+00:00_Greenwich', // TODO: Daylight Saving Time
+            devMode: false,
+            nightMode: false,
           })
 
           resolve({
