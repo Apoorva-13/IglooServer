@@ -401,6 +401,8 @@ type Query {
   device(id: ID!): Device
   # get's value's data
   value(id: ID!): Value
+  # get notification's data
+  notification(id: ID!): Notification
 
   verifyPassword(password: String!): Boolean
 

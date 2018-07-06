@@ -89,6 +89,7 @@ const resolvers = {
     ColourValue,
     PlotValue,
     MapValue,
+    Notification,
   ),
   Subscription: SubscriptionsResolver(pubsub, Device),
   Value: ValueResolver({

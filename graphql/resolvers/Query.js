@@ -11,6 +11,7 @@ const QueryResolver = (
   ColourValue,
   PlotValue,
   MapValue,
+  Notification,
 ) => ({
   user(root, args, context) {
     return new Promise(authenticated(context, (resolve) => {
@@ -93,6 +94,24 @@ const QueryResolver = (
           resolve(true)
         } else {
           resolve(false)
+        }
+      }),
+    )
+  },
+  notification(root, args, context) {
+    return logErrorsPromise(
+      'notificationQuery',
+      300,
+      authenticated(context, async (resolve, reject) => {
+        const notificationFound = await Notification.find({
+          where: { id: args.id },
+        })
+        if (!notificationFound) {
+          reject('The requested resource does not exist')
+        } else if (notificationFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          resolve(notificationFound)
         }
       }),
     )
