@@ -357,20 +357,24 @@ const MutationResolver = (
         })
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
+        } else if (userFound.stripeCustomerId) {
+          // replaces customer payment method
+          await stripe.customers.createSource(userFound.stripeCustomerId, {
+            source: args.stripeToken,
+          })
+
+          resolve(true)
         } else {
+          // create a new customer and attaches
           const customer = await stripe.customers.create({
             email: userFound.email,
             source: args.stripeToken,
           })
 
-          try {
-            const newUser = await userFound.update({
-              stripeCustomerId: customer.id,
-            })
-            resolve(true)
-          } catch (e) {
-            resolve(false)
-          }
+          await userFound.update({
+            stripeCustomerId: customer.id,
+          })
+          resolve(true)
         }
       }),
     )
