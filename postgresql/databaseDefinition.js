@@ -54,6 +54,9 @@ const databaseDefinition = (sequelize) => {
     nightMode: {
       type: Sequelize.BOOLEAN,
     },
+    stripeCustomerId: {
+      type: Sequelize.STRING,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {

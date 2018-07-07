@@ -214,6 +214,8 @@ type Mutation {
     nightMode: Boolean
   ): User
 
+  updatePaymentInfo(stripeToken: String!): Boolean
+
   # changes device's data
   device(
     # device id

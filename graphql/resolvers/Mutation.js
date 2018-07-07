@@ -13,6 +13,7 @@ import {
   genericDelete,
 } from './utilities'
 import webpush from 'web-push'
+import Stripe from 'stripe'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -26,6 +27,8 @@ webpush.setVapidDetails(
   process.env.PRIVATE_VAPID_KEY,
 )
 const SALT_ROUNDS = 10
+
+const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
 const MutationResolver = (
   User,
@@ -340,6 +343,34 @@ const MutationResolver = (
             userUpdated: newUser.dataValues,
             userId: context.auth.userId,
           })
+        }
+      }),
+    )
+  },
+  updatePaymentInfo(root, args, context) {
+    return logErrorsPromise(
+      'updatePaymentInfo',
+      500,
+      authenticated(context, async (resolve, reject) => {
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          const customer = await stripe.customers.create({
+            email: userFound.email,
+            source: args.stripeToken,
+          })
+
+          try {
+            const newUser = await userFound.update({
+              stripeCustomerId: customer.id,
+            })
+            resolve(true)
+          } catch (e) {
+            resolve(false)
+          }
         }
       }),
     )
