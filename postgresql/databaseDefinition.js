@@ -57,6 +57,9 @@ const databaseDefinition = (sequelize) => {
     stripeCustomerId: {
       type: Sequelize.STRING,
     },
+    monthUsage: {
+      type: Sequelize.INTEGER,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {
