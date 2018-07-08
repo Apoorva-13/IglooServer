@@ -54,6 +54,9 @@ const databaseDefinition = (sequelize) => {
     nightMode: {
       type: Sequelize.BOOLEAN,
     },
+    emailIsVerified: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {

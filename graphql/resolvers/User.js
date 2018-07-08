@@ -40,6 +40,7 @@ const UserResolver = (
   timezone: retrieveUserScalarProp(User, 'timezone'),
   devMode: retrieveUserScalarProp(User, 'devMode'),
   nightMode: retrieveUserScalarProp(User, 'nightMode'),
+  emailIsVerified: retrieveUserScalarProp(User, 'emailIsVerified'),
   devices(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',

@@ -463,7 +463,25 @@ const genericDelete = (Model, subscriptionName, pubsub) => (
 
 const socketToDeviceMap = {}
 
-const sendVerificationEmail = (email) => {
+const sendVerificationEmail = (email, userId) => {
+  // TODO: use different jwt secrets?
+  const verificationToken = jwt.encode(
+    {
+      userId,
+      email,
+      tokenType: 'EMAIL_VERIFICATION',
+    },
+    process.env.JWT_SECRET,
+    'HS512',
+  )
+
+  const GRAPHQL_PORT = process.env.PORT || 3000
+  const serverLink =
+    process.env.NODE_ENV === 'production'
+      ? 'https://iglooql.herokuapp.com/verifyEmail/'
+      : `http://localhost:${GRAPHQL_PORT}/verifyEmail/`
+  const emailVerificationLink = serverLink + verificationToken
+
   // TODO: create a template for the email verification
   ses.sendEmail(
     {
@@ -507,4 +525,5 @@ module.exports = {
   genericDelete,
   generatePermanentAuthenticationToken,
   socketToDeviceMap,
+  sendVerificationEmail,
 }

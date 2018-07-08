@@ -17,7 +17,9 @@ import path from 'path'
 import {
   PermanentToken,
   WebPushSubscription,
+  User,
 } from './postgresql/databaseConnection'
+import jwt from 'jwt-simple'
 
 webpush.setVapidDetails(
   'http://igloo.witlab.io/',
@@ -40,16 +42,22 @@ app.use(expressJwt({
   credentialsRequired: false,
   isRevoked: async (req, payload, done) => {
     if (payload.tokenType === 'TEMPORARY') done(null, false)
-    try {
-      const DatabaseToken = await PermanentToken.find({
-        where: { id: payload.tokenId },
-      })
-      return done(
-        null,
-        !(DatabaseToken && DatabaseToken.userId === payload.userId),
-      )
-    } catch (e) {
-      done('Internal error')
+    else if (payload.tokenType === 'PERMANENT') {
+      try {
+        const DatabaseToken = await PermanentToken.find({
+          where: { id: payload.tokenId },
+        })
+        return done(
+          null,
+          !(DatabaseToken && DatabaseToken.userId === payload.userId),
+        )
+      } catch (e) {
+        done('Internal error')
+      }
+    } else {
+      // TODO: if we use different jwt secrets this will become unnecessary
+      // if the token is not an authentication token reject it
+      done(null, true)
     }
   },
 }))
@@ -183,6 +191,37 @@ app.get('/fileuploadtest', (req, res) => {
      <button onclick="send()">SEND</button>
    
  </body></html>`)
+})
+
+app.get('/verifyEmail/:verificationToken', async (req, res) => {
+  const { verificationToken } = req.params
+  try {
+    const decodedToken = jwt.decode(
+      verificationToken,
+      process.env.JWT_SECRET,
+      false,
+      'HS512',
+    )
+
+    if (decodedToken.tokenType !== 'EMAIL_VERIFICATION') {
+      res.send('Malformed token')
+    } else {
+      const foundUser = await User.find({ userId: decodedToken.userId })
+
+      if (!foundUser) {
+        res.send("User doesn't exist anymore")
+      } else if (decodedToken.email !== foundUser.email) {
+        res.send("This isn't your primary email anymore")
+      } else {
+        foundUser.update({ emailIsVerified: true })
+
+        // TODO: redirect to Igloo Aurora
+        res.send('Verified')
+      }
+    }
+  } catch (e) {
+    res.send('Failed verification')
+  }
 })
 
 export default app

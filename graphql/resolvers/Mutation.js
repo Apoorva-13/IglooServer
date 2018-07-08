@@ -11,6 +11,7 @@ import {
   logErrorsPromise,
   getPropsIfDefined,
   genericDelete,
+  sendVerificationEmail,
 } from './utilities'
 import webpush from 'web-push'
 
@@ -147,6 +148,7 @@ const MutationResolver = (
             timezone: '+00:00_Greenwich', // TODO: Daylight Saving Time
             devMode: false,
             nightMode: false,
+            emailIsVerified: false,
           })
 
           resolve({
@@ -156,6 +158,8 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+
+          sendVerificationEmail(args.email, newUser.id)
         } catch (e) {
           console.log(e)
           if (e.errors[0].validatorKey === 'isEmail') {
@@ -333,13 +337,20 @@ const MutationResolver = (
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
         } else {
-          const newUser = await userFound.update(args)
+          const updateObj = args.email
+            ? { ...args, emailIsVerified: false }
+            : args
+          const newUser = await userFound.update(updateObj)
           resolve(newUser.dataValues)
 
           pubsub.publish('userUpdated', {
             userUpdated: newUser.dataValues,
             userId: context.auth.userId,
           })
+
+          if (args.email) {
+            sendVerificationEmail(args.email, newUser.id)
+          }
         }
       }),
     )

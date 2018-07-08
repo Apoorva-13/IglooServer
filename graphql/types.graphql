@@ -459,6 +459,7 @@ type User {
   nightMode: Boolean
   language: String
   timezone: String
+  emailIsVerified: Boolean
 }
 
 type PermanentToken {
