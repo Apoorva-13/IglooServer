@@ -5,6 +5,7 @@ import OTP from 'otp.js'
 import fortuna from 'javascript-fortuna'
 import { withFilter } from 'graphql-subscriptions'
 import winston from 'winston'
+import AWS from 'aws-sdk'
 
 require('dotenv').config()
 
@@ -12,6 +13,8 @@ require('dotenv').config()
 if (!process.env.JWT_SECRET) {
   throw new Error('Could not load .env')
 }
+
+const ses = new AWS.SES({ region: 'eu-west-1' })
 
 const { combine, timestamp, printf } = winston.format
 
@@ -459,6 +462,33 @@ const genericDelete = (Model, subscriptionName, pubsub) => (
   )
 
 const socketToDeviceMap = {}
+
+const sendVerificationEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <igloo@igloo.witlab.io>",
+      Destination: { ToAddresses: ['99.zanin@gmail.com'] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `Verify your account clicking this link: <a href="${emailVerificationLink}">VERIFY</a>`,
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: `Verify your account visiting this link: ${emailVerificationLink}`,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Verify your account',
+        },
+      },
+    },
+    console.log,
+  )
+}
 
 module.exports = {
   authenticated,
