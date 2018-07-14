@@ -151,6 +151,7 @@ const MutationResolver = (
             timezone: '+00:00_Greenwich', // TODO: Daylight Saving Time
             devMode: false,
             nightMode: false,
+            monthUsage: 0,
           })
 
           resolve({

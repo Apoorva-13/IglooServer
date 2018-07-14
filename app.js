@@ -18,6 +18,7 @@ import UpdateBatcher from 'update-batcher'
 import {
   PermanentToken,
   WebPushSubscription,
+  User,
 } from './postgresql/databaseConnection'
 
 webpush.setVapidDetails(
@@ -55,7 +56,17 @@ app.use(expressJwt({
   },
 }))
 
-const updateUserBilling = user => bill => console.log(user, bill)
+const updateUserBilling = auth => async (bill) => {
+  const userFound = await User.find({ where: { id: auth.userId } })
+
+  // TODO: handle this failure gracefully
+  if (!userFound) {
+    throw new Error("User doesn't exist. Use `SignupUser` to create one")
+  } else {
+    const newUser = await userFound.increment('monthUsage', { by: bill })
+    return newUser.monthUsage
+  }
+}
 
 app.use(
   '/graphql',

@@ -461,6 +461,7 @@ type User {
   nightMode: Boolean
   language: String
   timezone: String
+  monthUsage: Float
 }
 
 type PermanentToken {

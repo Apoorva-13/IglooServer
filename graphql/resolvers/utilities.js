@@ -117,6 +117,7 @@ const getPropsIfDefined = (args, props) => {
   return propObject
 }
 
+const MUTATION_COST = 2
 // generic resolver for CreateXValue mutations
 const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
   new Promise(authenticated(context, async (resolve, reject) => {
@@ -153,6 +154,7 @@ const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
         })
 
         resolve(resolveObj)
+        context.billingUpdater.update(MUTATION_COST)
       }
     } catch (e) /* istanbul ignore next */ {
       logger.error(e, { label: 'CreateGenericValue', code: 112 })
@@ -205,6 +207,7 @@ const genericValueMutation = (childModel, __resolveType, pubsub) => (
           valueUpdated: { ...resolveObj, __resolveType },
           userId: context.auth.userId,
         })
+        context.billingUpdater.update(MUTATION_COST)
       }
     }),
   )
