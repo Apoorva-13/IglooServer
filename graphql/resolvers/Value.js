@@ -1,6 +1,8 @@
 import { authenticated, logErrorsPromise } from './utilities'
 
-// remove this piece
+const QUERY_COST = 1
+
+// TODO: remove this piece
 // VVVVVVVVVVV
 const firstResolve = promises =>
   new Promise((resolve, reject) => {

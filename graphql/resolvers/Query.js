@@ -1,6 +1,8 @@
 import { authenticated, logErrorsPromise, findValue } from './utilities'
 import bcrypt from 'bcryptjs'
 
+const QUERY_COST = 1
+
 const QueryResolver = (
   User,
   Device,
@@ -16,6 +18,7 @@ const QueryResolver = (
   user(root, args, context) {
     return new Promise(authenticated(context, (resolve) => {
       resolve({ id: context.auth.userId })
+      context.billingUpdater.update(QUERY_COST)
     }))
   },
   device(root, args, context) {
@@ -51,6 +54,7 @@ const QueryResolver = (
               id: userId,
             },
           })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
@@ -74,6 +78,7 @@ const QueryResolver = (
         ).catch(e => reject(e))
 
         resolve(valueFound)
+        context.billingUpdater.update(QUERY_COST)
       }),
     )
   },
@@ -112,6 +117,7 @@ const QueryResolver = (
           reject('You are not allowed to access details about this resource')
         } else {
           resolve(notificationFound)
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )

@@ -1,5 +1,7 @@
 import { authenticated, logErrorsPromise, findAllValues } from './utilities'
 
+const QUERY_COST = 1
+
 const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
   logErrorsPromise(
     'retrieveScalarProp',
@@ -55,6 +57,7 @@ const UserResolver = (
           })
 
           resolve(devices)
+          context.billingUpdater.update(QUERY_COST * devices.length)
         }
       }),
     )
@@ -72,6 +75,7 @@ const UserResolver = (
             where: { userId: root.id },
           })
           resolve(notifications)
+          context.billingUpdater.update(QUERY_COST * notifications.length)
         }
       }),
     )
@@ -85,7 +89,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          resolve(findAllValues(
+          const values = await findAllValues(
             {
               BoolValue,
               FloatValue,
@@ -98,7 +102,10 @@ const UserResolver = (
               where: { userId: root.id },
             },
             context.auth.userId,
-          ))
+          )
+
+          resolve(values)
+          context.billingUpdater.update(QUERY_COST * values.length)
         }
       }),
     )
@@ -117,6 +124,7 @@ const UserResolver = (
           })
 
           resolve(tokens)
+          context.billingUpdater.update(QUERY_COST * tokens.length)
         }
       }),
     )

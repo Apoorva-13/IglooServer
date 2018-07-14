@@ -6202,6 +6202,10 @@ upath@1.0.0:
     lodash "3.x"
     underscore.string "2.3.x"
 
+update-batcher@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/update-batcher/-/update-batcher-1.0.0.tgz#4f7fecb1a1b83d764726e29ab170fa6373956343"
+
 update-notifier@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/update-notifier/-/update-notifier-2.3.0.tgz#4e8827a6bb915140ab093559d7014e3ebb837451"

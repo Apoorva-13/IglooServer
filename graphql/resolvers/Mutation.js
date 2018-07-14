@@ -27,6 +27,7 @@ webpush.setVapidDetails(
   process.env.PRIVATE_VAPID_KEY,
 )
 const SALT_ROUNDS = 10
+const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
@@ -279,6 +280,8 @@ const MutationResolver = (
         })
 
         resolve(resolveValue)
+
+        context.billingUpdater.update(MUTATION_COST)
       }),
     )
   },
@@ -321,6 +324,7 @@ const MutationResolver = (
           }
 
           resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -343,6 +347,7 @@ const MutationResolver = (
             userUpdated: newUser.dataValues,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -375,6 +380,7 @@ const MutationResolver = (
             stripeCustomerId: customer.id,
           })
           resolve(true)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -398,6 +404,7 @@ const MutationResolver = (
             deviceUpdated: newDevice.dataValues,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -435,6 +442,7 @@ const MutationResolver = (
             },
           }
           resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -493,6 +501,7 @@ const MutationResolver = (
             notificationCreated: resolveValue,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
 
           if (!userFound.quietMode) {
             const notificationSubscriptions = await WebPushSubscription.findAll({
@@ -564,6 +573,7 @@ const MutationResolver = (
             notificationUpdated: resolveValue,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -601,6 +611,8 @@ const MutationResolver = (
               userId: context.auth.userId,
             })
             resolve(args.id)
+            context.billingUpdater.update(MUTATION_COST)
+
             return
           } else if (
             entityFound &&
@@ -652,6 +664,7 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
           resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     ),
@@ -670,6 +683,7 @@ const MutationResolver = (
           const newNode = await node.destroy()
 
           resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )

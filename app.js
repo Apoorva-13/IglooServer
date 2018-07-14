@@ -14,6 +14,7 @@ import { pipeStreamToS3, getObjectOwner } from './s3helpers'
 import Busboy from 'connect-busboy'
 import AWS from 'aws-sdk'
 import path from 'path'
+import UpdateBatcher from 'update-batcher'
 import {
   PermanentToken,
   WebPushSubscription,
@@ -54,12 +55,17 @@ app.use(expressJwt({
   },
 }))
 
+const updateUserBilling = user => bill => console.log(user, bill)
+
 app.use(
   '/graphql',
   graphqlExpress(req => ({
     schema,
     context: {
       auth: req.user,
+      billingUpdater: req.user
+        ? new UpdateBatcher(updateUserBilling(req.user))
+        : undefined,
     },
   })),
 )
