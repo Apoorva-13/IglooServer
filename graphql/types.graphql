@@ -212,6 +212,8 @@ type Mutation {
     quietMode: Boolean
     devMode: Boolean
     nightMode: Boolean
+    usageCap: Int
+    paymentPlan: PaymentPlan
   ): User
 
   updatePaymentInfo(stripeToken: String!): Boolean
@@ -466,8 +468,9 @@ type User {
   nightMode: Boolean
   language: String
   timezone: String
-  monthUsage: Float
+  monthUsage: Int
   paymentPlan: PaymentPlan
+  usageCap: Int
 }
 
 type PermanentToken {

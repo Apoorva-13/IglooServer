@@ -332,26 +332,43 @@ const MutationResolver = (
     )
   },
   user(root, args, context) {
+    let permissionRequired
+    const mutationFields = Object.keys(args)
+    if (mutationFields.length === 1 && mutationFields[0] === 'usageCap') {
+      permissionRequired = ['TEMPORARY', 'PERMANENT', 'CHANGE_USAGE_CAP']
+    } else if (
+      mutationFields.length === 1 &&
+      mutationFields[0] === 'paymentPlan'
+    ) {
+      permissionRequired = ['TEMPORARY', 'PERMANENT', 'SWITCH_TO_PAYING']
+    }
+
     return logErrorsPromise(
       'user mutation',
       115,
-      authenticated(context, async (resolve, reject) => {
-        const userFound = await User.find({
-          where: { id: context.auth.userId },
-        })
-        if (!userFound) {
-          reject("User doesn't exist. Use `SignupUser` to create one")
-        } else {
-          const newUser = await userFound.update(args)
-          resolve(newUser.dataValues)
-
-          pubsub.publish('userUpdated', {
-            userUpdated: newUser.dataValues,
-            userId: context.auth.userId,
+      authenticated(
+        context,
+        async (resolve, reject) => {
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
           })
-          context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+
+          if (!userFound) {
+            reject("User doesn't exist. Use `SignupUser` to create one")
+          } else {
+            const newUser = await userFound.update(args)
+            resolve(newUser.dataValues)
+
+            pubsub.publish('userUpdated', {
+              userUpdated: newUser.dataValues,
+              userId: context.auth.userId,
+            })
+
+            if (permissionRequired !== undefined) { context.billingUpdater.update(MUTATION_COST) }
+          }
+        },
+        permissionRequired,
+      ),
     )
   },
   updatePaymentInfo(root, args, context) {

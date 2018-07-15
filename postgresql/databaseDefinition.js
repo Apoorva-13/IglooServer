@@ -64,6 +64,9 @@ const databaseDefinition = (sequelize) => {
     paymentPlan: {
       type: PaymentPlan,
     },
+    usageCap: {
+      type: Sequelize.INTEGER,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {

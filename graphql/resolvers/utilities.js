@@ -47,11 +47,16 @@ const JWT_EXPIRE_DAYS = 7
 
 fortuna.init()
 
-const authenticated = (context, callback) =>
-  (context.auth
+const authenticated = (
+  context,
+  callback,
+  acceptedTokenTypes = ['TEMPORARY', 'PERMANENT'],
+) =>
+  (context.auth && acceptedTokenTypes.indexOf(context.auth.tokenType) > -1
     ? callback
-    : (resolve, reject) =>
-      reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token'))
+    : (resolve, reject) => {
+      if (!context.auth) { reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token') } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') { reject('You exceeded the free usage quota') } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') { reject('You exceeded the usage cap that you set') } else reject("This token doesn't have the required authorizations")
+    })
 
 const generateAuthenticationToken = (userId, JWT_SECRET) =>
   jwt.encode(

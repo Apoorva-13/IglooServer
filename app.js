@@ -84,10 +84,16 @@ app.use('/graphql', async (req, res, next) => {
       userFound.paymentPlan === 'FREE' &&
       userFound.monthUsage > FREE_USAGE_QUOTA
     ) {
-      res.send('Exceeded free user quota')
-    } else {
-      next()
+      req.user.tokenType = 'SWITCH_TO_PAYING'
+    } else if (
+      userFound.paymentPlan === 'PAYING' &&
+      userFound.usageCap &&
+      userFound.monthUsage > userFound.usageCap
+    ) {
+      req.user.tokenType = 'CHANGE_USAGE_CAP'
     }
+
+    next()
   }
 })
 
