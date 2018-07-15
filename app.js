@@ -68,6 +68,29 @@ const updateUserBilling = auth => async (bill) => {
   }
 }
 
+// TODO: replace with real free usage quota
+const FREE_USAGE_QUOTA = 10
+
+// Check if usage threshold was exceeded
+app.use('/graphql', async (req, res, next) => {
+  // TODO: implement anti-DDOS here
+  if (!req.user) next()
+  else {
+    const userFound = await User.find({ where: { id: req.user.userId } })
+
+    if (!userFound) {
+      res.send("This user doesn't exist anymore")
+    } else if (
+      userFound.paymentPlan === 'FREE' &&
+      userFound.monthUsage > FREE_USAGE_QUOTA
+    ) {
+      res.send('Exceeded free user quota')
+    } else {
+      next()
+    }
+  }
+})
+
 app.use(
   '/graphql',
   graphqlExpress(req => ({

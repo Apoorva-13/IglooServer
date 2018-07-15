@@ -152,6 +152,7 @@ const MutationResolver = (
             devMode: false,
             nightMode: false,
             monthUsage: 0,
+            paymentPlan: 'FREE',
           })
 
           resolve({

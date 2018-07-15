@@ -43,6 +43,7 @@ const UserResolver = (
   devMode: retrieveUserScalarProp(User, 'devMode'),
   nightMode: retrieveUserScalarProp(User, 'nightMode'),
   monthUsage: retrieveUserScalarProp(User, 'monthUsage'),
+  paymentPlan: retrieveUserScalarProp(User, 'paymentPlan'),
   devices(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',

@@ -4,6 +4,7 @@ const databaseDefinition = (sequelize) => {
   const ValuePermission = Sequelize.ENUM('READ_ONLY', 'READ_WRITE')
   const ValueRelevance = Sequelize.ENUM('VISIBLE', 'HIDDEN', 'INVISIBLE')
   const TileSize = Sequelize.ENUM('NORMAL', 'WIDE', 'TALL', 'LARGE')
+  const PaymentPlan = Sequelize.ENUM('FREE', 'PAYING')
   const selfId = {
     id: {
       type: Sequelize.UUID,
@@ -59,6 +60,9 @@ const databaseDefinition = (sequelize) => {
     },
     monthUsage: {
       type: Sequelize.INTEGER,
+    },
+    paymentPlan: {
+      type: PaymentPlan,
     },
   })
 

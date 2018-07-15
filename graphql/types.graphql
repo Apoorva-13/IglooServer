@@ -447,6 +447,11 @@ type Subscription {
   keepOnline(deviceId: ID!): Boolean
 }
 
+enum PaymentPlan {
+  FREE
+  PAYING
+}
+
 type User {
   id: ID! @isUnique
   createdAt: DateTime!
@@ -462,6 +467,7 @@ type User {
   language: String
   timezone: String
   monthUsage: Float
+  paymentPlan: PaymentPlan
 }
 
 type PermanentToken {
