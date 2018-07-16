@@ -13,7 +13,8 @@
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "bill": "babel-node ./monthlyBilling"
   },
   "lint-staged": {
     "*.js": ["prettier-eslint --write", "git add"],

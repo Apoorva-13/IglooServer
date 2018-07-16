@@ -17,4 +17,4 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   logging: false,
 })
 
-module.exports = require('./databaseDefinition')(sequelize)
+module.exports = { ...require('./databaseDefinition')(sequelize), sequelize }

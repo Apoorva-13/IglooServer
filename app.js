@@ -69,7 +69,7 @@ const updateUserBilling = auth => async (bill) => {
 }
 
 // TODO: replace with real free usage quota
-const FREE_USAGE_QUOTA = 10
+const FREE_USAGE_QUOTA = 100 * 1000
 
 // Check if usage threshold was exceeded
 app.use('/graphql', async (req, res, next) => {
