@@ -1,22 +1,32 @@
 import { authenticated, logErrorsPromise, findAllValues } from './utilities'
 
-const retrieveUserScalarProp = (User, prop) => (root, args, context) =>
+const QUERY_COST = 1
+
+const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
+  root,
+  args,
+  context,
+) =>
   logErrorsPromise(
     'retrieveScalarProp',
     106,
-    authenticated(context, async (resolve, reject) => {
-      /* istanbul ignore if - this should never be the case, so the error is not reproducible */
-      if (context.auth.userId !== root.id) {
-        reject('You are not allowed to access details about this user')
-      } else {
-        const userFound = await User.find({ where: { id: root.id } })
-        if (!userFound) {
-          reject("User doesn't exist. Use `SignupUser` to create one")
+    authenticated(
+      context,
+      async (resolve, reject) => {
+        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+        if (context.auth.userId !== root.id) {
+          reject('You are not allowed to access details about this user')
         } else {
-          resolve(userFound[prop])
+          const userFound = await User.find({ where: { id: root.id } })
+          if (!userFound) {
+            reject("User doesn't exist. Use `SignupUser` to create one")
+          } else {
+            resolve(userFound[prop])
+          }
         }
-      }
-    }),
+      },
+      acceptedTokens,
+    ),
   )
 
 const UserResolver = (
@@ -40,6 +50,17 @@ const UserResolver = (
   timezone: retrieveUserScalarProp(User, 'timezone'),
   devMode: retrieveUserScalarProp(User, 'devMode'),
   nightMode: retrieveUserScalarProp(User, 'nightMode'),
+  monthUsage: retrieveUserScalarProp(User, 'monthUsage'),
+  paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
+    'TEMPORARY',
+    'PERMANENT',
+    'SWITCH_TO_PAYING',
+  ]),
+  usageCap: retrieveUserScalarProp(User, 'usageCap', [
+    'TEMPORARY',
+    'PERMANENT',
+    'CHANGE_USAGE_CAP',
+  ]),
   devices(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',
@@ -55,6 +76,7 @@ const UserResolver = (
           })
 
           resolve(devices)
+          context.billingUpdater.update(QUERY_COST * devices.length)
         }
       }),
     )
@@ -72,6 +94,7 @@ const UserResolver = (
             where: { userId: root.id },
           })
           resolve(notifications)
+          context.billingUpdater.update(QUERY_COST * notifications.length)
         }
       }),
     )
@@ -85,7 +108,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          resolve(findAllValues(
+          const values = await findAllValues(
             {
               BoolValue,
               FloatValue,
@@ -98,7 +121,10 @@ const UserResolver = (
               where: { userId: root.id },
             },
             context.auth.userId,
-          ))
+          )
+
+          resolve(values)
+          context.billingUpdater.update(QUERY_COST * values.length)
         }
       }),
     )
@@ -117,6 +143,7 @@ const UserResolver = (
           })
 
           resolve(tokens)
+          context.billingUpdater.update(QUERY_COST * tokens.length)
         }
       }),
     )

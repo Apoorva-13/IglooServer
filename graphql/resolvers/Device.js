@@ -5,6 +5,8 @@ import {
   findAllValues,
 } from './utilities'
 
+const QUERY_COST = 1
+
 const DeviceResolver = (
   Device,
   User,
@@ -41,7 +43,7 @@ const DeviceResolver = (
           /* istanbul ignore next */
           reject('You are not allowed to access details about this resource')
         } else {
-          resolve(findAllValues(
+          const valuesFound = await findAllValues(
             {
               BoolValue,
               FloatValue,
@@ -54,7 +56,11 @@ const DeviceResolver = (
               where: { deviceId: deviceFound.id },
             },
             context.auth.userId,
-          ))
+          )
+
+          resolve(valuesFound)
+
+          context.billingUpdater.update(QUERY_COST * valuesFound.length)
         }
       }),
     )
@@ -77,6 +83,7 @@ const DeviceResolver = (
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: deviceFound.userId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
@@ -102,6 +109,7 @@ const DeviceResolver = (
           })
 
           resolve(notifications)
+          context.billingUpdater.update(QUERY_COST * notifications.length)
         }
       }),
     )

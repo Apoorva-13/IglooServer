@@ -212,7 +212,11 @@ type Mutation {
     quietMode: Boolean
     devMode: Boolean
     nightMode: Boolean
+    usageCap: Int
+    paymentPlan: PaymentPlan
   ): User
+
+  updatePaymentInfo(stripeToken: String!): Boolean
 
   # changes device's data
   device(
@@ -445,6 +449,11 @@ type Subscription {
   keepOnline(deviceId: ID!): Boolean
 }
 
+enum PaymentPlan {
+  FREE
+  PAYING
+}
+
 type User {
   id: ID! @isUnique
   createdAt: DateTime!
@@ -459,6 +468,9 @@ type User {
   nightMode: Boolean
   language: String
   timezone: String
+  monthUsage: Int
+  paymentPlan: PaymentPlan
+  usageCap: Int
 }
 
 type PermanentToken {

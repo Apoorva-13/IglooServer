@@ -47,11 +47,16 @@ const JWT_EXPIRE_DAYS = 7
 
 fortuna.init()
 
-const authenticated = (context, callback) =>
-  (context.auth
+const authenticated = (
+  context,
+  callback,
+  acceptedTokenTypes = ['TEMPORARY', 'PERMANENT'],
+) =>
+  (context.auth && acceptedTokenTypes.indexOf(context.auth.tokenType) > -1
     ? callback
-    : (resolve, reject) =>
-      reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token'))
+    : (resolve, reject) => {
+      if (!context.auth) { reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token') } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') { reject('You exceeded the free usage quota') } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') { reject('You exceeded the usage cap that you set') } else reject("This token doesn't have the required authorizations")
+    })
 
 const generateAuthenticationToken = (userId, JWT_SECRET) =>
   jwt.encode(
@@ -117,6 +122,7 @@ const getPropsIfDefined = (args, props) => {
   return propObject
 }
 
+const MUTATION_COST = 2
 // generic resolver for CreateXValue mutations
 const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
   new Promise(authenticated(context, async (resolve, reject) => {
@@ -153,6 +159,7 @@ const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
         })
 
         resolve(resolveObj)
+        context.billingUpdater.update(MUTATION_COST)
       }
     } catch (e) /* istanbul ignore next */ {
       logger.error(e, { label: 'CreateGenericValue', code: 112 })
@@ -205,6 +212,7 @@ const genericValueMutation = (childModel, __resolveType, pubsub) => (
           valueUpdated: { ...resolveObj, __resolveType },
           userId: context.auth.userId,
         })
+        context.billingUpdater.update(MUTATION_COST)
       }
     }),
   )

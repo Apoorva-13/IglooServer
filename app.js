@@ -14,9 +14,11 @@ import { pipeStreamToS3, getObjectOwner } from './s3helpers'
 import Busboy from 'connect-busboy'
 import AWS from 'aws-sdk'
 import path from 'path'
+import UpdateBatcher from 'update-batcher'
 import {
   PermanentToken,
   WebPushSubscription,
+  User,
 } from './postgresql/databaseConnection'
 
 webpush.setVapidDetails(
@@ -54,12 +56,56 @@ app.use(expressJwt({
   },
 }))
 
+const updateUserBilling = auth => async (bill) => {
+  const userFound = await User.find({ where: { id: auth.userId } })
+
+  // TODO: handle this failure gracefully
+  if (!userFound) {
+    throw new Error("User doesn't exist. Use `SignupUser` to create one")
+  } else {
+    const newUser = await userFound.increment('monthUsage', { by: bill })
+    return newUser.monthUsage
+  }
+}
+
+// TODO: replace with real free usage quota
+const FREE_USAGE_QUOTA = 100 * 1000
+
+// Check if usage threshold was exceeded
+app.use('/graphql', async (req, res, next) => {
+  // TODO: implement anti-DDOS here
+  if (!req.user) next()
+  else {
+    const userFound = await User.find({ where: { id: req.user.userId } })
+
+    if (!userFound) {
+      res.send("This user doesn't exist anymore")
+    } else if (
+      userFound.paymentPlan === 'FREE' &&
+      userFound.monthUsage > FREE_USAGE_QUOTA
+    ) {
+      req.user.tokenType = 'SWITCH_TO_PAYING'
+    } else if (
+      userFound.paymentPlan === 'PAYING' &&
+      userFound.usageCap &&
+      userFound.monthUsage > userFound.usageCap
+    ) {
+      req.user.tokenType = 'CHANGE_USAGE_CAP'
+    }
+
+    next()
+  }
+})
+
 app.use(
   '/graphql',
   graphqlExpress(req => ({
     schema,
     context: {
       auth: req.user,
+      billingUpdater: req.user
+        ? new UpdateBatcher(updateUserBilling(req.user))
+        : undefined,
     },
   })),
 )

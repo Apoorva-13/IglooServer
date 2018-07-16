@@ -13,7 +13,8 @@
     "pretest": "npm run setupDatabase",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls",
     "lint": "prettier-eslint **/*.js --write",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "bill": "babel-node ./monthlyBilling"
   },
   "lint-staged": {
     "*.js": ["prettier-eslint --write", "git add"],
@@ -62,7 +63,9 @@
     "pg": "7.4.1",
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.8",
+    "stripe": "^6.2.1",
     "subscriptions-transport-ws": "^0.9.4",
+    "update-batcher": "^1.0.0",
     "uuid": "^3.2.1",
     "web-push": "^3.3.0",
     "winston": "^3.0.0-rc1",

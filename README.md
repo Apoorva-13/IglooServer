@@ -31,6 +31,7 @@ DATABASE_URL=
 BUCKET_NAME=
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
+STRIPE_SECRET_KEY=
 ```
 
 The JWT secret can be whatever password you like, we suggest you [generate a random one](https://www.lastpass.com/password-generator). You can generate the VAPID key pair with [this web app](https://web-push-codelab.glitch.me/). The database URL is a PostgreSQL connection URL with this schema `postgresql://user:password@domain:port/dbname`. The Bucket name is the name of your S3 bucket.
@@ -43,6 +44,7 @@ The JWT secret can be whatever password you like, we suggest you [generate a ran
 - copy the credentials in the `.env` file
 
 TODO: SES setup and S3 setup
+TODO: Stripe setup
 
 #### Database
 To create the database structure needed just run the `setupDatabase` script:

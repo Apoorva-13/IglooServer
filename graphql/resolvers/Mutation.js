@@ -13,6 +13,7 @@ import {
   genericDelete,
 } from './utilities'
 import webpush from 'web-push'
+import Stripe from 'stripe'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -26,6 +27,9 @@ webpush.setVapidDetails(
   process.env.PRIVATE_VAPID_KEY,
 )
 const SALT_ROUNDS = 10
+const MUTATION_COST = 2
+
+const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
 const MutationResolver = (
   User,
@@ -147,6 +151,8 @@ const MutationResolver = (
             timezone: '+00:00_Greenwich', // TODO: Daylight Saving Time
             devMode: false,
             nightMode: false,
+            monthUsage: 0,
+            paymentPlan: 'FREE',
           })
 
           resolve({
@@ -276,6 +282,8 @@ const MutationResolver = (
         })
 
         resolve(resolveValue)
+
+        context.billingUpdater.update(MUTATION_COST)
       }),
     )
   },
@@ -318,28 +326,80 @@ const MutationResolver = (
           }
 
           resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
   },
   user(root, args, context) {
+    let permissionRequired
+    const mutationFields = Object.keys(args)
+    if (mutationFields.length === 1 && mutationFields[0] === 'usageCap') {
+      permissionRequired = ['TEMPORARY', 'PERMANENT', 'CHANGE_USAGE_CAP']
+    } else if (
+      mutationFields.length === 1 &&
+      mutationFields[0] === 'paymentPlan'
+    ) {
+      permissionRequired = ['TEMPORARY', 'PERMANENT', 'SWITCH_TO_PAYING']
+    }
+
     return logErrorsPromise(
       'user mutation',
       115,
+      authenticated(
+        context,
+        async (resolve, reject) => {
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+
+          if (!userFound) {
+            reject("User doesn't exist. Use `SignupUser` to create one")
+          } else {
+            const newUser = await userFound.update(args)
+            resolve(newUser.dataValues)
+
+            pubsub.publish('userUpdated', {
+              userUpdated: newUser.dataValues,
+              userId: context.auth.userId,
+            })
+
+            if (permissionRequired !== undefined) { context.billingUpdater.update(MUTATION_COST) }
+          }
+        },
+        permissionRequired,
+      ),
+    )
+  },
+  updatePaymentInfo(root, args, context) {
+    return logErrorsPromise(
+      'updatePaymentInfo',
+      500,
       authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
           where: { id: context.auth.userId },
         })
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
-        } else {
-          const newUser = await userFound.update(args)
-          resolve(newUser.dataValues)
-
-          pubsub.publish('userUpdated', {
-            userUpdated: newUser.dataValues,
-            userId: context.auth.userId,
+        } else if (userFound.stripeCustomerId) {
+          // replaces customer payment method
+          await stripe.customers.createSource(userFound.stripeCustomerId, {
+            source: args.stripeToken,
           })
+
+          resolve(true)
+        } else {
+          // create a new customer and attaches
+          const customer = await stripe.customers.create({
+            email: userFound.email,
+            source: args.stripeToken,
+          })
+
+          await userFound.update({
+            stripeCustomerId: customer.id,
+          })
+          resolve(true)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -363,6 +423,7 @@ const MutationResolver = (
             deviceUpdated: newDevice.dataValues,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -400,6 +461,7 @@ const MutationResolver = (
             },
           }
           resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -458,6 +520,7 @@ const MutationResolver = (
             notificationCreated: resolveValue,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
 
           if (!userFound.quietMode) {
             const notificationSubscriptions = await WebPushSubscription.findAll({
@@ -529,6 +592,7 @@ const MutationResolver = (
             notificationUpdated: resolveValue,
             userId: context.auth.userId,
           })
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )
@@ -566,6 +630,8 @@ const MutationResolver = (
               userId: context.auth.userId,
             })
             resolve(args.id)
+            context.billingUpdater.update(MUTATION_COST)
+
             return
           } else if (
             entityFound &&
@@ -617,6 +683,7 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
           resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     ),
@@ -635,6 +702,7 @@ const MutationResolver = (
           const newNode = await node.destroy()
 
           resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
         }
       }),
     )

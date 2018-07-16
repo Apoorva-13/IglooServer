@@ -4,6 +4,8 @@ import {
   logErrorsPromise,
 } from './utilities'
 
+const QUERY_COST = 1
+
 const GenericResolver = Model => ({
   createdAt: retrieveScalarProp(Model, 'createdAt'),
   updatedAt: retrieveScalarProp(Model, 'updatedAt'),
@@ -43,6 +45,7 @@ const PlotValueResolver = (PlotValue, PlotNode) => ({
       authenticated(context, async (resolve, reject) => {
         const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
         resolve(nodes)
+        context.billingUpdater.update(QUERY_COST * nodes.length)
       }),
     ),
 })
@@ -68,6 +71,7 @@ const PlotNodeResolver = PlotNode => ({
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: plotNode.userId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
@@ -90,6 +94,7 @@ const PlotNodeResolver = PlotNode => ({
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: plotNode.deviceId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
@@ -112,6 +117,7 @@ const PlotNodeResolver = PlotNode => ({
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: plotNode.plotId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )

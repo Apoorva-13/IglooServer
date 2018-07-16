@@ -4091,6 +4091,10 @@ lodash.isobject@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/lodash.isobject/-/lodash.isobject-3.0.2.tgz#3c8fb8d5b5bf4bf90ae06e14f2a530a4ed935e1d"
 
+lodash.isplainobject@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/lodash.isplainobject/-/lodash.isplainobject-4.0.6.tgz#7c526a52d89b45c45cc690b88163be0497f550cb"
+
 lodash.isstring@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/lodash.isstring/-/lodash.isstring-4.0.1.tgz#d527dfb5456eca7cc9bb95d5daeaf88ba54a5451"
@@ -5836,6 +5840,14 @@ strip-json-comments@~2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-2.0.1.tgz#3c531942e908c2697c0ec344858c286c7ca0a60a"
 
+stripe@^6.2.1:
+  version "6.2.1"
+  resolved "https://registry.yarnpkg.com/stripe/-/stripe-6.2.1.tgz#0fe4aebe5462034080c9aefa03898a3121639f33"
+  dependencies:
+    lodash.isplainobject "^4.0.6"
+    qs "~6.5.1"
+    safe-buffer "^5.1.1"
+
 subscriptions-transport-ws@^0.9.4:
   version "0.9.5"
   resolved "https://registry.yarnpkg.com/subscriptions-transport-ws/-/subscriptions-transport-ws-0.9.5.tgz#faa9eb1230d5f2efe355368cd973b867e4483c53"
@@ -6189,6 +6201,10 @@ upath@1.0.0:
   dependencies:
     lodash "3.x"
     underscore.string "2.3.x"
+
+update-batcher@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/update-batcher/-/update-batcher-1.0.0.tgz#4f7fecb1a1b83d764726e29ab170fa6373956343"
 
 update-notifier@^2.3.0:
   version "2.3.0"

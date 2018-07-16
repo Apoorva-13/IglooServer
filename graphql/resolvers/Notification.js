@@ -4,6 +4,8 @@ import {
   logErrorsPromise,
 } from './utilities'
 
+const QUERY_COST = 1
+
 const UserResolver = (Notification, User, Device) => ({
   content: retrieveScalarProp(Notification, 'content'),
   date: retrieveScalarProp(Notification, 'date'),
@@ -27,6 +29,7 @@ const UserResolver = (Notification, User, Device) => ({
           // the User resolver will take care of loading the other props,
           // it only needs to know the user id
           resolve({ id: notificationFound.userId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
@@ -49,6 +52,7 @@ const UserResolver = (Notification, User, Device) => ({
           // the User resolver will take care of loading the other props,
           // it only needs to know the device id
           resolve({ id: notificationFound.deviceId })
+          context.billingUpdater.update(QUERY_COST)
         }
       }),
     )
