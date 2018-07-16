@@ -29,6 +29,12 @@ const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
     ),
   )
 
+const scalarProps = (User, props) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = retrieveUserScalarProp(User, prop)
+    return acc
+  }, {})
+
 const UserResolver = (
   User,
   PermanentToken,
@@ -42,15 +48,19 @@ const UserResolver = (
   MapValue,
   Notification,
 ) => ({
-  email: retrieveUserScalarProp(User, 'email'),
-  createdAt: retrieveUserScalarProp(User, 'createdAt'),
-  updatedAt: retrieveUserScalarProp(User, 'updatedAt'),
-  quietMode: retrieveUserScalarProp(User, 'quietMode'),
-  language: retrieveUserScalarProp(User, 'language'),
-  timezone: retrieveUserScalarProp(User, 'timezone'),
-  devMode: retrieveUserScalarProp(User, 'devMode'),
-  nightMode: retrieveUserScalarProp(User, 'nightMode'),
-  monthUsage: retrieveUserScalarProp(User, 'monthUsage'),
+  ...scalarProps(User, [
+    'email',
+    'createdAt',
+    'updatedAt',
+    'quietMode',
+    'language',
+    'timezone',
+    'devMode',
+    'nightMode',
+    'monthUsage',
+    'signalStatus',
+    'batteryStatus',
+  ]),
   paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
     'TEMPORARY',
     'PERMANENT',
