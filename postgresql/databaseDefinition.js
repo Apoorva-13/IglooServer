@@ -67,6 +67,12 @@ const databaseDefinition = (sequelize) => {
     usageCap: {
       type: Sequelize.INTEGER,
     },
+    batteryStatus: {
+      type: Sequelize.FLOAT,
+    },
+    signalStatus: {
+      type: Sequelize.FLOAT,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {
