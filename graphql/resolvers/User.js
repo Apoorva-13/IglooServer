@@ -45,6 +45,7 @@ const UserResolver = (
   BoolValue,
   ColourValue,
   PlotValue,
+  StringPlotValue,
   MapValue,
   Notification,
 ) => ({
@@ -125,6 +126,7 @@ const UserResolver = (
               StringValue,
               ColourValue,
               PlotValue,
+              StringPlotValue,
               MapValue,
             },
             {

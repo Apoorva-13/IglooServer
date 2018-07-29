@@ -89,6 +89,7 @@ const ValueResolver = SequelizeValues => ({
         const NOT_EXIST = 'The requested resource does not exist'
         const models = Object.values(SequelizeValues)
 
+        // TODO: resolve this stuff
         function indexToType(idx) {
           const modelName = Object.keys(SequelizeValues)[idx]
 

@@ -223,6 +223,26 @@ const databaseDefinition = (sequelize) => {
       allowNull: false,
     },
   })
+  const StringPlotValue = sequelize.define('stringPlotValue', {
+    ...Value,
+    allowedValues: {
+      type: Sequelize.ARRAY(Sequelize.STRING),
+    },
+  })
+  const StringPlotNode = sequelize.define('stringPlotNode', {
+    ...selfId,
+    ...otherId('userId', User),
+    ...otherId('deviceId', Device),
+    ...otherId('plotId', StringPlotValue),
+    value: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    timestamp: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
+  })
   const MapValue = sequelize.define('mapValue', {
     ...Value,
     latitude: {
@@ -261,6 +281,8 @@ const databaseDefinition = (sequelize) => {
     ColourValue,
     Notification,
     WebPushSubscription,
+    StringPlotValue,
+    StringPlotNode,
   }
 }
 

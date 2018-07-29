@@ -55,7 +55,13 @@ const authenticated = (
   (context.auth && acceptedTokenTypes.indexOf(context.auth.tokenType) > -1
     ? callback
     : (resolve, reject) => {
-      if (!context.auth) { reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token') } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') { reject('You exceeded the free usage quota') } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') { reject('You exceeded the usage cap that you set') } else reject("This token doesn't have the required authorizations")
+      if (!context.auth) {
+        reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
+      } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') {
+        reject('You exceeded the free usage quota')
+      } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') {
+        reject('You exceeded the usage cap that you set')
+      } else reject("This token doesn't have the required authorizations")
     })
 
 const generateAuthenticationToken = (userId, JWT_SECRET) =>
@@ -277,7 +283,13 @@ const firstResolve = promises =>
 
 const findAllValues = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    StringPlotValue,
+    MapValue,
   },
   query,
   userId,
@@ -287,6 +299,7 @@ const findAllValues = (
   const stringValues = StringValue.findAll(query)
   const colourValues = ColourValue.findAll(query)
   const plotValues = PlotValue.findAll(query)
+  const stringPlotValues = StringPlotValue.findAll(query)
   const mapValues = MapValue.findAll(query)
 
   return Promise.all([
@@ -295,6 +308,7 @@ const findAllValues = (
     stringValues,
     colourValues,
     plotValues,
+    stringPlotValues,
     mapValues,
   ]).then(([
     booleanValues,
@@ -302,6 +316,7 @@ const findAllValues = (
     stringValues,
     colourValues,
     plotValues,
+    stringPlotValues,
     mapValues,
   ]) => [
     ...booleanValues
@@ -344,6 +359,14 @@ const findAllValues = (
         __resolveType: 'PlotValue',
       }))
       .filter(value => value.userId === userId),
+    ...stringPlotValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringPlotValue',
+      }))
+      .filter(value => value.userId === userId),
     ...mapValues
       .map(value => ({
         ...value.dataValues,
@@ -358,7 +381,13 @@ const findAllValues = (
 // try refactoring this with firstResolve
 const findValue = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    StringPlotValue,
+    MapValue,
   },
   query,
   userId,
@@ -417,6 +446,16 @@ const findValue = (
         user: { id: value.dataValues.userId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'PlotValue',
+      }
+      : value))
+
+  const stringPlotValue = StringPlotValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringPlotValue',
       }
       : value))
 

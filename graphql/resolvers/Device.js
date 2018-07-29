@@ -15,7 +15,7 @@ const DeviceResolver = (
   FloatValue,
   StringValue,
   PlotValue,
-  PlotNode,
+  StringPlotValue,
   MapValue,
   ColourValue,
   Notification,
@@ -50,6 +50,7 @@ const DeviceResolver = (
               StringValue,
               ColourValue,
               PlotValue,
+              StringPlotValue,
               MapValue,
             },
             {
