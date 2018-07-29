@@ -26,6 +26,8 @@ const {
   StringValue,
   PlotValue,
   PlotNode,
+  StringPlotValue,
+  StringPlotNode,
   MapValue,
   ColourValue,
   Notification,
@@ -42,6 +44,8 @@ const setup = async () => {
     await StringValue.sync({ force: true })
     await PlotValue.sync({ force: true })
     await PlotNode.sync({ force: true })
+    await StringPlotValue.sync({ force: true })
+    await StringPlotNode.sync({ force: true })
     await MapValue.sync({ force: true })
     await ColourValue.sync({ force: true })
     await Notification.sync({ force: true })

@@ -43,6 +43,8 @@ const MutationResolver = (
   MapValue,
   PlotValue,
   PlotNode,
+  StringPlotValue,
+  StringPlotNode,
   Notification,
   WebPushSubscription,
   pubsub,
@@ -293,6 +295,7 @@ const MutationResolver = (
   CreateColourValue: CreateGenericValue(Device, ColourValue, pubsub),
   CreateMapValue: CreateGenericValue(Device, MapValue, pubsub),
   CreatePlotValue: CreateGenericValue(Device, PlotValue, pubsub),
+  CreateStringPlotValue: CreateGenericValue(Device, StringPlotValue, pubsub),
   CreatePlotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
@@ -306,6 +309,44 @@ const MutationResolver = (
           reject('You are not authorized to edit this plot')
         } else {
           const plotNode = await PlotNode.create({
+            ...args,
+            timestamp: args.timestamp || new Date(),
+            deviceId: plot.deviceId,
+            userId: context.auth.userId,
+          })
+
+          const resolveObj = {
+            ...plotNode.dataValues,
+            user: {
+              id: plotNode.userId,
+            },
+            device: {
+              id: plotNode.deviceId,
+            },
+            plot: {
+              id: plotNode.plotId,
+            },
+          }
+
+          resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  CreateStringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreateStringPlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const plot = await StringPlotValue.find({ where: { id: args.plotId } })
+
+        if (!plot) {
+          reject("This plot doesn't exist")
+        } else if (plot.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const plotNode = await StringPlotNode.create({
             ...args,
             timestamp: args.timestamp || new Date(),
             deviceId: plot.deviceId,
@@ -364,7 +405,9 @@ const MutationResolver = (
               userId: context.auth.userId,
             })
 
-            if (permissionRequired !== undefined) { context.billingUpdater.update(MUTATION_COST) }
+            if (permissionRequired !== undefined) {
+              context.billingUpdater.update(MUTATION_COST)
+            }
           }
         },
         permissionRequired,
@@ -434,12 +477,49 @@ const MutationResolver = (
   colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
   mapValue: genericValueMutation(MapValue, 'MapValue', pubsub),
   plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
+  stringPlotValue: genericValueMutation(
+    StringPlotValue,
+    'StringPlotValue',
+    pubsub,
+  ),
   plotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
       authenticated(context, async (resolve, reject) => {
         const node = await PlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.update(args)
+
+          const resolveObj = {
+            ...newNode.dataValues,
+            user: {
+              id: newNode.dataValues.userId,
+            },
+            device: {
+              id: newNode.dataValues.deviceId,
+            },
+            plot: {
+              id: newNode.dataValues.plotId,
+            },
+          }
+          resolve(resolveObj)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  stringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'stringPlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await StringPlotNode.find({ where: { id: args.id } })
 
         if (!node) {
           reject("This node doesn't exist")
@@ -614,6 +694,7 @@ const MutationResolver = (
           ColourValue,
           BoolValue,
           PlotValue,
+          StringPlotValue,
           MapValue,
         ]
         for (let i = 0; i < modelsList.length; i++) {
@@ -672,6 +753,7 @@ const MutationResolver = (
             BoolValue,
             MapValue,
             PlotValue,
+            StringPlotValue,
             PlotNode,
             Notification,
           ].map(deleteChild))
@@ -693,6 +775,26 @@ const MutationResolver = (
       139,
       authenticated(context, async (resolve, reject) => {
         const node = await PlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.destroy()
+
+          resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  deleteStringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreatePlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await StringPlotNode.find({ where: { id: args.id } })
 
         if (!node) {
           reject("This node doesn't exist")
