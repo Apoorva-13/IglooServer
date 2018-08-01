@@ -3,6 +3,7 @@ import { subscriptionFilterOnlyMine, socketToDeviceMap } from './utilities'
 const subscriptionResolver = (pubsub, Device) => ({
   deviceCreated: subscriptionFilterOnlyMine('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOnlyMine('valueCreated', pubsub),
+  tokenCreated: subscriptionFilterOnlyMine('tokenCreated', pubsub),
   notificationCreated: subscriptionFilterOnlyMine(
     'notificationCreated',
     pubsub,
@@ -20,6 +21,7 @@ const subscriptionResolver = (pubsub, Device) => ({
   ),
   valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
   deviceDeleted: subscriptionFilterOnlyMine('deviceDeleted', pubsub),
+  tokenDeleted: subscriptionFilterOnlyMine('tokenDeleted', pubsub),
   keepOnline: {
     subscribe: async (root, args, context, info) => {
       if (context.auth) {

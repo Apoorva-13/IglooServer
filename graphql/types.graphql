@@ -488,6 +488,8 @@ type Subscription {
   deviceCreated: Device
   # subscribes to value creations
   valueCreated: Value
+  #subscribes to token creations
+  tokenCreated: PermanentToken
   # subscribes to notification creations
   notificationCreated: Notification
   # subscribes to value updates
@@ -502,6 +504,8 @@ type Subscription {
   valueDeleted: ID
   # subscribes to device deleted
   deviceDeleted: ID
+  # subscribes to token deletes
+  tokenDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
   # keeps the device's status set as online

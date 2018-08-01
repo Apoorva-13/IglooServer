@@ -110,6 +110,16 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+
+          const resolveObj = {
+            id: databaseToken.id,
+            customName: databaseToken.customName,
+            user: { id: context.auth.userId },
+          }
+          pubsub.publish('tokenCreated', {
+            tokenCreated: resolveObj,
+            userId: context.auth.userId,
+          })
         }
       }),
     )
@@ -131,6 +141,10 @@ const MutationResolver = (
           await databaseToken.destroy()
 
           resolve(args.id)
+          pubsub.publish('tokenDeleted', {
+            tokenDeleted: args.id,
+            userId: context.auth.userId,
+          })
         }
       }),
     )
