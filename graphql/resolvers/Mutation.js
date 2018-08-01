@@ -343,6 +343,11 @@ const MutationResolver = (
           }
 
           resolve(resolveObj)
+          pubsub.publish('plotNodeCreated', {
+            plotNodeCreated: resolveObj,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -381,6 +386,10 @@ const MutationResolver = (
           }
 
           resolve(resolveObj)
+          pubsub.publish('stringPlotNodeCreated', {
+            stringPlotNodeCreated: resolveObj,
+            userId: context.auth.userId,
+          })
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -523,6 +532,11 @@ const MutationResolver = (
             },
           }
           resolve(resolveObj)
+          pubsub.publish('plotNodeUpdated', {
+            plotNodeUpdated: resolveObj,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -555,6 +569,11 @@ const MutationResolver = (
             },
           }
           resolve(resolveObj)
+          pubsub.publish('stringPlotNodeUpdated', {
+            stringPlotNodeUpdated: resolveObj,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -798,6 +817,11 @@ const MutationResolver = (
           const newNode = await node.destroy()
 
           resolve(args.id)
+          pubsub.publish('plotNodeDeleted', {
+            plotNodeDeleted: args.id,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -818,6 +842,11 @@ const MutationResolver = (
           const newNode = await node.destroy()
 
           resolve(args.id)
+          pubsub.publish('stringPlotNodeDeleted', {
+            stringPlotNodeDeleted: args.id,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),

@@ -4,6 +4,11 @@ const subscriptionResolver = (pubsub, Device) => ({
   deviceCreated: subscriptionFilterOnlyMine('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOnlyMine('valueCreated', pubsub),
   tokenCreated: subscriptionFilterOnlyMine('tokenCreated', pubsub),
+  plotNodeCreated: subscriptionFilterOnlyMine('plotNodeCreated', pubsub),
+  stringPlotNodeCreated: subscriptionFilterOnlyMine(
+    'stringPlotNodeCreated',
+    pubsub,
+  ),
   notificationCreated: subscriptionFilterOnlyMine(
     'notificationCreated',
     pubsub,
@@ -11,6 +16,11 @@ const subscriptionResolver = (pubsub, Device) => ({
   userUpdated: subscriptionFilterOnlyMine('userUpdated', pubsub),
   deviceUpdated: subscriptionFilterOnlyMine('deviceUpdated', pubsub),
   valueUpdated: subscriptionFilterOnlyMine('valueUpdated', pubsub),
+  plotNodeUpdated: subscriptionFilterOnlyMine('plotNodeUpdated', pubsub),
+  stringPlotNodeUpdated: subscriptionFilterOnlyMine(
+    'stringPlotNodeUpdated',
+    pubsub,
+  ),
   notificationUpdated: subscriptionFilterOnlyMine(
     'notificationUpdated',
     pubsub,
@@ -21,6 +31,11 @@ const subscriptionResolver = (pubsub, Device) => ({
   ),
   valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
   deviceDeleted: subscriptionFilterOnlyMine('deviceDeleted', pubsub),
+  plotNodeDeleted: subscriptionFilterOnlyMine('plotNodeDeleted', pubsub),
+  stringPlotNodeDeleted: subscriptionFilterOnlyMine(
+    'stringPlotNodeDeleted',
+    pubsub,
+  ),
   tokenDeleted: subscriptionFilterOnlyMine('tokenDeleted', pubsub),
   keepOnline: {
     subscribe: async (root, args, context, info) => {
