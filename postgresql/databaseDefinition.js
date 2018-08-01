@@ -122,6 +122,9 @@ const databaseDefinition = (sequelize) => {
     online: {
       type: Sequelize.BOOLEAN,
     },
+    lastSeen: {
+      type: Sequelize.DATE,
+    },
   })
 
   const Notification = sequelize.define('notification', {

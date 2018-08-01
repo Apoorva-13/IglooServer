@@ -555,6 +555,7 @@ type Device {
   icon: String
   notifications: [Notification!]!
   online: Boolean
+  lastSeen: DateTime
 }
 
 enum ValuePermission {

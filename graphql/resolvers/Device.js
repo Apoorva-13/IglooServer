@@ -28,6 +28,7 @@ const DeviceResolver = (
   icon: retrieveScalarProp(Device, 'icon'),
   index: retrieveScalarProp(Device, 'index'),
   online: retrieveScalarProp(Device, 'online'),
+  lastSeen: retrieveScalarProp(Device, 'lastSeen'),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',
