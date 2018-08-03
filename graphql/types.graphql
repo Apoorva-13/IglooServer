@@ -243,6 +243,9 @@ type Mutation {
     paymentPlan: PaymentPlan
     signalStatus: Float
     batteryStatus: Float
+    displayName: String
+    profileIcon: String
+    profileIconColor: String
   ): User
 
   updatePaymentInfo(stripeToken: String!): Boolean
@@ -548,6 +551,9 @@ type User {
   usageCap: Int
   signalStatus: Float
   batteryStatus: Float
+  displayName: String
+  profileIcon: String
+  profileIconColor: String
 }
 
 type PermanentToken {
