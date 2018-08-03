@@ -243,6 +243,9 @@ type Mutation {
     paymentPlan: PaymentPlan
     signalStatus: Float
     batteryStatus: Float
+    displayName: String
+    profileIcon: String
+    profileIconColor: String
   ): User
 
   updatePaymentInfo(stripeToken: String!): Boolean
@@ -488,6 +491,12 @@ type Subscription {
   deviceCreated: Device
   # subscribes to value creations
   valueCreated: Value
+  # subscribes to plot node creations
+  plotNodeCreated: PlotNode
+  # subscribes to string plot node creations
+  stringPlotNodeCreated: StringPlotNode
+  #subscribes to token creations
+  tokenCreated: PermanentToken
   # subscribes to notification creations
   notificationCreated: Notification
   # subscribes to value updates
@@ -496,12 +505,22 @@ type Subscription {
   deviceUpdated: Device
   # subscribes to value updates
   valueUpdated: Value
+  # subscribes to plot node updates
+  plotNodeUpdated: PlotNode
+  # subscribes to plot node updates
+  stringPlotNodeUpdated: StringPlotNode
   # subscribes to notification updates
   notificationUpdated: Notification
   # subscribes to value deleted
   valueDeleted: ID
+  # subscribes to plot node deletes
+  plotNodeDeleted: ID
+  # subscribes to plot node deletes
+  stringPlotNodeDeleted: ID
   # subscribes to device deleted
   deviceDeleted: ID
+  # subscribes to token deletes
+  tokenDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
   # keeps the device's status set as online
@@ -532,6 +551,9 @@ type User {
   usageCap: Int
   signalStatus: Float
   batteryStatus: Float
+  displayName: String
+  profileIcon: String
+  profileIconColor: String
 }
 
 type PermanentToken {
@@ -555,6 +577,7 @@ type Device {
   icon: String
   notifications: [Notification!]!
   online: Boolean
+  lastSeen: DateTime
 }
 
 enum ValuePermission {

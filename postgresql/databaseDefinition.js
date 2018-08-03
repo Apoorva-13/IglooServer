@@ -73,6 +73,15 @@ const databaseDefinition = (sequelize) => {
     signalStatus: {
       type: Sequelize.FLOAT,
     },
+    displayName: {
+      type: Sequelize.STRING,
+    },
+    profileIcon: {
+      type: Sequelize.STRING,
+    },
+    profileIconColor: {
+      type: Sequelize.STRING,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {
@@ -121,6 +130,9 @@ const databaseDefinition = (sequelize) => {
     },
     online: {
       type: Sequelize.BOOLEAN,
+    },
+    lastSeen: {
+      type: Sequelize.DATE,
     },
   })
 

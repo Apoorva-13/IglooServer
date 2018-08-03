@@ -61,6 +61,9 @@ const UserResolver = (
     'monthUsage',
     'signalStatus',
     'batteryStatus',
+    'displayName',
+    'profileIcon',
+    'profileIconColor',
   ]),
   paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
     'TEMPORARY',

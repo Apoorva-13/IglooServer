@@ -80,6 +80,7 @@ app.use('/graphql', async (req, res, next) => {
 
     if (!userFound) {
       res.send("This user doesn't exist anymore")
+      return
     } else if (
       userFound.paymentPlan === 'FREE' &&
       userFound.monthUsage > FREE_USAGE_QUOTA
