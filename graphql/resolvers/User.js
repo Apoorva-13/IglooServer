@@ -22,6 +22,7 @@ const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
             reject("User doesn't exist. Use `SignupUser` to create one")
           } else {
             resolve(userFound[prop])
+            context.billingUpdater.update(QUERY_COST)
           }
         }
       },
