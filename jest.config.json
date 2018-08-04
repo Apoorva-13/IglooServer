@@ -1,5 +1,8 @@
 {
   "collectCoverage": true,
   "bail": true,
-  "coveragePathIgnorePatterns": ["/node_modules/", "/tests/"]
+  "coveragePathIgnorePatterns": ["/node_modules/", "/tests/"],
+  "transform": {
+    "^.+\\.jsx?$": "babel-jest"
+  }
 }

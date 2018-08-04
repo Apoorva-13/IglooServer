@@ -5,6 +5,10 @@ import {
   MockDevice,
   mockDeviceData,
   MockBillingUpdater,
+  mockNotificationData,
+  MockNotification,
+  mockPermanentTokenData,
+  MockPermanentToken,
 } from './mocks'
 import { checkScalarProps } from './utilities'
 
@@ -24,9 +28,30 @@ describe('User resolver', () => {
     'usageCap',
     'monthUsage',
   ]
+
   checkScalarProps(userScalarProps, mockUserData, UserResolver, MockUser)
 
-  it('should resolve paymentPlan even with SWITCH_TO_PAYING authorization', async () => {
+  for (const prop of userScalarProps) {
+    it(`should not resolve ${prop} if not authenticated`, async () => {
+      const mock = MockUser()
+      const resolver = UserResolver(mock)
+
+      const mockBillingUpdater = MockBillingUpdater()
+      try {
+        await resolver[prop](
+          { id: 'fakeUserId' },
+          {},
+          {
+            billingUpdater: mockBillingUpdater,
+          },
+        )
+      } catch (e) {
+        expect(e).toBe('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
+      }
+    })
+  }
+
+  it('should resolve the prop paymentPlan even with SWITCH_TO_PAYING authorization', async () => {
     const mock = MockUser()
     const resolver = UserResolver(mock)
 
@@ -48,7 +73,7 @@ describe('User resolver', () => {
     expect(paymentPlan).toBe(mockUserData.paymentPlan)
   })
 
-  it('should resolve usageCap even with CHANGE_USAGE_CAP authorization', async () => {
+  it('should resolve the prop usageCap even with CHANGE_USAGE_CAP authorization', async () => {
     const mock = MockUser()
     const resolver = UserResolver(mock)
 
@@ -90,6 +115,70 @@ describe('User resolver', () => {
 
     expect(mockDevice.findAll.called).toBe(true)
     expect(devices.length).toBe(1)
-    expect(devices[0]).toBe(mockDeviceData)
+
+    // devices[0] should be a slice of the object returned by the mock resolver
+    expect(mockDeviceData).toEqual(expect.objectContaining(devices[0]))
+  })
+
+  it('should resolve the prop notifications', async () => {
+    const mockPermanentToken = MockPermanentToken()
+    const resolver = UserResolver(null, mockPermanentToken)
+
+    const mockBillingUpdater = MockBillingUpdater()
+    const permanentTokens = await resolver.permanentTokens(
+      { id: 'fakeUserId' },
+      {},
+      {
+        auth: {
+          userId: 'fakeUserId',
+          accessLevel: 'OWNER',
+          tokenType: 'TEMPORARY',
+        },
+        billingUpdater: mockBillingUpdater,
+      },
+    )
+
+    expect(mockPermanentToken.findAll.called).toBe(true)
+    expect(permanentTokens.length).toBe(1)
+
+    // permanentTokens[0] should be a slice of the object returned by the mock resolver
+    expect(mockPermanentTokenData).toEqual(expect.objectContaining(permanentTokens[0]))
+  })
+
+  it('should resolve the prop permanentTokens', async () => {
+    const mockNotification = MockNotification()
+    const resolver = UserResolver(
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      mockNotification,
+    )
+
+    const mockBillingUpdater = MockBillingUpdater()
+    const notifications = await resolver.notifications(
+      { id: 'fakeUserId' },
+      {},
+      {
+        auth: {
+          userId: 'fakeUserId',
+          accessLevel: 'OWNER',
+          tokenType: 'TEMPORARY',
+        },
+        billingUpdater: mockBillingUpdater,
+      },
+    )
+
+    expect(mockNotification.findAll.called).toBe(true)
+    expect(notifications.length).toBe(1)
+
+    // notifications[0] should be a slice of the object returned by the mock resolver
+    expect(mockNotificationData).toEqual(expect.objectContaining(notifications[0]))
   })
 })

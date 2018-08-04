@@ -1,5 +1,18 @@
 import sinon from 'sinon'
 
+function MockResolver(data) {
+  const findStub = sinon.stub()
+  findStub.returns(data)
+
+  const findAllStub = sinon.stub()
+  findAllStub.returns([data])
+
+  return () => ({
+    find: findStub,
+    findAll: findAllStub,
+  })
+}
+
 const mockUserData = {
   id: 'fakeUserId',
   createdAt: '', // TODO: real dates
@@ -17,15 +30,6 @@ const mockUserData = {
   monthUsage: 200,
 }
 
-function MockUser() {
-  const findStub = sinon.stub()
-  findStub.returns(mockUserData)
-
-  return {
-    find: findStub,
-  }
-}
-
 const mockDeviceData = {
   id: 'fakeDeviceId',
   userId: 'fakeUserId',
@@ -36,17 +40,20 @@ const mockDeviceData = {
   online: false,
 }
 
-function MockDevice() {
-  const findStub = sinon.stub()
-  findStub.returns(mockDeviceData)
+const mockNotificationData = {
+  id: 'fakeNotificationId',
+  deviceId: 'fakeDeviceId',
+  userId: 'fakeUserId',
+  content: 'Example content',
+  date: '',
+  visualized: false,
+  snackbarVisualized: false,
+}
 
-  const findAllStub = sinon.stub()
-  findAllStub.returns([mockDeviceData])
-
-  return {
-    find: findStub,
-    findAll: findAllStub,
-  }
+const mockPermanentTokenData = {
+  id: 'fakePermanentTokenId',
+  userId: 'fakeUserId',
+  customName: 'Example custom name',
 }
 
 function MockBillingUpdater() {
@@ -58,9 +65,13 @@ function MockBillingUpdater() {
 }
 
 module.exports = {
-  MockUser,
   mockUserData,
+  MockUser: MockResolver(mockUserData),
   mockDeviceData,
-  MockDevice,
+  MockDevice: MockResolver(mockDeviceData),
+  mockNotificationData,
+  MockNotification: MockResolver(mockNotificationData),
+  mockPermanentTokenData,
+  MockPermanentToken: MockResolver(mockPermanentTokenData),
   MockBillingUpdater,
 }
