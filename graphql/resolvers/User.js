@@ -18,6 +18,7 @@ const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
           reject('You are not allowed to access details about this user')
         } else {
           const userFound = await User.find({ where: { id: root.id } })
+          /* istanbul ignore if - this should never be the case, so the error is not reproducible */
           if (!userFound) {
             reject("User doesn't exist. Use `SignupUser` to create one")
           } else {

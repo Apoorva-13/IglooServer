@@ -2,10 +2,10 @@ import sinon from 'sinon'
 
 function MockResolver(data) {
   const findStub = sinon.stub()
-  findStub.returns(data)
+  findStub.resolves({ ...data, dataValues: data })
 
   const findAllStub = sinon.stub()
-  findAllStub.returns([data])
+  findAllStub.resolves([{ ...data, dataValues: data }])
 
   return () => ({
     find: findStub,
@@ -64,6 +64,62 @@ function MockBillingUpdater() {
   }
 }
 
+const mockValueData = {
+  userId: 'fakeUserId',
+  deviceId: 'fakeDeviceId',
+  valueDetails: 'example value details',
+  permission: 'READ_WRITE',
+  relevance: 'VISIBLE',
+  tileSize: 'NORMAL',
+  customName: 'example custom name',
+}
+
+const mockBoolValueData = {
+  ...mockValueData,
+  value: false,
+  id: 'fakeBoolValueId',
+}
+
+const mockFloatValueData = {
+  ...mockValueData,
+  value: 3.4,
+  precision: 0.1,
+  boundaries: [0, 10],
+  id: 'fakeFloatValueId',
+}
+
+const mockStringValueData = {
+  ...mockValueData,
+  value: 'example string data',
+  maxChars: 50,
+  allowedValues: ['red', 'green', 'blue'],
+  id: 'fakeStringValueId',
+}
+
+const mockPlotValueData = {
+  ...mockValueData,
+  precision: 0.01,
+  threshold: 0.8,
+  boundaries: [0, 1],
+  id: 'fakePlotValueId',
+}
+
+const mockMapValueData = {
+  ...mockValueData,
+  id: 'fakeMapValueId',
+  latitude: 53.2,
+  longitude: 10.2,
+  height: 32,
+  value: '',
+}
+
+const mockColourValueData = {
+  ...mockValueData,
+  id: 'fakeColourValueId',
+  value: '#f0f',
+  allowedValues: ['#f00', '#f0f', '#fff'],
+}
+
 module.exports = {
   mockUserData,
   MockUser: MockResolver(mockUserData),
@@ -73,5 +129,17 @@ module.exports = {
   MockNotification: MockResolver(mockNotificationData),
   mockPermanentTokenData,
   MockPermanentToken: MockResolver(mockPermanentTokenData),
+  mockBoolValueData,
+  MockBoolValue: MockResolver(mockBoolValueData),
+  mockFloatValueData,
+  MockFloatValue: MockResolver(mockFloatValueData),
+  mockStringValueData,
+  MockStringValue: MockResolver(mockStringValueData),
+  mockPlotValueData,
+  MockPlotValue: MockResolver(mockPlotValueData),
+  mockMapValueData,
+  MockMapValue: MockResolver(mockMapValueData),
+  mockColourValueData,
+  MockColourValue: MockResolver(mockColourValueData),
   MockBillingUpdater,
 }

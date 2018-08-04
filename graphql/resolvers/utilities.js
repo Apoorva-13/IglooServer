@@ -55,7 +55,13 @@ const authenticated = (
   (context.auth && acceptedTokenTypes.indexOf(context.auth.tokenType) > -1
     ? callback
     : (resolve, reject) => {
-      if (!context.auth) { reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token') } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') { reject('You exceeded the free usage quota') } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') { reject('You exceeded the usage cap that you set') } else reject("This token doesn't have the required authorizations")
+      if (!context.auth) {
+        reject('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
+      } else if (context.auth.tokenType === 'SWITCH_TO_PAYING') {
+        reject('You exceeded the free usage quota')
+      } else if (context.auth.tokenType === 'CHANGE_USAGE_CAP') {
+        reject('You exceeded the usage cap that you set')
+      } else reject("This token doesn't have the required authorizations")
     })
 
 const generateAuthenticationToken = (userId, JWT_SECRET) =>
@@ -175,7 +181,7 @@ const logErrorsPromise = (name, code, callback) =>
       if (e.parent && e.parent.routine === 'string_to_uuid') {
         reject(new Error('The ID you provided is not a valid ID, check for typing mistakes'))
       } else {
-        logger.error(e.toString(), { label: name, code })
+        logger.error(`${e.toString()}\n${e.stack}`, { label: name, code })
         reject(new Error(`${code} - An internal error occured, please contact us. The error code is ${code}`))
       }
     }
