@@ -1,5 +1,5 @@
 import DeviceResolver from '../graphql/resolvers/Device'
-import { checkScalarProps } from './utilities'
+import { checkScalarProps, checkValuesProp } from './utilities'
 import { mockDeviceData, MockDevice } from './mocks'
 
 describe('Device resolver', () => {
@@ -19,4 +19,26 @@ describe('Device resolver', () => {
     DeviceResolver,
     MockDevice,
   )
+
+  const mockDevice = MockDevice()
+  checkValuesProp(([
+    mockFloatValue,
+    mockStringValue,
+    mockBoolValue,
+    mockColourValue,
+    mockPlotValue,
+    mockMapValue,
+  ]) =>
+    DeviceResolver(
+      mockDevice,
+      null,
+      null,
+      mockBoolValue,
+      mockFloatValue,
+      mockStringValue,
+      mockPlotValue,
+      null,
+      mockMapValue,
+      mockColourValue,
+    ))
 })
