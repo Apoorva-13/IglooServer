@@ -6,7 +6,7 @@ import {
 
 const QUERY_COST = 1
 
-const UserResolver = (Notification, User, Device) => ({
+const NotificationResolver = (Notification, User, Device) => ({
   content: retrieveScalarProp(Notification, 'content'),
   date: retrieveScalarProp(Notification, 'date'),
   visualized: retrieveScalarProp(Notification, 'visualized'),
@@ -59,4 +59,4 @@ const UserResolver = (Notification, User, Device) => ({
   },
 })
 
-export default UserResolver
+export default NotificationResolver
