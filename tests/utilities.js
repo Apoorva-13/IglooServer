@@ -1,19 +1,12 @@
 import {
   MockBillingUpdater,
   MockBoolValue,
-  mockBoolValueData,
   MockColourValue,
-  mockColourValueData,
   MockFloatValue,
-  mockFloatValueData,
   MockMapValue,
-  mockMapValueData,
   MockPlotValue,
-  mockPlotValueData,
   MockStringValue,
-  mockStringValueData,
   MockNotification,
-  mockNotificationData,
 } from './mocks'
 
 // checks that the resolver returns all the scalar props
@@ -29,7 +22,7 @@ function checkScalarProps(propList, correctData, Resolver, Mock) {
 
       const mockBillingUpdater = MockBillingUpdater()
       const propLoaded = await resolver[prop](
-        { id: 'fakeUserId' },
+        { id: 'fakeUserId' }, // TODO: the root should be a parameter
         {},
         {
           auth: {
@@ -69,7 +62,7 @@ function checkValuesProp(resolverGenerator) {
 
     const mockBillingUpdater = MockBillingUpdater()
     const values = await resolver.values(
-      { id: 'fakeUserId' },
+      { id: 'fakeUserId' }, // TODO: the root should be a parameter
       {},
       {
         auth: {
@@ -89,22 +82,22 @@ function checkValuesProp(resolverGenerator) {
       // expect every value to be a slice of the value returned by the mock function
       switch (value.__resolveType) {
         case 'BooleanValue':
-          expect(value).toEqual(expect.objectContaining(mockBoolValueData))
+          expect(value).toEqual(expect.objectContaining(MockBoolValue.mockData))
           break
         case 'FloatValue':
-          expect(value).toEqual(expect.objectContaining(mockFloatValueData))
+          expect(value).toEqual(expect.objectContaining(MockFloatValue.mockData))
           break
         case 'StringValue':
-          expect(value).toEqual(expect.objectContaining(mockStringValueData))
+          expect(value).toEqual(expect.objectContaining(MockStringValue.mockData))
           break
         case 'ColourValue':
-          expect(value).toEqual(expect.objectContaining(mockColourValueData))
+          expect(value).toEqual(expect.objectContaining(MockColourValue.mockData))
           break
         case 'PlotValue':
-          expect(value).toEqual(expect.objectContaining(mockPlotValueData))
+          expect(value).toEqual(expect.objectContaining(MockPlotValue.mockData))
           break
         case 'MapValue':
-          expect(value).toEqual(expect.objectContaining(mockMapValueData))
+          expect(value).toEqual(expect.objectContaining(MockMapValue.mockData))
           break
         default:
           throw new Error(`received unexpected __resolveType: ${value.__resolveType}`)
@@ -121,7 +114,7 @@ function checkNotificationsProp(resolverGenerator) {
 
     const mockBillingUpdater = MockBillingUpdater()
     const notifications = await resolver.notifications(
-      { id: 'fakeUserId' },
+      { id: 'fakeUserId' }, // TODO: the root should be a parameter
       {},
       {
         auth: {
@@ -138,7 +131,7 @@ function checkNotificationsProp(resolverGenerator) {
 
     // notifications[0] should be a slice of the object returned by the mock resolver
     delete notifications[0].dataValues
-    expect(mockNotificationData).toEqual(expect.objectContaining(notifications[0]))
+    expect(MockNotification.mockData).toEqual(expect.objectContaining(notifications[0]))
   })
 }
 
@@ -151,7 +144,7 @@ function checkRejectUnauthenticated(propList, Resolver, Mock) {
       const mockBillingUpdater = MockBillingUpdater()
       try {
         await resolver[prop](
-          { id: 'fakeUserId' },
+          { id: 'fakeUserId' }, // TODO: the root should be a parameter
           {},
           {
             billingUpdater: mockBillingUpdater,

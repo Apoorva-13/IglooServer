@@ -1,10 +1,6 @@
 import NotificationResolver from '../graphql/resolvers/Notification'
 import { checkScalarProps, checkRejectUnauthenticated } from './utilities'
-import {
-  mockNotificationData,
-  MockNotification,
-  MockBillingUpdater,
-} from './mocks'
+import { MockNotification, MockBillingUpdater } from './mocks'
 
 describe('Notification resolver', () => {
   const notificationScalarProps = [
@@ -15,7 +11,7 @@ describe('Notification resolver', () => {
   ]
   checkScalarProps(
     notificationScalarProps,
-    mockNotificationData,
+    MockNotification.mockData,
     NotificationResolver,
     MockNotification,
   )
@@ -39,7 +35,7 @@ describe('Notification resolver', () => {
     )
 
     expect(mockNotification.find.called).toBe(true)
-    expect(userLoaded.id).toBe(mockNotificationData.userId)
+    expect(userLoaded.id).toBe(MockNotification.mockData.userId)
   })
 
   test('should resolve the prop device', async () => {
@@ -61,7 +57,7 @@ describe('Notification resolver', () => {
     )
 
     expect(mockNotification.find.called).toBe(true)
-    expect(deviceLoaded.id).toBe(mockNotificationData.deviceId)
+    expect(deviceLoaded.id).toBe(MockNotification.mockData.deviceId)
   })
 
   const notificationProps = [

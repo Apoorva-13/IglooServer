@@ -1,13 +1,8 @@
 import UserResolver from '../graphql/resolvers/User'
 import {
   MockUser,
-  mockUserData,
   MockDevice,
-  mockDeviceData,
   MockBillingUpdater,
-  mockNotificationData,
-  MockNotification,
-  mockPermanentTokenData,
   MockPermanentToken,
 } from './mocks'
 import {
@@ -34,7 +29,7 @@ describe('User resolver', () => {
     'monthUsage',
   ]
 
-  checkScalarProps(userScalarProps, mockUserData, UserResolver, MockUser)
+  checkScalarProps(userScalarProps, MockUser.mockData, UserResolver, MockUser)
 
   test('should resolve the prop paymentPlan even with SWITCH_TO_PAYING authorization', async () => {
     const mock = MockUser()
@@ -55,7 +50,7 @@ describe('User resolver', () => {
     )
 
     expect(mock.find.called).toBe(true)
-    expect(paymentPlan).toBe(mockUserData.paymentPlan)
+    expect(paymentPlan).toBe(MockUser.mockData.paymentPlan)
   })
 
   test('should resolve the prop usageCap even with CHANGE_USAGE_CAP authorization', async () => {
@@ -77,7 +72,7 @@ describe('User resolver', () => {
     )
 
     expect(mock.find.called).toBe(true)
-    expect(usageCap).toBe(mockUserData.usageCap)
+    expect(usageCap).toBe(MockUser.mockData.usageCap)
   })
 
   test('should resolve the prop devices', async () => {
@@ -103,7 +98,7 @@ describe('User resolver', () => {
 
     // devices[0] should be a slice of the object returned by the mock resolver
     delete devices[0].dataValues
-    expect(mockDeviceData).toEqual(expect.objectContaining(devices[0]))
+    expect(MockDevice.mockData).toEqual(expect.objectContaining(devices[0]))
   })
 
   test('should resolve the prop permanentTokens', async () => {
@@ -129,7 +124,7 @@ describe('User resolver', () => {
 
     // permanentTokens[0] should be a slice of the object returned by the mock resolver
     delete permanentTokens[0].dataValues
-    expect(mockPermanentTokenData).toEqual(expect.objectContaining(permanentTokens[0]))
+    expect(MockPermanentToken.mockData).toEqual(expect.objectContaining(permanentTokens[0]))
   })
 
   checkNotificationsProp(mockNotification =>

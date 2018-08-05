@@ -7,10 +7,15 @@ function MockResolver(data) {
   const findAllStub = sinon.stub()
   findAllStub.resolves([{ ...data, dataValues: data }])
 
-  return () => ({
+  const factory = () => ({
     find: findStub,
     findAll: findAllStub,
+    mockData: data,
   })
+
+  factory.mockData = data
+
+  return factory
 }
 
 const mockUserData = {
@@ -123,25 +128,15 @@ const mockColourValueData = {
 }
 
 module.exports = {
-  mockUserData,
   MockUser: MockResolver(mockUserData),
-  mockDeviceData,
   MockDevice: MockResolver(mockDeviceData),
-  mockNotificationData,
   MockNotification: MockResolver(mockNotificationData),
-  mockPermanentTokenData,
   MockPermanentToken: MockResolver(mockPermanentTokenData),
-  mockBoolValueData,
   MockBoolValue: MockResolver(mockBoolValueData),
-  mockFloatValueData,
   MockFloatValue: MockResolver(mockFloatValueData),
-  mockStringValueData,
   MockStringValue: MockResolver(mockStringValueData),
-  mockPlotValueData,
   MockPlotValue: MockResolver(mockPlotValueData),
-  mockMapValueData,
   MockMapValue: MockResolver(mockMapValueData),
-  mockColourValueData,
   MockColourValue: MockResolver(mockColourValueData),
   MockBillingUpdater,
 }

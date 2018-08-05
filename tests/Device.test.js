@@ -5,7 +5,7 @@ import {
   checkNotificationsProp,
   checkRejectUnauthenticated,
 } from './utilities'
-import { mockDeviceData, MockDevice, MockBillingUpdater } from './mocks'
+import { MockDevice, MockBillingUpdater } from './mocks'
 
 describe('Device resolver', () => {
   const deviceScalarProps = [
@@ -20,7 +20,7 @@ describe('Device resolver', () => {
 
   checkScalarProps(
     deviceScalarProps,
-    mockDeviceData,
+    MockDevice.mockData,
     DeviceResolver,
     MockDevice,
   )
@@ -68,7 +68,7 @@ describe('Device resolver', () => {
 
     const mockBillingUpdater = MockBillingUpdater()
     const userLoaded = await resolver.user(
-      { id: 'fakeUserId' },
+      { id: 'fakeDeviceId' },
       {},
       {
         auth: {
@@ -81,7 +81,7 @@ describe('Device resolver', () => {
     )
 
     expect(mockDevice.find.called).toBe(true)
-    expect(userLoaded.id).toBe(mockDeviceData.userId)
+    expect(userLoaded.id).toBe(MockDevice.mockData.userId)
   })
 
   const deviceProps = [
