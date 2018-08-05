@@ -32,6 +32,8 @@ const mockUserData = {
 
 const mockDeviceData = {
   id: 'fakeDeviceId',
+  createdAt: '', // TODO: real dates
+  updatedAt: '',
   userId: 'fakeUserId',
   deviceType: 'Example Device Type',
   customName: 'Example Custom Name',

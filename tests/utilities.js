@@ -7,7 +7,7 @@ function checkScalarProps(propList, correctData, Resolver, Mock) {
   // resolver with a mocked database, tries to resolve
   // the prop and checks that the result is correct
   for (const prop of propList) {
-    it(`should resolve the prop ${prop}`, async () => {
+    test(`should resolve the prop ${prop}`, async () => {
       const mock = Mock()
       const resolver = Resolver(mock)
 
