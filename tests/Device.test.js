@@ -1,6 +1,11 @@
 import DeviceResolver from '../graphql/resolvers/Device'
-import { checkScalarProps, checkValuesProp } from './utilities'
-import { mockDeviceData, MockDevice } from './mocks'
+import {
+  checkScalarProps,
+  checkValuesProp,
+  checkNotificationsProp,
+  checkRejectUnauthenticated,
+} from './utilities'
+import { mockDeviceData, MockDevice, MockBillingUpdater } from './mocks'
 
 describe('Device resolver', () => {
   const deviceScalarProps = [
@@ -41,4 +46,55 @@ describe('Device resolver', () => {
       mockMapValue,
       mockColourValue,
     ))
+
+  checkNotificationsProp(mockNotification =>
+    DeviceResolver(
+      mockDevice,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      mockNotification,
+    ))
+
+  test('should resolve prop user', async () => {
+    const mockDevice = MockDevice()
+    const resolver = DeviceResolver(mockDevice)
+
+    const mockBillingUpdater = MockBillingUpdater()
+    const userLoaded = await resolver.user(
+      { id: 'fakeUserId' },
+      {},
+      {
+        auth: {
+          userId: 'fakeUserId',
+          accessLevel: 'OWNER',
+          tokenType: 'TEMPORARY',
+        },
+        billingUpdater: mockBillingUpdater,
+      },
+    )
+
+    expect(mockDevice.find.called).toBe(true)
+    expect(userLoaded.id).toBe(mockDeviceData.userId)
+  })
+
+  const deviceProps = [
+    'createdAt',
+    'updatedAt',
+    'deviceType',
+    'customName',
+    'icon',
+    'index',
+    'online',
+    'values',
+    'user',
+    'notifications',
+  ]
+  checkRejectUnauthenticated(deviceProps, DeviceResolver, MockDevice)
 })

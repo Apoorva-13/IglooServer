@@ -10,7 +10,12 @@ import {
   mockPermanentTokenData,
   MockPermanentToken,
 } from './mocks'
-import { checkScalarProps, checkValuesProp } from './utilities'
+import {
+  checkScalarProps,
+  checkValuesProp,
+  checkNotificationsProp,
+  checkRejectUnauthenticated,
+} from './utilities'
 
 describe('User resolver', () => {
   const userScalarProps = [
@@ -101,7 +106,7 @@ describe('User resolver', () => {
     expect(mockDeviceData).toEqual(expect.objectContaining(devices[0]))
   })
 
-  test('should resolve the prop notifications', async () => {
+  test('should resolve the prop permanentTokens', async () => {
     const mockPermanentToken = MockPermanentToken()
     const resolver = UserResolver(null, mockPermanentToken)
 
@@ -127,9 +132,8 @@ describe('User resolver', () => {
     expect(mockPermanentTokenData).toEqual(expect.objectContaining(permanentTokens[0]))
   })
 
-  test('should resolve the prop permanentTokens', async () => {
-    const mockNotification = MockNotification()
-    const resolver = UserResolver(
+  checkNotificationsProp(mockNotification =>
+    UserResolver(
       null,
       null,
       null,
@@ -141,29 +145,7 @@ describe('User resolver', () => {
       null,
       null,
       mockNotification,
-    )
-
-    const mockBillingUpdater = MockBillingUpdater()
-    const notifications = await resolver.notifications(
-      { id: 'fakeUserId' },
-      {},
-      {
-        auth: {
-          userId: 'fakeUserId',
-          accessLevel: 'OWNER',
-          tokenType: 'TEMPORARY',
-        },
-        billingUpdater: mockBillingUpdater,
-      },
-    )
-
-    expect(mockNotification.findAll.called).toBe(true)
-    expect(notifications.length).toBe(1)
-
-    // notifications[0] should be a slice of the object returned by the mock resolver
-    delete notifications[0].dataValues
-    expect(mockNotificationData).toEqual(expect.objectContaining(notifications[0]))
-  })
+    ))
 
   checkValuesProp(mockValues =>
     UserResolver(null, null, null, null, ...mockValues, null))
@@ -188,23 +170,5 @@ describe('User resolver', () => {
     'permanentTokens',
   ]
 
-  for (const prop of userProps) {
-    test(`should not resolve ${prop} if not authenticated`, async () => {
-      const mock = MockUser()
-      const resolver = UserResolver(mock)
-
-      const mockBillingUpdater = MockBillingUpdater()
-      try {
-        await resolver[prop](
-          { id: 'fakeUserId' },
-          {},
-          {
-            billingUpdater: mockBillingUpdater,
-          },
-        )
-      } catch (e) {
-        expect(e).toBe('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
-      }
-    })
-  }
+  checkRejectUnauthenticated(userProps, UserResolver, MockUser)
 })
