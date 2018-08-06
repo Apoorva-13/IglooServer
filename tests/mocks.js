@@ -1,11 +1,29 @@
 import sinon from 'sinon'
 
 function MockResolver(data) {
-  const findStub = sinon.stub()
-  findStub.resolves({ ...data, dataValues: data })
+  const findStub = ({ where: query }) => {
+    let querySatisfied = true
+    for (const key of Object.keys(query)) {
+      if (data[key] !== query[key]) querySatisfied = false
+    }
 
-  const findAllStub = sinon.stub()
-  findAllStub.resolves([{ ...data, dataValues: data }])
+    findStub.called = true
+
+    return querySatisfied ? { ...data, dataValues: data } : null
+  }
+  findStub.called = false
+
+  const findAllStub = ({ where: query }) => {
+    let querySatisfied = true
+    for (const key of Object.keys(query)) {
+      if (data[key] !== query[key]) querySatisfied = false
+    }
+
+    findAllStub.called = true
+
+    return querySatisfied ? [{ ...data, dataValues: data }] : []
+  }
+  findAllStub.called = false
 
   const factory = () => ({
     find: findStub,

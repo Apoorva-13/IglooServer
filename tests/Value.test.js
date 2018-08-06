@@ -77,4 +77,48 @@ describe('Value resolvers', () => {
       }
     })
   }
+
+  test('should choose the correct __resolveType', async () => {
+    const idToTypeMap = {
+      fakeBoolValueId: 'BooleanValue',
+      fakeFloatValueId: 'FloatValue',
+      fakeStringValueId: 'StringValue',
+      fakePlotValueId: 'PlotValue',
+      fakeColourValueId: 'ColourValue',
+      fakeMapValueId: 'MapValue',
+    }
+
+    for (const id of Object.keys(idToTypeMap)) {
+      const mockBoolValue = MockBoolValue()
+      const mockFloatValue = MockFloatValue()
+      const mockStringValue = MockStringValue()
+      const mockColourValue = MockColourValue()
+      const mockPlotValue = MockPlotValue()
+      const mockMapValue = MockMapValue()
+
+      const resolver = ValueResolver({
+        BoolValue: mockBoolValue,
+        FloatValue: mockFloatValue,
+        StringValue: mockStringValue,
+        PlotValue: mockPlotValue,
+        MapValue: mockMapValue,
+        ColourValue: mockColourValue,
+      })
+
+      const mockBillingUpdater = MockBillingUpdater()
+      const resolveTypeLoaded = await resolver.__resolveType(
+        { id },
+        {
+          auth: {
+            userId: 'fakeUserId',
+            accessLevel: 'OWNER',
+            tokenType: 'TEMPORARY',
+          },
+          billingUpdater: mockBillingUpdater,
+        },
+      )
+
+      expect(resolveTypeLoaded).toBe(idToTypeMap[id])
+    }
+  })
 })

@@ -23,44 +23,51 @@ describe('Device resolver', () => {
     MockDevice.mockData,
     DeviceResolver,
     MockDevice,
+    'fakeDeviceId',
   )
 
   const mockDevice = MockDevice()
-  checkValuesProp(([
-    mockFloatValue,
-    mockStringValue,
-    mockBoolValue,
-    mockColourValue,
-    mockPlotValue,
-    mockMapValue,
-  ]) =>
-    DeviceResolver(
-      mockDevice,
-      null,
-      null,
-      mockBoolValue,
+  checkValuesProp(
+    ([
       mockFloatValue,
       mockStringValue,
-      mockPlotValue,
-      null,
-      mockMapValue,
+      mockBoolValue,
       mockColourValue,
-    ))
+      mockPlotValue,
+      mockMapValue,
+    ]) =>
+      DeviceResolver(
+        mockDevice,
+        null,
+        null,
+        mockBoolValue,
+        mockFloatValue,
+        mockStringValue,
+        mockPlotValue,
+        null,
+        mockMapValue,
+        mockColourValue,
+      ),
+    'fakeDeviceId',
+  )
 
-  checkNotificationsProp(mockNotification =>
-    DeviceResolver(
-      mockDevice,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      mockNotification,
-    ))
+  checkNotificationsProp(
+    mockNotification =>
+      DeviceResolver(
+        mockDevice,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        mockNotification,
+      ),
+    'fakeDeviceId',
+  )
 
   test('should resolve prop user', async () => {
     const mockDevice = MockDevice()

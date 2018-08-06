@@ -11,7 +11,7 @@ import {
 
 // checks that the resolver returns all the scalar props
 // as they are in the database
-function checkScalarProps(propList, correctData, Resolver, Mock) {
+function checkScalarProps(propList, correctData, Resolver, Mock, id) {
   // loops all the props and for each prop creates a
   // resolver with a mocked database, tries to resolve
   // the prop and checks that the result is correct
@@ -22,7 +22,7 @@ function checkScalarProps(propList, correctData, Resolver, Mock) {
 
       const mockBillingUpdater = MockBillingUpdater()
       const propLoaded = await resolver[prop](
-        { id: 'fakeUserId' }, // TODO: the root should be a parameter
+        { id }, // TODO: the root should be a parameter
         {},
         {
           auth: {
@@ -41,7 +41,7 @@ function checkScalarProps(propList, correctData, Resolver, Mock) {
 }
 
 // resolver should take the mock values only as input
-function checkValuesProp(resolverGenerator) {
+function checkValuesProp(resolverGenerator, id) {
   test('should resolve the prop values', async () => {
     const mockBoolValue = MockBoolValue()
     const mockFloatValue = MockFloatValue()
@@ -62,7 +62,7 @@ function checkValuesProp(resolverGenerator) {
 
     const mockBillingUpdater = MockBillingUpdater()
     const values = await resolver.values(
-      { id: 'fakeUserId' }, // TODO: the root should be a parameter
+      { id }, // TODO: the root should be a parameter
       {},
       {
         auth: {
@@ -107,14 +107,14 @@ function checkValuesProp(resolverGenerator) {
   })
 }
 
-function checkNotificationsProp(resolverGenerator) {
+function checkNotificationsProp(resolverGenerator, id) {
   test('should resolve the prop notifications', async () => {
     const mockNotification = MockNotification()
     const resolver = resolverGenerator(mockNotification)
 
     const mockBillingUpdater = MockBillingUpdater()
     const notifications = await resolver.notifications(
-      { id: 'fakeUserId' }, // TODO: the root should be a parameter
+      { id }, // TODO: the root should be a parameter
       {},
       {
         auth: {
@@ -144,7 +144,7 @@ function checkRejectUnauthenticated(propList, Resolver, Mock) {
       const mockBillingUpdater = MockBillingUpdater()
       try {
         await resolver[prop](
-          { id: 'fakeUserId' }, // TODO: the root should be a parameter
+          {}, // the request should not be processed so no need to pass a root
           {},
           {
             billingUpdater: mockBillingUpdater,
@@ -152,6 +152,31 @@ function checkRejectUnauthenticated(propList, Resolver, Mock) {
         )
       } catch (e) {
         expect(e).toBe('You are not authenticated. Use `AuthenticateUser` to obtain an authentication token')
+      }
+    })
+
+    // TODO: uniform the error message
+    test.skip(`should not resolve ${prop} if they don't own the resource`, async () => {
+      const mock = Mock()
+      const resolver = Resolver(mock)
+
+      const mockBillingUpdater = MockBillingUpdater()
+      try {
+        await resolver[prop](
+          {}, // the request should not be processed so no need to pass a root
+          {},
+          {
+            auth: {
+              userId: 'fakeOtherUserId',
+              accessLevel: 'OWNER',
+              tokenType: 'TEMPORARY',
+            },
+            billingUpdater: mockBillingUpdater,
+          },
+        )
+      } catch (e) {
+        // TODO: fill in the error message here
+        expect(e).toBe('ERROR_MESSAGE')
       }
     })
   }

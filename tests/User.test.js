@@ -29,7 +29,13 @@ describe('User resolver', () => {
     'monthUsage',
   ]
 
-  checkScalarProps(userScalarProps, MockUser.mockData, UserResolver, MockUser)
+  checkScalarProps(
+    userScalarProps,
+    MockUser.mockData,
+    UserResolver,
+    MockUser,
+    'fakeUserId',
+  )
 
   test('should resolve the prop paymentPlan even with SWITCH_TO_PAYING authorization', async () => {
     const mock = MockUser()
@@ -127,23 +133,28 @@ describe('User resolver', () => {
     expect(MockPermanentToken.mockData).toEqual(expect.objectContaining(permanentTokens[0]))
   })
 
-  checkNotificationsProp(mockNotification =>
-    UserResolver(
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      null,
-      mockNotification,
-    ))
+  checkNotificationsProp(
+    mockNotification =>
+      UserResolver(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        mockNotification,
+      ),
+    'fakeUserId',
+  )
 
-  checkValuesProp(mockValues =>
-    UserResolver(null, null, null, null, ...mockValues, null))
+  checkValuesProp(
+    mockValues => UserResolver(null, null, null, null, ...mockValues, null),
+    'fakeUserId',
+  )
 
   const userProps = [
     'createdAt',

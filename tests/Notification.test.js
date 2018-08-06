@@ -14,6 +14,7 @@ describe('Notification resolver', () => {
     MockNotification.mockData,
     NotificationResolver,
     MockNotification,
+    'fakeNotificationId',
   )
 
   test('should resolve the prop user', async () => {
@@ -22,7 +23,7 @@ describe('Notification resolver', () => {
 
     const mockBillingUpdater = MockBillingUpdater()
     const userLoaded = await resolver.user(
-      { id: 'fakeUserId' },
+      { id: 'fakeNotificationId' },
       {},
       {
         auth: {
@@ -44,7 +45,7 @@ describe('Notification resolver', () => {
 
     const mockBillingUpdater = MockBillingUpdater()
     const deviceLoaded = await resolver.device(
-      { id: 'fakeUserId' },
+      { id: 'fakeNotificationId' },
       {},
       {
         auth: {
