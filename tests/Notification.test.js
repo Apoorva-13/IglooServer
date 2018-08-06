@@ -61,14 +61,7 @@ describe('Notification resolver', () => {
     expect(deviceLoaded.id).toBe(MockNotification.mockData.deviceId)
   })
 
-  const notificationProps = [
-    'content',
-    'date',
-    'visualized',
-    'snackbarVisualized',
-    'user',
-    'device',
-  ]
+  const notificationProps = [...notificationScalarProps, 'user', 'device']
   checkRejectUnauthenticated(
     notificationProps,
     NotificationResolver,

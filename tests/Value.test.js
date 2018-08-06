@@ -121,4 +121,25 @@ describe('Value resolvers', () => {
       expect(resolveTypeLoaded).toBe(idToTypeMap[id])
     }
   })
+
+  const mockValues = () => {
+    const mockBoolValue = MockBoolValue()
+    const mockFloatValue = MockFloatValue()
+    const mockStringValue = MockStringValue()
+    const mockColourValue = MockColourValue()
+    const mockPlotValue = MockPlotValue()
+    const mockMapValue = MockMapValue()
+
+    return {
+      BoolValue: mockBoolValue,
+      FloatValue: mockFloatValue,
+      StringValue: mockStringValue,
+      PlotValue: mockPlotValue,
+      MapValue: mockMapValue,
+      ColourValue: mockColourValue,
+    }
+  }
+  const valueProps = [...valueScalarProps, '__resolveType']
+
+  checkRejectUnauthenticated(valueProps, ValueResolver, mockValues)
 })

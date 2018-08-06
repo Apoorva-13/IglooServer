@@ -157,19 +157,7 @@ describe('User resolver', () => {
   )
 
   const userProps = [
-    'createdAt',
-    'updatedAt',
-    'email',
-    'quietMode',
-    'language',
-    'timezone',
-    'devMode',
-    'nightMode',
-    'signalStatus',
-    'batteryStatus',
-    'paymentPlan',
-    'usageCap',
-    'monthUsage',
+    ...userScalarProps,
     'devices',
     'notifications',
     'values',

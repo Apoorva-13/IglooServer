@@ -91,17 +91,6 @@ describe('Device resolver', () => {
     expect(userLoaded.id).toBe(MockDevice.mockData.userId)
   })
 
-  const deviceProps = [
-    'createdAt',
-    'updatedAt',
-    'deviceType',
-    'customName',
-    'icon',
-    'index',
-    'online',
-    'values',
-    'user',
-    'notifications',
-  ]
+  const deviceProps = [...deviceScalarProps, 'values', 'user', 'notifications']
   checkRejectUnauthenticated(deviceProps, DeviceResolver, MockDevice)
 })

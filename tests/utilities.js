@@ -22,7 +22,7 @@ function checkScalarProps(propList, correctData, Resolver, Mock, id) {
 
       const mockBillingUpdater = MockBillingUpdater()
       const propLoaded = await resolver[prop](
-        { id }, // TODO: the root should be a parameter
+        { id },
         {},
         {
           auth: {
@@ -62,7 +62,7 @@ function checkValuesProp(resolverGenerator, id) {
 
     const mockBillingUpdater = MockBillingUpdater()
     const values = await resolver.values(
-      { id }, // TODO: the root should be a parameter
+      { id },
       {},
       {
         auth: {
@@ -114,7 +114,7 @@ function checkNotificationsProp(resolverGenerator, id) {
 
     const mockBillingUpdater = MockBillingUpdater()
     const notifications = await resolver.notifications(
-      { id }, // TODO: the root should be a parameter
+      { id },
       {},
       {
         auth: {
