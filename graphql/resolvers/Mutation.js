@@ -231,6 +231,23 @@ const MutationResolver = (
       }),
     )
   },
+  ResendVerificationEmail(root, args, context) {
+    return logErrorsPromise(
+      'ResendVerificationEmail',
+      900,
+      authenticated(context, async (resolve) => {
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          resolve(true)
+          sendVerificationEmail(userFound.email, userFound.id)
+        }
+      }),
+    )
+  },
   CreateDevice(root, args, context) {
     return logErrorsPromise(
       'CreateDevice',

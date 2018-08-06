@@ -485,7 +485,7 @@ const sendVerificationEmail = (email, userId) => {
   // TODO: create a template for the email verification
   ses.sendEmail(
     {
-      Source: "'Igloo Cloud' <igloo@igloo.witlab.io>",
+      Source: "'Igloo Cloud' <verification@igloo.ooo>",
       Destination: { ToAddresses: ['99.zanin@gmail.com'] },
       Message: {
         Body: {
