@@ -616,16 +616,47 @@ const sendPasswordUpdatedEmail = (email) => {
         Body: {
           Html: {
             Charset: 'UTF-8',
-            Data: 'Your password has been changed, if it was you that changed it you can ignore this email',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
           },
           Text: {
             Charset: 'UTF-8',
-            Data: 'Your password has been changed, if it was you that changed it you can ignore this email',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
           },
         },
         Subject: {
           Charset: 'UTF-8',
           Data: 'Password has been changed',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendTokenCreatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'A new permanent token has been created',
         },
       },
     },
@@ -654,4 +685,5 @@ module.exports = {
   generatePasswordRecoveryToken,
   sendPasswordRecoveryEmail,
   sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 }

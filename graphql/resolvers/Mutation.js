@@ -14,6 +14,7 @@ import {
   sendVerificationEmail,
   sendPasswordRecoveryEmail,
   sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -138,6 +139,12 @@ const MutationResolver = (
             tokenCreated: resolveObj,
             userId: context.auth.userId,
           })
+
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+
+          sendTokenCreatedEmail(userFound.email)
         }
       }),
     )
