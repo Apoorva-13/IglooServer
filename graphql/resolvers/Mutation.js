@@ -11,6 +11,7 @@ import {
   logErrorsPromise,
   getPropsIfDefined,
   genericDelete,
+  sendVerificationEmail,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -169,6 +170,7 @@ const MutationResolver = (
             nightMode: false,
             monthUsage: 0,
             paymentPlan: 'FREE',
+            emailIsVerified: false,
           })
 
           resolve({
@@ -178,6 +180,8 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+
+          sendVerificationEmail(args.email, newUser.id)
         } catch (e) {
           console.log(e)
           if (e.errors[0].validatorKey === 'isEmail') {
@@ -245,6 +249,23 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+        }
+      }),
+    )
+  },
+  ResendVerificationEmail(root, args, context) {
+    return logErrorsPromise(
+      'ResendVerificationEmail',
+      900,
+      authenticated(context, async (resolve) => {
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          resolve(true)
+          sendVerificationEmail(userFound.email, userFound.id)
         }
       }),
     )
@@ -420,7 +441,10 @@ const MutationResolver = (
           if (!userFound) {
             reject("User doesn't exist. Use `SignupUser` to create one")
           } else {
-            const newUser = await userFound.update(args)
+            const updateObj = args.email
+              ? { ...args, emailIsVerified: false }
+              : args
+            const newUser = await userFound.update(updateObj)
             resolve(newUser.dataValues)
 
             pubsub.publish('userUpdated', {
@@ -428,7 +452,12 @@ const MutationResolver = (
               userId: context.auth.userId,
             })
 
-            if (permissionRequired !== undefined) {
+            if (args.email) {
+              sendVerificationEmail(args.email, newUser.id)
+            }
+
+            // if we are the mutation is not a usageCap or paymentPlan update bill it
+            if (permissionRequired === undefined) {
               context.billingUpdater.update(MUTATION_COST)
             }
           }
@@ -464,6 +493,7 @@ const MutationResolver = (
           await userFound.update({
             stripeCustomerId: customer.id,
           })
+
           resolve(true)
           context.billingUpdater.update(MUTATION_COST)
         }

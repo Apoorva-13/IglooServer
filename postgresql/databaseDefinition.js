@@ -82,6 +82,9 @@ const databaseDefinition = (sequelize) => {
     profileIconColor: {
       type: Sequelize.STRING,
     },
+    emailIsVerified: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {

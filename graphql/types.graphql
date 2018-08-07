@@ -52,6 +52,8 @@ type Mutation {
   # Changes the password of the authenticated user
   ChangePassword(newPassword: String!): AuthenticateUserPayload
 
+  ResendVerificationEmail: Boolean
+
   # Creates a new Device
   CreateDevice(
     # Product name, for example Igloo Thermostat
@@ -554,6 +556,7 @@ type User {
   displayName: String
   profileIcon: String
   profileIconColor: String
+  emailIsVerified: Boolean
 }
 
 type PermanentToken {

@@ -64,6 +64,7 @@ const UserResolver = (
     'displayName',
     'profileIcon',
     'profileIconColor',
+    'emailIsVerified',
   ]),
   paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
     'TEMPORARY',
