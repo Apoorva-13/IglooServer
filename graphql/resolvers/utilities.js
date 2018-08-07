@@ -99,6 +99,21 @@ const generatePermanentAuthenticationToken = (
     'HS512',
   )
 
+const generatePasswordRecoveryToken = (userId, JWT_SECRET) =>
+  jwt.encode(
+    {
+      exp: moment()
+        .utc()
+        .add({ hours: 1 })
+        .unix(),
+      userId,
+      accessLevel: 'OWNER',
+      tokenType: 'PASSWORD_RECOVERY',
+    },
+    JWT_SECRET,
+    'HS512',
+  )
+
 const retrieveScalarProp = (Model, prop) => (root, args, context) =>
   new Promise(authenticated(context, async (resolve, reject) => {
     try {
@@ -533,7 +548,7 @@ const sendVerificationEmail = (email, userId) => {
   ses.sendEmail(
     {
       Source: "'Igloo Cloud' <verification@igloo.ooo>",
-      Destination: { ToAddresses: ['99.zanin@gmail.com'] },
+      Destination: { ToAddresses: [email] },
       Message: {
         Body: {
           Html: {
@@ -548,6 +563,100 @@ const sendVerificationEmail = (email, userId) => {
         Subject: {
           Charset: 'UTF-8',
           Data: 'Verify your account',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendPasswordRecoveryEmail = (email, userId) => {
+  // TODO: use different jwt secrets?
+  const recoveryToken = generatePasswordRecoveryToken(
+    userId,
+    process.env.JWT_SECRET,
+  )
+
+  // TODO: update this with the real link
+  const emailRecoverylink = `https://igloocloud.github.io/IglooAurora/recovery/${recoveryToken}`
+
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <recovery@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `Change your password clicking this link: <a href="${emailRecoverylink}">Recover password</a>`,
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: `Change your password at this link: ${emailRecoverylink}`,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Recover your password',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendPasswordUpdatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Password has been changed',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendTokenCreatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'A new permanent token has been created',
         },
       },
     },
@@ -573,4 +682,8 @@ module.exports = {
   generatePermanentAuthenticationToken,
   socketToDeviceMap,
   sendVerificationEmail,
+  generatePasswordRecoveryToken,
+  sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 }

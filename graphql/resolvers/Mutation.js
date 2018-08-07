@@ -12,6 +12,9 @@ import {
   getPropsIfDefined,
   genericDelete,
   sendVerificationEmail,
+  sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -88,7 +91,22 @@ const MutationResolver = (
       },
     )
   },
+  SendPasswordRecoveryEmail(root, args, context) {
+    return logErrorsPromise(
+      'SendPasswordRecoveryEmail',
+      901,
+      async (resolve, reject) => {
+        const userFound = await User.find({ where: { email: args.email } })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          sendPasswordRecoveryEmail(userFound.email, userFound.id)
 
+          resolve(true)
+        }
+      },
+    )
+  },
   GeneratePermanentAccessToken(root, args, context) {
     return logErrorsPromise(
       'GeneratePermanentAccessToken',
@@ -121,6 +139,12 @@ const MutationResolver = (
             tokenCreated: resolveObj,
             userId: context.auth.userId,
           })
+
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+
+          sendTokenCreatedEmail(userFound.email)
         }
       }),
     )
@@ -230,27 +254,33 @@ const MutationResolver = (
     return logErrorsPromise(
       'ChangePassword',
       101,
-      authenticated(context, async (resolve, reject) => {
-        const userFound = await User.find({
-          where: { id: context.auth.userId },
-        })
-        if (!userFound) {
-          reject("User doesn't exist. Use `SignupUser` to create one")
-        } else {
-          const encryptedPass = bcrypt.hashSync(args.newPassword, SALT_ROUNDS)
+      authenticated(
+        context,
+        async (resolve, reject) => {
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+          if (!userFound) {
+            reject("User doesn't exist. Use `SignupUser` to create one")
+          } else {
+            const encryptedPass = bcrypt.hashSync(args.newPassword, SALT_ROUNDS)
 
-          const newUser = await userFound.update({
-            password: encryptedPass,
-          })
-          resolve({
-            id: newUser.dataValues.id,
-            token: generateAuthenticationToken(
-              newUser.dataValues.id,
-              JWT_SECRET,
-            ),
-          })
-        }
-      }),
+            const newUser = await userFound.update({
+              password: encryptedPass,
+            })
+            resolve({
+              id: newUser.dataValues.id,
+              token: generateAuthenticationToken(
+                newUser.dataValues.id,
+                JWT_SECRET,
+              ),
+            })
+
+            sendPasswordUpdatedEmail(userFound.email)
+          }
+        },
+        ['TEMPORARY', 'PERMANENT', 'PASSWORD_RECOVERY'],
+      ),
     )
   },
   ResendVerificationEmail(root, args, context) {
