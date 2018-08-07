@@ -578,8 +578,7 @@ const sendPasswordRecoveryEmail = (email, userId) => {
   )
 
   // TODO: update this with the real link
-  const emailRecoverylink =
-    `https://igloocloud.github.io/IglooAurora/recovery/${recoveryToken}`
+  const emailRecoverylink = `https://igloocloud.github.io/IglooAurora/recovery/${recoveryToken}`
 
   // TODO: create a template for the email verification
   ses.sendEmail(
@@ -599,7 +598,34 @@ const sendPasswordRecoveryEmail = (email, userId) => {
         },
         Subject: {
           Charset: 'UTF-8',
-          Data: 'Verify your account',
+          Data: 'Recover your password',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendPasswordUpdatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: 'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: 'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Password has been changed',
         },
       },
     },
@@ -627,4 +653,5 @@ module.exports = {
   sendVerificationEmail,
   generatePasswordRecoveryToken,
   sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
 }

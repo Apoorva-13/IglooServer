@@ -13,6 +13,7 @@ import {
   genericDelete,
   sendVerificationEmail,
   sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -267,6 +268,8 @@ const MutationResolver = (
                 JWT_SECRET,
               ),
             })
+
+            sendPasswordUpdatedEmail(userFound.email)
           }
         },
         ['TEMPORARY', 'PERMANENT', 'PASSWORD_RECOVERY'],
