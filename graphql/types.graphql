@@ -46,6 +46,9 @@ type Mutation {
   # Creates a new account
   SignupUser(email: String!, password: String!): SignupUserPayload
 
+  # Sends an email with a llink to change the password
+  SendPasswordRecoveryEmail(email: String!): Boolean
+
   # Upgrades a user to 2 factor authentication
   UpgradeTo2FactorAuthentication: UpgradeTo2FactorPayload
 

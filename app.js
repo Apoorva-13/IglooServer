@@ -42,23 +42,29 @@ app.use(expressJwt({
   secret: process.env.JWT_SECRET,
   credentialsRequired: false,
   isRevoked: async (req, payload, done) => {
-    if (payload.tokenType === 'TEMPORARY') done(null, false)
-    else if (payload.tokenType === 'PERMANENT') {
-      try {
-        const DatabaseToken = await PermanentToken.find({
-          where: { id: payload.tokenId },
-        })
-        return done(
-          null,
-          !(DatabaseToken && DatabaseToken.userId === payload.userId),
-        )
-      } catch (e) {
-        done('Internal error')
-      }
-    } else {
-      // TODO: if we use different jwt secrets this will become unnecessary
-      // if the token is not an authentication token reject it
-      done(null, true)
+    switch (payload.tokenType) {
+      case 'PERMANENT':
+        try {
+          const DatabaseToken = await PermanentToken.find({
+            where: { id: payload.tokenId },
+          })
+          return done(
+            null,
+            !(DatabaseToken && DatabaseToken.userId === payload.userId),
+          )
+        } catch (e) {
+          done('Internal error')
+        }
+        break
+
+      case 'TEMPORARY':
+      case 'PASSWORD_RECOVERY':
+        done(null, false)
+        break
+
+      default:
+        done(null, true)
+        break
     }
   },
 }))
