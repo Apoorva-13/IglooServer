@@ -7,6 +7,12 @@ import {
 
 const QUERY_COST = 1
 
+const scalarProps = (Device, props) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = retrieveScalarProp(Device, prop)
+    return acc
+  }, {})
+
 const DeviceResolver = (
   Device,
   User,
@@ -20,15 +26,19 @@ const DeviceResolver = (
   ColourValue,
   Notification,
 ) => ({
-  createdAt: retrieveScalarProp(Device, 'createdAt'),
-  updatedAt: retrieveScalarProp(Device, 'updatedAt'),
-  deviceType: retrieveScalarProp(Device, 'deviceType'),
-  customName: retrieveScalarProp(Device, 'customName'),
-  tags: retrieveScalarProp(Device, 'tags'),
-  icon: retrieveScalarProp(Device, 'icon'),
-  index: retrieveScalarProp(Device, 'index'),
-  online: retrieveScalarProp(Device, 'online'),
-  lastSeen: retrieveScalarProp(Device, 'lastSeen'),
+  ...retrieveScalarProp(Device, [
+    'createdAt',
+    'updatedAt',
+    'deviceType',
+    'customName',
+    'tags',
+    'icon',
+    'index',
+    'online',
+    'lastSeen',
+    'signalStatus',
+    'batteryStatus',
+  ]),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',

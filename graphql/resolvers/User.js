@@ -61,8 +61,6 @@ const UserResolver = (
     'devMode',
     'nightMode',
     'monthUsage',
-    'signalStatus',
-    'batteryStatus',
     'displayName',
     'profileIcon',
     'profileIconColor',

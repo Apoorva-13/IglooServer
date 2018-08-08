@@ -246,8 +246,6 @@ type Mutation {
     nightMode: Boolean
     usageCap: Int
     paymentPlan: PaymentPlan
-    signalStatus: Float
-    batteryStatus: Float
     displayName: String
     profileIcon: String
     profileIconColor: String
@@ -268,6 +266,8 @@ type Mutation {
     icon: String
     # used to sort the devices in Igloo Aurora
     index: Int
+    signalStatus: Float
+    batteryStatus: Float
   ): Device
 
   # changes floatValue's data
@@ -554,8 +554,6 @@ type User {
   monthUsage: Int
   paymentPlan: PaymentPlan
   usageCap: Int
-  signalStatus: Float
-  batteryStatus: Float
   displayName: String
   profileIcon: String
   profileIconColor: String
@@ -587,6 +585,8 @@ type Device {
   notifications: [Notification!]!
   online: Boolean
   lastSeen: DateTime
+  signalStatus: Float
+  batteryStatus: Float
 }
 
 enum ValuePermission {

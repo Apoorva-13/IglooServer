@@ -67,12 +67,6 @@ const databaseDefinition = (sequelize) => {
     usageCap: {
       type: Sequelize.INTEGER,
     },
-    batteryStatus: {
-      type: Sequelize.FLOAT,
-    },
-    signalStatus: {
-      type: Sequelize.FLOAT,
-    },
     displayName: {
       type: Sequelize.STRING,
     },
@@ -139,6 +133,12 @@ const databaseDefinition = (sequelize) => {
     },
     lastSeen: {
       type: Sequelize.DATE,
+    },
+    batteryStatus: {
+      type: Sequelize.FLOAT,
+    },
+    signalStatus: {
+      type: Sequelize.FLOAT,
     },
   })
 
