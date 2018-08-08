@@ -129,6 +129,12 @@ const mockPlotValueData = {
   id: 'fakePlotValueId',
 }
 
+const mockStringPlotValueData = {
+  ...mockValueData,
+  id: 'fakeStringPlotValueId',
+  allowedValues: ['cat', 'dog'],
+}
+
 const mockMapValueData = {
   ...mockValueData,
   id: 'fakeMapValueId',
@@ -154,6 +160,7 @@ module.exports = {
   MockFloatValue: MockResolver(mockFloatValueData),
   MockStringValue: MockResolver(mockStringValueData),
   MockPlotValue: MockResolver(mockPlotValueData),
+  MockStringPlotValue: MockResolver(mockStringPlotValueData),
   MockMapValue: MockResolver(mockMapValueData),
   MockColourValue: MockResolver(mockColourValueData),
   MockBillingUpdater,

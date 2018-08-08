@@ -6,6 +6,7 @@ import {
   MockMapValue,
   MockPlotValue,
   MockStringValue,
+  MockStringPlotValue,
   MockNotification,
 } from './mocks'
 
@@ -48,6 +49,7 @@ function checkValuesProp(resolverGenerator, id) {
     const mockStringValue = MockStringValue()
     const mockColourValue = MockColourValue()
     const mockPlotValue = MockPlotValue()
+    const mockStringPlotValue = MockStringPlotValue()
     const mockMapValue = MockMapValue()
 
     const mockValues = [
@@ -56,6 +58,7 @@ function checkValuesProp(resolverGenerator, id) {
       mockBoolValue,
       mockColourValue,
       mockPlotValue,
+      mockStringPlotValue,
       mockMapValue,
     ]
     const resolver = resolverGenerator(mockValues)
@@ -75,7 +78,7 @@ function checkValuesProp(resolverGenerator, id) {
     )
 
     mockValues.forEach(mockValue => expect(mockValue.findAll.called).toBe(true))
-    expect(values.length).toBe(6)
+    expect(values.length).toBe(7)
     values.forEach((value) => {
       expect(value.__resolveType).toBeDefined()
 
@@ -95,6 +98,9 @@ function checkValuesProp(resolverGenerator, id) {
           break
         case 'PlotValue':
           expect(value).toEqual(expect.objectContaining(MockPlotValue.mockData))
+          break
+        case 'StringPlotValue':
+          expect(value).toEqual(expect.objectContaining(MockStringPlotValue.mockData))
           break
         case 'MapValue':
           expect(value).toEqual(expect.objectContaining(MockMapValue.mockData))

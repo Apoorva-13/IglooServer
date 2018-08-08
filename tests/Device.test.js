@@ -16,6 +16,8 @@ describe('Device resolver', () => {
     'icon',
     'index',
     'online',
+    'signalStatus',
+    'batteryStatus',
   ]
 
   checkScalarProps(
@@ -34,6 +36,7 @@ describe('Device resolver', () => {
       mockBoolValue,
       mockColourValue,
       mockPlotValue,
+      mockStringPlotValue,
       mockMapValue,
     ]) =>
       DeviceResolver(
@@ -44,7 +47,7 @@ describe('Device resolver', () => {
         mockFloatValue,
         mockStringValue,
         mockPlotValue,
-        null,
+        mockStringPlotValue,
         mockMapValue,
         mockColourValue,
       ),

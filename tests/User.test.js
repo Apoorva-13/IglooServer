@@ -22,8 +22,6 @@ describe('User resolver', () => {
     'timezone',
     'devMode',
     'nightMode',
-    'signalStatus',
-    'batteryStatus',
     'paymentPlan',
     'usageCap',
     'monthUsage',
@@ -136,6 +134,7 @@ describe('User resolver', () => {
   checkNotificationsProp(
     mockNotification =>
       UserResolver(
+        null,
         null,
         null,
         null,
