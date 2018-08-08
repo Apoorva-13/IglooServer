@@ -26,7 +26,7 @@ const DeviceResolver = (
   ColourValue,
   Notification,
 ) => ({
-  ...retrieveScalarProp(Device, [
+  ...scalarProps(Device, [
     'createdAt',
     'updatedAt',
     'deviceType',
