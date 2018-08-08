@@ -70,6 +70,7 @@ type Mutation {
     index: Int
     signalStatus: Float
     batteryStatus: Float
+    boardId: ID
   ): Device
 
   # Creates a new notification
@@ -270,6 +271,7 @@ type Mutation {
     index: Int
     signalStatus: Float
     batteryStatus: Float
+    boardId: ID
   ): Device
 
   # changes floatValue's data
@@ -544,6 +546,7 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   email: String! @isUnique
+  boards: [Board!]!
   devices: [Device!]!
   values: [Value!]!
   notifications: [Notification!]!
@@ -560,6 +563,14 @@ type User {
   profileIcon: String
   profileIconColor: String
   emailIsVerified: Boolean
+}
+
+type Board {
+  id: ID!
+  user: User!
+  customName: String!
+  avatar: String
+  devices: [Device!]!
 }
 
 type PermanentToken {
@@ -583,6 +594,7 @@ type Device {
   tags: [String!]!
   values: [Value!]!
   user: User!
+  board: Board!
   icon: String
   notifications: [Notification!]!
   online: Boolean

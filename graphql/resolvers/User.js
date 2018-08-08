@@ -39,7 +39,7 @@ const UserResolver = (
   User,
   PermanentToken,
   Device,
-  Value,
+  Board,
   FloatValue,
   StringValue,
   BoolValue,
@@ -90,6 +90,25 @@ const UserResolver = (
 
           resolve(devices)
           context.billingUpdater.update(QUERY_COST * devices.length)
+        }
+      }),
+    )
+  },
+  boards(root, args, context) {
+    return logErrorsPromise(
+      'User boards resolver',
+      904,
+      authenticated(context, async (resolve, reject) => {
+        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+        if (context.auth.userId !== root.id) {
+          reject('You are not allowed to access details about this user')
+        } else {
+          const boards = await Board.findAll({
+            where: { userId: root.id },
+          })
+
+          resolve(boards)
+          context.billingUpdater.update(QUERY_COST * boards.length)
         }
       }),
     )

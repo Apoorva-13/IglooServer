@@ -20,6 +20,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
 
 const {
   User,
+  Board,
   Device,
   BoolValue,
   FloatValue,
@@ -38,6 +39,7 @@ const {
 const setup = async () => {
   try {
     await User.sync({ force: true })
+    await Board.sync({ force: true })
     await Device.sync({ force: true })
     await BoolValue.sync({ force: true })
     await FloatValue.sync({ force: true })
