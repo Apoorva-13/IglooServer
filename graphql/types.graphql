@@ -68,6 +68,8 @@ type Mutation {
     icon: String
     # used to sort the devices in Igloo Aurora
     index: Int
+    signalStatus: Float
+    batteryStatus: Float
   ): Device
 
   # Creates a new notification
