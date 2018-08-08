@@ -47,7 +47,7 @@ httpServer.listen(GRAPHQL_PORT, () => {
           return false
         }
       },
-      onDisconnect: async (websocket) => {
+      onOperationComplete: async (websocket) => {
         if (socketToDeviceMap.hasOwnProperty(websocket)) {
           const { deviceId, userId } = socketToDeviceMap[websocket]
           await Device.update(
