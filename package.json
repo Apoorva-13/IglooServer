@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon ./server.js --exec babel-node --inspect -e js,graphql,env",
     "start": "node ./build/server.js",
-    "prestart": "npm run build",
+    "prestart": "npm run build && npm run setupDatabase",
     "build":
       "babel server.js app.js s3helpers.js shared.js -d build --source-maps && babel postgresql -d build/postgresql --source-maps && babel graphql -d build/graphql --source-maps",
     "setupDatabase": "node ./postgresql/setup.js",
