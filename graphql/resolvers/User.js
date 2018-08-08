@@ -47,6 +47,7 @@ const UserResolver = (
   BoolValue,
   ColourValue,
   PlotValue,
+  StringPlotValue,
   MapValue,
   Notification,
 ) => ({
@@ -62,6 +63,10 @@ const UserResolver = (
     'monthUsage',
     'signalStatus',
     'batteryStatus',
+    'displayName',
+    'profileIcon',
+    'profileIconColor',
+    'emailIsVerified',
   ]),
   paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
     'TEMPORARY',
@@ -127,6 +132,7 @@ const UserResolver = (
               StringValue,
               ColourValue,
               PlotValue,
+              StringPlotValue,
               MapValue,
             },
             {

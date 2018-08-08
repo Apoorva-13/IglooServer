@@ -5,6 +5,7 @@ import OTP from 'otp.js'
 import fortuna from 'javascript-fortuna'
 import { withFilter } from 'graphql-subscriptions'
 import winston from 'winston'
+import AWS from 'aws-sdk'
 
 require('dotenv').config()
 
@@ -12,6 +13,8 @@ require('dotenv').config()
 if (!process.env.JWT_SECRET) {
   throw new Error('Could not load .env')
 }
+
+const ses = new AWS.SES({ region: 'eu-west-1' })
 
 const { combine, timestamp, printf } = winston.format
 
@@ -91,6 +94,21 @@ const generatePermanentAuthenticationToken = (
       tokenId,
       accessLevel: accessLevel || 'DEVICE',
       tokenType: 'PERMANENT',
+    },
+    JWT_SECRET,
+    'HS512',
+  )
+
+const generatePasswordRecoveryToken = (userId, JWT_SECRET) =>
+  jwt.encode(
+    {
+      exp: moment()
+        .utc()
+        .add({ hours: 1 })
+        .unix(),
+      userId,
+      accessLevel: 'OWNER',
+      tokenType: 'PASSWORD_RECOVERY',
     },
     JWT_SECRET,
     'HS512',
@@ -283,7 +301,13 @@ const firstResolve = promises =>
 
 const findAllValues = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    StringPlotValue,
+    MapValue,
   },
   query,
   userId,
@@ -293,6 +317,7 @@ const findAllValues = (
   const stringValues = StringValue.findAll(query)
   const colourValues = ColourValue.findAll(query)
   const plotValues = PlotValue.findAll(query)
+  const stringPlotValues = StringPlotValue.findAll(query)
   const mapValues = MapValue.findAll(query)
 
   return Promise.all([
@@ -301,6 +326,7 @@ const findAllValues = (
     stringValues,
     colourValues,
     plotValues,
+    stringPlotValues,
     mapValues,
   ]).then(([
     booleanValues,
@@ -308,6 +334,7 @@ const findAllValues = (
     stringValues,
     colourValues,
     plotValues,
+    stringPlotValues,
     mapValues,
   ]) => [
     ...booleanValues
@@ -350,6 +377,14 @@ const findAllValues = (
         __resolveType: 'PlotValue',
       }))
       .filter(value => value.userId === userId),
+    ...stringPlotValues
+      .map(value => ({
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringPlotValue',
+      }))
+      .filter(value => value.userId === userId),
     ...mapValues
       .map(value => ({
         ...value.dataValues,
@@ -364,7 +399,13 @@ const findAllValues = (
 // try refactoring this with firstResolve
 const findValue = (
   {
-    BoolValue, FloatValue, StringValue, ColourValue, PlotValue, MapValue,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    StringPlotValue,
+    MapValue,
   },
   query,
   userId,
@@ -426,6 +467,16 @@ const findValue = (
       }
       : value))
 
+  const stringPlotValue = StringPlotValue.find(query).then(value =>
+    (value
+      ? {
+        ...value.dataValues,
+        user: { id: value.dataValues.userId },
+        device: { id: value.dataValues.deviceId },
+        __resolveType: 'StringPlotValue',
+      }
+      : value))
+
   return Promise.all([
     booleanValue,
     floatValue,
@@ -474,6 +525,145 @@ const genericDelete = (Model, subscriptionName, pubsub) => (
 
 const socketToDeviceMap = {}
 
+const sendVerificationEmail = (email, userId) => {
+  // TODO: use different jwt secrets?
+  const verificationToken = jwt.encode(
+    {
+      userId,
+      email,
+      tokenType: 'EMAIL_VERIFICATION',
+    },
+    process.env.JWT_SECRET,
+    'HS512',
+  )
+
+  const GRAPHQL_PORT = process.env.PORT || 3000
+  const serverLink =
+    process.env.NODE_ENV === 'production'
+      ? 'https://iglooql.herokuapp.com/verifyEmail/'
+      : `http://localhost:${GRAPHQL_PORT}/verifyEmail/`
+  const emailVerificationLink = serverLink + verificationToken
+
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <verification@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `Verify your account clicking this link: <a href="${emailVerificationLink}">VERIFY</a>`,
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: `Verify your account visiting this link: ${emailVerificationLink}`,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Verify your account',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendPasswordRecoveryEmail = (email, userId) => {
+  // TODO: use different jwt secrets?
+  const recoveryToken = generatePasswordRecoveryToken(
+    userId,
+    process.env.JWT_SECRET,
+  )
+
+  // TODO: update this with the real link
+  const emailRecoverylink = `https://igloocloud.github.io/IglooAurora/recovery/${recoveryToken}`
+
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <recovery@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data: `Change your password clicking this link: <a href="${emailRecoverylink}">Recover password</a>`,
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data: `Change your password at this link: ${emailRecoverylink}`,
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Recover your password',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendPasswordUpdatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data:
+              'Your password has been changed, if it was you that changed it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'Password has been changed',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
+const sendTokenCreatedEmail = (email) => {
+  // TODO: create a template for the email verification
+  ses.sendEmail(
+    {
+      Source: "'Igloo Cloud' <security@igloo.ooo>",
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Html: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+          Text: {
+            Charset: 'UTF-8',
+            Data:
+              'A new permanent token has been created, if it was you that created it you can ignore this email',
+          },
+        },
+        Subject: {
+          Charset: 'UTF-8',
+          Data: 'A new permanent token has been created',
+        },
+      },
+    },
+    console.log,
+  )
+}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -491,4 +681,9 @@ module.exports = {
   genericDelete,
   generatePermanentAuthenticationToken,
   socketToDeviceMap,
+  sendVerificationEmail,
+  generatePasswordRecoveryToken,
+  sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 }

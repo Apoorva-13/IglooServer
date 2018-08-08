@@ -15,7 +15,7 @@ const DeviceResolver = (
   FloatValue,
   StringValue,
   PlotValue,
-  PlotNode,
+  StringPlotValue,
   MapValue,
   ColourValue,
   Notification,
@@ -28,6 +28,7 @@ const DeviceResolver = (
   icon: retrieveScalarProp(Device, 'icon'),
   index: retrieveScalarProp(Device, 'index'),
   online: retrieveScalarProp(Device, 'online'),
+  lastSeen: retrieveScalarProp(Device, 'lastSeen'),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',
@@ -50,6 +51,7 @@ const DeviceResolver = (
               StringValue,
               ColourValue,
               PlotValue,
+              StringPlotValue,
               MapValue,
             },
             {

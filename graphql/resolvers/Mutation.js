@@ -11,6 +11,10 @@ import {
   logErrorsPromise,
   getPropsIfDefined,
   genericDelete,
+  sendVerificationEmail,
+  sendPasswordRecoveryEmail,
+  sendPasswordUpdatedEmail,
+  sendTokenCreatedEmail,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -43,6 +47,8 @@ const MutationResolver = (
   MapValue,
   PlotValue,
   PlotNode,
+  StringPlotValue,
+  StringPlotNode,
   Notification,
   WebPushSubscription,
   pubsub,
@@ -85,7 +91,22 @@ const MutationResolver = (
       },
     )
   },
+  SendPasswordRecoveryEmail(root, args, context) {
+    return logErrorsPromise(
+      'SendPasswordRecoveryEmail',
+      901,
+      async (resolve, reject) => {
+        const userFound = await User.find({ where: { email: args.email } })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          sendPasswordRecoveryEmail(userFound.email, userFound.id)
 
+          resolve(true)
+        }
+      },
+    )
+  },
   GeneratePermanentAccessToken(root, args, context) {
     return logErrorsPromise(
       'GeneratePermanentAccessToken',
@@ -108,6 +129,22 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+
+          const resolveObj = {
+            id: databaseToken.id,
+            customName: databaseToken.customName,
+            user: { id: context.auth.userId },
+          }
+          pubsub.publish('tokenCreated', {
+            tokenCreated: resolveObj,
+            userId: context.auth.userId,
+          })
+
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+
+          sendTokenCreatedEmail(userFound.email)
         }
       }),
     )
@@ -129,6 +166,10 @@ const MutationResolver = (
           await databaseToken.destroy()
 
           resolve(args.id)
+          pubsub.publish('tokenDeleted', {
+            tokenDeleted: args.id,
+            userId: context.auth.userId,
+          })
         }
       }),
     )
@@ -153,6 +194,7 @@ const MutationResolver = (
             nightMode: false,
             monthUsage: 0,
             paymentPlan: 'FREE',
+            emailIsVerified: false,
           })
 
           resolve({
@@ -162,6 +204,8 @@ const MutationResolver = (
               JWT_SECRET,
             ),
           })
+
+          sendVerificationEmail(args.email, newUser.id)
         } catch (e) {
           console.log(e)
           if (e.errors[0].validatorKey === 'isEmail') {
@@ -210,25 +254,48 @@ const MutationResolver = (
     return logErrorsPromise(
       'ChangePassword',
       101,
-      authenticated(context, async (resolve, reject) => {
+      authenticated(
+        context,
+        async (resolve, reject) => {
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+          if (!userFound) {
+            reject("User doesn't exist. Use `SignupUser` to create one")
+          } else {
+            const encryptedPass = bcrypt.hashSync(args.newPassword, SALT_ROUNDS)
+
+            const newUser = await userFound.update({
+              password: encryptedPass,
+            })
+            resolve({
+              id: newUser.dataValues.id,
+              token: generateAuthenticationToken(
+                newUser.dataValues.id,
+                JWT_SECRET,
+              ),
+            })
+
+            sendPasswordUpdatedEmail(userFound.email)
+          }
+        },
+        ['TEMPORARY', 'PERMANENT', 'PASSWORD_RECOVERY'],
+      ),
+    )
+  },
+  ResendVerificationEmail(root, args, context) {
+    return logErrorsPromise(
+      'ResendVerificationEmail',
+      900,
+      authenticated(context, async (resolve) => {
         const userFound = await User.find({
           where: { id: context.auth.userId },
         })
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
         } else {
-          const encryptedPass = bcrypt.hashSync(args.newPassword, SALT_ROUNDS)
-
-          const newUser = await userFound.update({
-            password: encryptedPass,
-          })
-          resolve({
-            id: newUser.dataValues.id,
-            token: generateAuthenticationToken(
-              newUser.dataValues.id,
-              JWT_SECRET,
-            ),
-          })
+          resolve(true)
+          sendVerificationEmail(userFound.email, userFound.id)
         }
       }),
     )
@@ -293,6 +360,7 @@ const MutationResolver = (
   CreateColourValue: CreateGenericValue(Device, ColourValue, pubsub),
   CreateMapValue: CreateGenericValue(Device, MapValue, pubsub),
   CreatePlotValue: CreateGenericValue(Device, PlotValue, pubsub),
+  CreateStringPlotValue: CreateGenericValue(Device, StringPlotValue, pubsub),
   CreatePlotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
@@ -326,6 +394,53 @@ const MutationResolver = (
           }
 
           resolve(resolveObj)
+          pubsub.publish('plotNodeCreated', {
+            plotNodeCreated: resolveObj,
+            userId: context.auth.userId,
+          })
+
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  CreateStringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreateStringPlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const plot = await StringPlotValue.find({ where: { id: args.plotId } })
+
+        if (!plot) {
+          reject("This plot doesn't exist")
+        } else if (plot.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const plotNode = await StringPlotNode.create({
+            ...args,
+            timestamp: args.timestamp || new Date(),
+            deviceId: plot.deviceId,
+            userId: context.auth.userId,
+          })
+
+          const resolveObj = {
+            ...plotNode.dataValues,
+            user: {
+              id: plotNode.userId,
+            },
+            device: {
+              id: plotNode.deviceId,
+            },
+            plot: {
+              id: plotNode.plotId,
+            },
+          }
+
+          resolve(resolveObj)
+          pubsub.publish('stringPlotNodeCreated', {
+            stringPlotNodeCreated: resolveObj,
+            userId: context.auth.userId,
+          })
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -356,7 +471,10 @@ const MutationResolver = (
           if (!userFound) {
             reject("User doesn't exist. Use `SignupUser` to create one")
           } else {
-            const newUser = await userFound.update(args)
+            const updateObj = args.email
+              ? { ...args, emailIsVerified: false }
+              : args
+            const newUser = await userFound.update(updateObj)
             resolve(newUser.dataValues)
 
             pubsub.publish('userUpdated', {
@@ -364,7 +482,14 @@ const MutationResolver = (
               userId: context.auth.userId,
             })
 
-            if (permissionRequired !== undefined) { context.billingUpdater.update(MUTATION_COST) }
+            if (args.email) {
+              sendVerificationEmail(args.email, newUser.id)
+            }
+
+            // if we are the mutation is not a usageCap or paymentPlan update bill it
+            if (permissionRequired === undefined) {
+              context.billingUpdater.update(MUTATION_COST)
+            }
           }
         },
         permissionRequired,
@@ -398,6 +523,7 @@ const MutationResolver = (
           await userFound.update({
             stripeCustomerId: customer.id,
           })
+
           resolve(true)
           context.billingUpdater.update(MUTATION_COST)
         }
@@ -434,6 +560,11 @@ const MutationResolver = (
   colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
   mapValue: genericValueMutation(MapValue, 'MapValue', pubsub),
   plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
+  stringPlotValue: genericValueMutation(
+    StringPlotValue,
+    'StringPlotValue',
+    pubsub,
+  ),
   plotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
@@ -461,6 +592,48 @@ const MutationResolver = (
             },
           }
           resolve(resolveObj)
+          pubsub.publish('plotNodeUpdated', {
+            plotNodeUpdated: resolveObj,
+            userId: context.auth.userId,
+          })
+
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  stringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'stringPlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await StringPlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.update(args)
+
+          const resolveObj = {
+            ...newNode.dataValues,
+            user: {
+              id: newNode.dataValues.userId,
+            },
+            device: {
+              id: newNode.dataValues.deviceId,
+            },
+            plot: {
+              id: newNode.dataValues.plotId,
+            },
+          }
+          resolve(resolveObj)
+          pubsub.publish('stringPlotNodeUpdated', {
+            stringPlotNodeUpdated: resolveObj,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -614,6 +787,7 @@ const MutationResolver = (
           ColourValue,
           BoolValue,
           PlotValue,
+          StringPlotValue,
           MapValue,
         ]
         for (let i = 0; i < modelsList.length; i++) {
@@ -672,6 +846,7 @@ const MutationResolver = (
             BoolValue,
             MapValue,
             PlotValue,
+            StringPlotValue,
             PlotNode,
             Notification,
           ].map(deleteChild))
@@ -702,6 +877,36 @@ const MutationResolver = (
           const newNode = await node.destroy()
 
           resolve(args.id)
+          pubsub.publish('plotNodeDeleted', {
+            plotNodeDeleted: args.id,
+            userId: context.auth.userId,
+          })
+
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  deleteStringPlotNode(root, args, context) {
+    return logErrorsPromise(
+      'CreatePlotNode mutation',
+      139,
+      authenticated(context, async (resolve, reject) => {
+        const node = await StringPlotNode.find({ where: { id: args.id } })
+
+        if (!node) {
+          reject("This node doesn't exist")
+        } else if (node.userId !== context.auth.userId) {
+          reject('You are not authorized to edit this plot')
+        } else {
+          const newNode = await node.destroy()
+
+          resolve(args.id)
+          pubsub.publish('stringPlotNodeDeleted', {
+            stringPlotNodeDeleted: args.id,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),

@@ -12,6 +12,7 @@ const QueryResolver = (
   BoolValue,
   ColourValue,
   PlotValue,
+  StringPlotValue,
   MapValue,
   Notification,
 ) => ({
@@ -71,6 +72,7 @@ const QueryResolver = (
             StringValue,
             ColourValue,
             PlotValue,
+            StringPlotValue,
             MapValue,
           },
           { where: { id: args.id } },

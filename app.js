@@ -20,6 +20,7 @@ import {
   WebPushSubscription,
   User,
 } from './postgresql/databaseConnection'
+import jwt from 'jwt-simple'
 
 webpush.setVapidDetails(
   'http://igloo.witlab.io/',
@@ -41,17 +42,35 @@ app.use(expressJwt({
   secret: process.env.JWT_SECRET,
   credentialsRequired: false,
   isRevoked: async (req, payload, done) => {
-    if (payload.tokenType === 'TEMPORARY') done(null, false)
-    try {
-      const DatabaseToken = await PermanentToken.find({
-        where: { id: payload.tokenId },
-      })
-      return done(
-        null,
-        !(DatabaseToken && DatabaseToken.userId === payload.userId),
-      )
-    } catch (e) {
-      done('Internal error')
+    switch (payload.tokenType) {
+      case 'PERMANENT':
+        try {
+          const DatabaseToken = await PermanentToken.find({
+            where: { id: payload.tokenId },
+          })
+
+          if (DatabaseToken && DatabaseToken.userId === payload.userId) {
+            done(null, false)
+
+            // TODO: handle eventual error
+            DatabaseToken.update({ lastUsed: new Date() })
+          } else {
+            done(null, true)
+          }
+        } catch (e) {
+          done('Internal error')
+          console.log(e)
+        }
+        break
+
+      case 'TEMPORARY':
+      case 'PASSWORD_RECOVERY':
+        done(null, false)
+        break
+
+      default:
+        done(null, true)
+        break
     }
   },
 }))
@@ -80,6 +99,7 @@ app.use('/graphql', async (req, res, next) => {
 
     if (!userFound) {
       res.send("This user doesn't exist anymore")
+      return
     } else if (
       userFound.paymentPlan === 'FREE' &&
       userFound.monthUsage > FREE_USAGE_QUOTA
@@ -229,6 +249,36 @@ app.get('/fileuploadtest', (req, res) => {
      <button onclick="send()">SEND</button>
    
  </body></html>`)
+})
+
+app.get('/verifyEmail/:verificationToken', async (req, res) => {
+  const { verificationToken } = req.params
+  try {
+    const decodedToken = jwt.decode(
+      verificationToken,
+      process.env.JWT_SECRET,
+      false,
+      'HS512',
+    )
+
+    if (decodedToken.tokenType !== 'EMAIL_VERIFICATION') {
+      res.send('Malformed token')
+    } else {
+      const foundUser = await User.find({ userId: decodedToken.userId })
+
+      if (!foundUser) {
+        res.send("User doesn't exist anymore")
+      } else if (decodedToken.email !== foundUser.email) {
+        res.send("This isn't your primary email anymore")
+      } else {
+        foundUser.update({ emailIsVerified: true })
+
+        res.redirect('https://igloocloud.github.io/IglooAurora')
+      }
+    }
+  } catch (e) {
+    res.send('Failed verification')
+  }
 })
 
 export default app

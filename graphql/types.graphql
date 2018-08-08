@@ -46,11 +46,16 @@ type Mutation {
   # Creates a new account
   SignupUser(email: String!, password: String!): SignupUserPayload
 
+  # Sends an email with a llink to change the password
+  SendPasswordRecoveryEmail(email: String!): Boolean
+
   # Upgrades a user to 2 factor authentication
   UpgradeTo2FactorAuthentication: UpgradeTo2FactorPayload
 
   # Changes the password of the authenticated user
   ChangePassword(newPassword: String!): AuthenticateUserPayload
+
+  ResendVerificationEmail: Boolean
 
   # Creates a new Device
   CreateDevice(
@@ -203,6 +208,33 @@ type Mutation {
     value: Float!
   ): PlotNode
 
+  # Creates a new PlotValue
+  CreateStringPlotValue(
+    # device owning the value
+    deviceId: ID!
+    # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
+    permission: ValuePermission!
+    # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
+    relevance: ValueRelevance!
+    # additional details about the value
+    valueDetails: String
+    # name of the value, displayed in Igloo Aurora
+    customName: String
+    # tile size in Igloo Aurora
+    tileSize: TileSize
+    # allowed labels
+    allowedValues: [String!]
+  ): StringPlotValue
+
+  # Creates a new node in a plot
+  CreateStringPlotNode(
+    # id of the parent plot
+    plotId: ID!
+    # default is now
+    timestamp: DateTime
+    value: String!
+  ): StringPlotNode
+
   # Change user's data
   user(
     email: String
@@ -216,6 +248,9 @@ type Mutation {
     paymentPlan: PaymentPlan
     signalStatus: Float
     batteryStatus: Float
+    displayName: String
+    profileIcon: String
+    profileIconColor: String
   ): User
 
   updatePaymentInfo(stripeToken: String!): Boolean
@@ -367,6 +402,34 @@ type Mutation {
     timestamp: DateTime
   ): PlotNode
 
+  # changes StringPlotValue's data
+  stringPlotValue(
+    # value id
+    id: ID!
+    # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
+    permission: ValuePermission
+    # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
+    relevance: ValueRelevance
+    # additional details about the value
+    valueDetails: String
+    # name of the value, displayed in Igloo Aurora
+    customName: String
+    # tile size in Igloo Aurora
+    tileSize: TileSize
+    # allowed labels
+    allowedValues: [String!]
+  ): PlotValue
+
+  # change StringPlotNode's data
+  stringPlotNode(
+    # node's id
+    id: ID!
+    # node's value
+    value: String
+    # node's timestamp
+    timestamp: DateTime
+  ): StringPlotNode
+
   # change notification's data
   notification(
     # notification's id
@@ -390,6 +453,8 @@ type Mutation {
   deleteUser(password: String!, twoFactorCode: String): ID
   # delte plot node
   deletePlotNode(id: ID!): ID
+  # delte string plot node
+  deleteStringPlotNode(id: ID!): ID
 }
 
 input DeviceFilter {
@@ -431,6 +496,12 @@ type Subscription {
   deviceCreated: Device
   # subscribes to value creations
   valueCreated: Value
+  # subscribes to plot node creations
+  plotNodeCreated: PlotNode
+  # subscribes to string plot node creations
+  stringPlotNodeCreated: StringPlotNode
+  #subscribes to token creations
+  tokenCreated: PermanentToken
   # subscribes to notification creations
   notificationCreated: Notification
   # subscribes to value updates
@@ -439,12 +510,22 @@ type Subscription {
   deviceUpdated: Device
   # subscribes to value updates
   valueUpdated: Value
+  # subscribes to plot node updates
+  plotNodeUpdated: PlotNode
+  # subscribes to plot node updates
+  stringPlotNodeUpdated: StringPlotNode
   # subscribes to notification updates
   notificationUpdated: Notification
   # subscribes to value deleted
   valueDeleted: ID
+  # subscribes to plot node deletes
+  plotNodeDeleted: ID
+  # subscribes to plot node deletes
+  stringPlotNodeDeleted: ID
   # subscribes to device deleted
   deviceDeleted: ID
+  # subscribes to token deletes
+  tokenDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
   # keeps the device's status set as online
@@ -475,12 +556,19 @@ type User {
   usageCap: Int
   signalStatus: Float
   batteryStatus: Float
+  displayName: String
+  profileIcon: String
+  profileIconColor: String
+  emailIsVerified: Boolean
 }
 
 type PermanentToken {
   id: ID!
   user: User!
   customName: String!
+
+  # lastUsed=null if never used
+  lastUsed: DateTime
 }
 
 type Device {
@@ -498,6 +586,7 @@ type Device {
   icon: String
   notifications: [Notification!]!
   online: Boolean
+  lastSeen: DateTime
 }
 
 enum ValuePermission {
@@ -535,6 +624,15 @@ type PlotNode {
   user: User!
   timestamp: DateTime!
   value: Float!
+}
+
+type StringPlotNode {
+  id: ID! @isUnique
+  device: Device!
+  plot: StringPlotValue!
+  user: User!
+  timestamp: DateTime!
+  value: String!
 }
 
 type Map {
@@ -617,6 +715,21 @@ type PlotValue implements Value {
   customName: String
 
   threshold: Float
+}
+
+type StringPlotValue implements Value {
+  id: ID! @isUnique
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  device: Device!
+  user: User!
+  permission: ValuePermission! @defaultValue(value: READ_WRITE)
+  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  valueDetails: String
+  value: [StringPlotNode!]!
+  tileSize: TileSize!
+  customName: String
+  allowedValues: [String!]
 }
 
 type BooleanValue implements Value {

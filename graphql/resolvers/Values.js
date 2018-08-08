@@ -49,7 +49,23 @@ const PlotValueResolver = (PlotValue, PlotNode) => ({
       }),
     ),
 })
-
+const StringPlotValueResolver = (StringPlotValue, StringPlotNode) => ({
+  ...GenericResolver(StringPlotValue),
+  allowedValues: retrieveScalarProp(StringPlotValue, 'allowedValues'),
+  // overriding GenericResolver's value
+  value: (root, args, context) =>
+    logErrorsPromise(
+      'StringPlotValueResolver',
+      135,
+      authenticated(context, async (resolve, reject) => {
+        const nodes = await StringPlotNode.findAll({
+          where: { plotId: root.id },
+        })
+        resolve(nodes)
+        context.billingUpdater.update(QUERY_COST * nodes.length)
+      }),
+    ),
+})
 const PlotNodeResolver = PlotNode => ({
   timestamp: retrieveScalarProp(PlotNode, 'timestamp'),
   value: retrieveScalarProp(PlotNode, 'value'),
@@ -131,6 +147,8 @@ export default ({
   ColourValue,
   PlotValue,
   PlotNode,
+  StringPlotValue,
+  StringPlotNode,
 }) => ({
   BooleanValue: BooleanValueResolver(BoolValue),
   FloatValue: FloatValueResolver(FloatValue),
@@ -138,4 +156,6 @@ export default ({
   ColourValue: ColourValueResolver(ColourValue),
   PlotValue: PlotValueResolver(PlotValue, PlotNode),
   PlotNode: PlotNodeResolver(PlotNode),
+  StringPlotValue: StringPlotValueResolver(StringPlotValue, StringPlotNode),
+  StringPlotNode: PlotNodeResolver(StringPlotNode),
 })
