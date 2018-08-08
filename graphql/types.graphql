@@ -566,6 +566,9 @@ type PermanentToken {
   id: ID!
   user: User!
   customName: String!
+
+  # lastUsed=null if never used
+  lastUsed: DateTime
 }
 
 type Device {

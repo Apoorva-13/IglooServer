@@ -48,12 +48,18 @@ app.use(expressJwt({
           const DatabaseToken = await PermanentToken.find({
             where: { id: payload.tokenId },
           })
-          return done(
-            null,
-            !(DatabaseToken && DatabaseToken.userId === payload.userId),
-          )
+
+          if (DatabaseToken && DatabaseToken.userId === payload.userId) {
+            done(null, false)
+
+            // TODO: handle eventual error
+            DatabaseToken.update({ lastUsed: new Date() })
+          } else {
+            done(null, true)
+          }
         } catch (e) {
           done('Internal error')
+          console.log(e)
         }
         break
 

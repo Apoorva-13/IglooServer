@@ -94,6 +94,9 @@ const databaseDefinition = (sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    lastUsed: {
+      type: Sequelize.DATE,
+    },
   })
 
   const WebPushSubscription = sequelize.define('webPushNotification', {
