@@ -90,7 +90,7 @@ const resolvers = {
   Query: QueryResolver(
     User,
     Device,
-    Value,
+    Board,
     FloatValue,
     StringValue,
     BoolValue,

@@ -482,6 +482,8 @@ type Query {
   user: User
   #  get's device's data
   device(id: ID!): Device
+  # get's board's data
+  board(id: ID!): Board
   # get's value's data
   value(id: ID!): Value
   # get notification's data
@@ -490,6 +492,7 @@ type Query {
   verifyPassword(password: String!): Boolean
 
   allDevices: [Device]
+  allBoard: [Board]
   allValues: [Value]
   allNotifications: [Notification]
   allPlotNodes: [PlotNode]
