@@ -2,6 +2,7 @@ import { subscriptionFilterOnlyMine, socketToDeviceMap } from './utilities'
 
 const subscriptionResolver = (pubsub, Device) => ({
   deviceCreated: subscriptionFilterOnlyMine('deviceCreated', pubsub),
+  boardCreated: subscriptionFilterOnlyMine('boardCreated', pubsub),
   valueCreated: subscriptionFilterOnlyMine('valueCreated', pubsub),
   tokenCreated: subscriptionFilterOnlyMine('tokenCreated', pubsub),
   plotNodeCreated: subscriptionFilterOnlyMine('plotNodeCreated', pubsub),
@@ -15,6 +16,7 @@ const subscriptionResolver = (pubsub, Device) => ({
   ),
   userUpdated: subscriptionFilterOnlyMine('userUpdated', pubsub),
   deviceUpdated: subscriptionFilterOnlyMine('deviceUpdated', pubsub),
+  boardUpdated: subscriptionFilterOnlyMine('boardUpdated', pubsub),
   valueUpdated: subscriptionFilterOnlyMine('valueUpdated', pubsub),
   plotNodeUpdated: subscriptionFilterOnlyMine('plotNodeUpdated', pubsub),
   stringPlotNodeUpdated: subscriptionFilterOnlyMine(
@@ -31,6 +33,7 @@ const subscriptionResolver = (pubsub, Device) => ({
   ),
   valueDeleted: subscriptionFilterOnlyMine('valueDeleted', pubsub),
   deviceDeleted: subscriptionFilterOnlyMine('deviceDeleted', pubsub),
+  boardDeleted: subscriptionFilterOnlyMine('boardDeleted', pubsub),
   plotNodeDeleted: subscriptionFilterOnlyMine('plotNodeDeleted', pubsub),
   stringPlotNodeDeleted: subscriptionFilterOnlyMine(
     'stringPlotNodeDeleted',

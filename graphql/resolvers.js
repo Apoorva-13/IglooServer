@@ -72,7 +72,7 @@ const resolvers = {
     User,
     PermanentToken,
     Device,
-    Value,
+    Board,
     FloatValue,
     StringValue,
     BoolValue,

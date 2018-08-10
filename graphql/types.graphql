@@ -57,6 +57,9 @@ type Mutation {
 
   ResendVerificationEmail: Boolean
 
+  # Creates a Board
+  CreateBoard(customName: String!, avatar: String): Board
+
   # Creates a new Device
   CreateDevice(
     # Product name, for example Igloo Thermostat
@@ -256,6 +259,9 @@ type Mutation {
 
   updatePaymentInfo(stripeToken: String!): Boolean
 
+  # changes board's data
+  board(id: ID!, customName: String, avatar: String): Board
+
   # changes device's data
   device(
     # device id
@@ -451,8 +457,10 @@ type Mutation {
   deleteNotification(id: ID!): ID
   # delte value
   deleteValue(id: ID!): ID
-  # delte device
+  # delete device
   deleteDevice(id: ID!): ID
+  # delete board
+  deleteBoard(id: ID!): ID
   # delte user
   deleteUser(password: String!, twoFactorCode: String): ID
   # delte plot node
@@ -498,6 +506,8 @@ type Query {
 type Subscription {
   # subscribes to device creations
   deviceCreated: Device
+  # subscribes to board creations
+  boardCreated: Board
   # subscribes to value creations
   valueCreated: Value
   # subscribes to plot node creations
@@ -512,6 +522,8 @@ type Subscription {
   userUpdated: User
   # subscribes to device updates
   deviceUpdated: Device
+  # subscribes to board updates
+  boardUpdated: Board
   # subscribes to value updates
   valueUpdated: Value
   # subscribes to plot node updates
@@ -528,6 +540,8 @@ type Subscription {
   stringPlotNodeDeleted: ID
   # subscribes to device deleted
   deviceDeleted: ID
+  # subscribes to board deleted
+  boardDeleted: ID
   # subscribes to token deletes
   tokenDeleted: ID
   # subscribes to notification deletes
@@ -594,7 +608,7 @@ type Device {
   tags: [String!]!
   values: [Value!]!
   user: User!
-  board: Board!
+  board: Board
   icon: String
   notifications: [Notification!]!
   online: Boolean

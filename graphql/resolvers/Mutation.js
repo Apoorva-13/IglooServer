@@ -39,7 +39,7 @@ const MutationResolver = (
   User,
   PermanentToken,
   Device,
-  Value,
+  Board,
   FloatValue,
   StringValue,
   BoolValue,
@@ -300,6 +300,33 @@ const MutationResolver = (
       }),
     )
   },
+  CreateBoard(root, args, context) {
+    return logErrorsPromise(
+      'CreateBoard',
+      910,
+      authenticated(context, async (resolve, reject) => {
+        const newBoard = await Board.create({
+          ...args,
+          userId: context.auth.userId,
+        })
+
+        const resolveValue = {
+          ...newBoard.dataValues,
+          user: { id: newBoard.userId },
+          devices: [],
+        }
+
+        pubsub.publish('boardCreated', {
+          boardCreated: resolveValue,
+          userId: context.auth.userId,
+        })
+
+        resolve(resolveValue)
+
+        context.billingUpdater.update(MUTATION_COST)
+      }),
+    )
+  },
   CreateDevice(root, args, context) {
     return logErrorsPromise(
       'CreateDevice',
@@ -318,6 +345,7 @@ const MutationResolver = (
           userId: context.auth.userId,
           signalStatus: args.signalStatus,
           batteryStatus: args.batteryStatus,
+          boardId: args.boardId,
         })
         const {
           id,
@@ -330,6 +358,7 @@ const MutationResolver = (
           icon,
           signalStatus,
           batteryStatus,
+          boardId,
         } = newDevice.dataValues
         const values = [] // values cannot be set when creating the device so no need to fetch them
 
@@ -347,6 +376,11 @@ const MutationResolver = (
           user: {
             id: userId,
           },
+          board: boardId
+            ? {
+              id: boardId,
+            }
+            : null,
         }
 
         pubsub.publish('deviceCreated', {
@@ -531,6 +565,33 @@ const MutationResolver = (
           })
 
           resolve(true)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  board(root, args, context) {
+    return logErrorsPromise(
+      'board mutation',
+      911,
+      authenticated(context, async (resolve, reject) => {
+        const boardFound = await Board.find({
+          where: { id: args.id },
+        })
+
+        if (!boardFound) {
+          reject("Board doesn't exist. Use `CreateBoard` to create one")
+        } else if (boardFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const newBoard = await boardFound.update(args)
+
+          resolve(newBoard.dataValues)
+          pubsub.publish('boardUpdated', {
+            boardUpdated: newBoard.dataValues,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
