@@ -929,6 +929,60 @@ const MutationResolver = (
         }
       }),
     ),
+  deleteBoard: (root, args, context) =>
+    logErrorsPromise(
+      'delete board mutation',
+      913,
+      authenticated(context, async (resolve, reject) => {
+        const boardFound = await Board.find({
+          where: { id: args.id },
+        })
+
+        if (!boardFound) {
+          reject('The requested resource does not exist')
+        } else if (boardFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          const devices = await Device.findAll({
+            where: { boardId: boardFound.id },
+          })
+
+          const deleteDevicesPromises = devices.map(async (device) => {
+            const deleteChild = Model =>
+              Model.destroy({
+                where: {
+                  deviceId: device.id,
+                },
+              })
+
+            await Promise.all([
+              FloatValue,
+              StringValue,
+              ColourValue,
+              BoolValue,
+              MapValue,
+              PlotValue,
+              StringPlotValue,
+              PlotNode,
+              Notification,
+            ].map(deleteChild))
+
+            await device.destroy()
+          })
+          await Promise.all(deleteDevicesPromises)
+
+          await boardFound.destroy()
+
+          pubsub.publish('boardDeleted', {
+            boardDeleted: args.id,
+            userId: context.auth.userId,
+          })
+          resolve(args.id)
+
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    ),
   deletePlotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
