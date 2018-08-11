@@ -664,6 +664,12 @@ const sendTokenCreatedEmail = (email) => {
   )
 }
 
+const scalarPropsResolvers = (Model, props) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = retrieveScalarProp(Model, prop)
+    return acc
+  }, {})
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -686,4 +692,5 @@ module.exports = {
   sendPasswordRecoveryEmail,
   sendPasswordUpdatedEmail,
   sendTokenCreatedEmail,
+  scalarPropsResolvers,
 }

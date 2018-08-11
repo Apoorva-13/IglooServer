@@ -1,5 +1,6 @@
 import GraphQLToolsTypes from 'graphql-tools-types'
 import UserResolver from './resolvers/User'
+import BoardResolver from './resolvers/Board'
 import MutationResolver from './resolvers/Mutation'
 import QueryResolver from './resolvers/Query'
 import DeviceResolver from './resolvers/Device'
@@ -9,6 +10,7 @@ import ValueResolver from './resolvers/Value'
 import ValueResolvers from './resolvers/Values'
 import {
   User,
+  Board,
   PermanentToken,
   Device,
   Value,
@@ -42,7 +44,7 @@ const resolvers = {
     User,
     PermanentToken,
     Device,
-    Value,
+    Board,
     FloatValue,
     StringValue,
     BoolValue,
@@ -52,6 +54,7 @@ const resolvers = {
     MapValue,
     Notification,
   ),
+  Board: BoardResolver(Board, Device),
   Device: DeviceResolver(
     Device,
     User,
@@ -69,7 +72,7 @@ const resolvers = {
     User,
     PermanentToken,
     Device,
-    Value,
+    Board,
     FloatValue,
     StringValue,
     BoolValue,
@@ -87,7 +90,7 @@ const resolvers = {
   Query: QueryResolver(
     User,
     Device,
-    Value,
+    Board,
     FloatValue,
     StringValue,
     BoolValue,

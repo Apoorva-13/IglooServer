@@ -39,7 +39,7 @@ const MutationResolver = (
   User,
   PermanentToken,
   Device,
-  Value,
+  Board,
   FloatValue,
   StringValue,
   BoolValue,
@@ -300,6 +300,33 @@ const MutationResolver = (
       }),
     )
   },
+  CreateBoard(root, args, context) {
+    return logErrorsPromise(
+      'CreateBoard',
+      910,
+      authenticated(context, async (resolve, reject) => {
+        const newBoard = await Board.create({
+          ...args,
+          userId: context.auth.userId,
+        })
+
+        const resolveValue = {
+          ...newBoard.dataValues,
+          user: { id: newBoard.userId },
+          devices: [],
+        }
+
+        pubsub.publish('boardCreated', {
+          boardCreated: resolveValue,
+          userId: context.auth.userId,
+        })
+
+        resolve(resolveValue)
+
+        context.billingUpdater.update(MUTATION_COST)
+      }),
+    )
+  },
   CreateDevice(root, args, context) {
     return logErrorsPromise(
       'CreateDevice',
@@ -316,6 +343,9 @@ const MutationResolver = (
           icon: args.icon,
           index,
           userId: context.auth.userId,
+          signalStatus: args.signalStatus,
+          batteryStatus: args.batteryStatus,
+          boardId: args.boardId,
         })
         const {
           id,
@@ -326,6 +356,9 @@ const MutationResolver = (
           userId,
           tags,
           icon,
+          signalStatus,
+          batteryStatus,
+          boardId,
         } = newDevice.dataValues
         const values = [] // values cannot be set when creating the device so no need to fetch them
 
@@ -338,9 +371,16 @@ const MutationResolver = (
           tags,
           values,
           icon,
+          signalStatus,
+          batteryStatus,
           user: {
             id: userId,
           },
+          board: boardId
+            ? {
+              id: boardId,
+            }
+            : null,
         }
 
         pubsub.publish('deviceCreated', {
@@ -525,6 +565,33 @@ const MutationResolver = (
           })
 
           resolve(true)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    )
+  },
+  board(root, args, context) {
+    return logErrorsPromise(
+      'board mutation',
+      911,
+      authenticated(context, async (resolve, reject) => {
+        const boardFound = await Board.find({
+          where: { id: args.id },
+        })
+
+        if (!boardFound) {
+          reject("Board doesn't exist. Use `CreateBoard` to create one")
+        } else if (boardFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const newBoard = await boardFound.update(args)
+
+          resolve(newBoard.dataValues)
+          pubsub.publish('boardUpdated', {
+            boardUpdated: newBoard.dataValues,
+            userId: context.auth.userId,
+          })
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),
@@ -858,6 +925,60 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
           resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
+        }
+      }),
+    ),
+  deleteBoard: (root, args, context) =>
+    logErrorsPromise(
+      'delete board mutation',
+      913,
+      authenticated(context, async (resolve, reject) => {
+        const boardFound = await Board.find({
+          where: { id: args.id },
+        })
+
+        if (!boardFound) {
+          reject('The requested resource does not exist')
+        } else if (boardFound.userId !== context.auth.userId) {
+          reject('You are not allowed to update this resource')
+        } else {
+          const devices = await Device.findAll({
+            where: { boardId: boardFound.id },
+          })
+
+          const deleteDevicesPromises = devices.map(async (device) => {
+            const deleteChild = Model =>
+              Model.destroy({
+                where: {
+                  deviceId: device.id,
+                },
+              })
+
+            await Promise.all([
+              FloatValue,
+              StringValue,
+              ColourValue,
+              BoolValue,
+              MapValue,
+              PlotValue,
+              StringPlotValue,
+              PlotNode,
+              Notification,
+            ].map(deleteChild))
+
+            await device.destroy()
+          })
+          await Promise.all(deleteDevicesPromises)
+
+          await boardFound.destroy()
+
+          pubsub.publish('boardDeleted', {
+            boardDeleted: args.id,
+            userId: context.auth.userId,
+          })
+          resolve(args.id)
+
           context.billingUpdater.update(MUTATION_COST)
         }
       }),

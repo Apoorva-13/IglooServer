@@ -1,17 +1,11 @@
 import {
   authenticated,
-  retrieveScalarProp,
   logErrorsPromise,
   findAllValues,
+  scalarPropsResolvers,
 } from './utilities'
 
 const QUERY_COST = 1
-
-const scalarProps = (Device, props) =>
-  props.reduce((acc, prop) => {
-    acc[prop] = retrieveScalarProp(Device, prop)
-    return acc
-  }, {})
 
 const DeviceResolver = (
   Device,
@@ -26,7 +20,7 @@ const DeviceResolver = (
   ColourValue,
   Notification,
 ) => ({
-  ...scalarProps(Device, [
+  ...scalarPropsResolvers(Device, [
     'createdAt',
     'updatedAt',
     'deviceType',
@@ -100,7 +94,30 @@ const DeviceResolver = (
       }),
     )
   },
+  board(root, args, context) {
+    return logErrorsPromise(
+      'Device board resolver',
+      903,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: root.id },
+        })
+        /* istanbul ignore if */
+        if (!deviceFound) {
+          reject('The requested resource does not exist')
+        } else if (deviceFound.userId !== context.auth.userId) {
+          /* istanbul ignore next */
+          reject('You are not allowed to access details about this resource')
+        } else {
+          // the Board resolver will take care of loading the other props,
+          // it only needs to know the board id
+          resolve(deviceFound.boardId ? { id: deviceFound.boardId } : null)
 
+          if (deviceFound.boardId) context.billingUpdater.update(QUERY_COST)
+        }
+      }),
+    )
+  },
   notifications(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',

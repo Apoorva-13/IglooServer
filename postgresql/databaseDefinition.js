@@ -12,10 +12,10 @@ const databaseDefinition = (sequelize) => {
       primaryKey: true,
     },
   }
-  const otherId = (fieldName, model) => ({
+  const otherId = (fieldName, model, allowNull = false) => ({
     [fieldName]: {
       type: Sequelize.UUID,
-      allowNull: false,
+      allowNull,
       references: {
         model,
         key: 'id',
@@ -81,6 +81,18 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  const Board = sequelize.define('board', {
+    ...selfId,
+    ...otherId('userId', User),
+    customName: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    avatar: {
+      type: Sequelize.STRING,
+    },
+  })
+
   const PermanentToken = sequelize.define('permanentToken', {
     ...selfId,
     ...otherId('userId', User),
@@ -113,6 +125,7 @@ const databaseDefinition = (sequelize) => {
   const Device = sequelize.define('device', {
     ...selfId,
     ...otherId('userId', User),
+    ...otherId('boardId', Board, true),
     deviceType: {
       type: Sequelize.STRING,
     },
@@ -288,6 +301,7 @@ const databaseDefinition = (sequelize) => {
 
   return {
     User,
+    Board,
     PermanentToken,
     Device,
     BoolValue,

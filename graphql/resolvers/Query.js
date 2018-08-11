@@ -6,7 +6,7 @@ const QUERY_COST = 1
 const QueryResolver = (
   User,
   Device,
-  Value,
+  Board,
   FloatValue,
   StringValue,
   BoolValue,
@@ -53,6 +53,30 @@ const QueryResolver = (
             deviceType,
             user: {
               id: userId,
+            },
+          })
+          context.billingUpdater.update(QUERY_COST)
+        }
+      }),
+    )
+  },
+  board(root, args, context) {
+    return logErrorsPromise(
+      'board query',
+      912,
+      authenticated(context, async (resolve, reject) => {
+        const boardFound = await Board.find({
+          where: { id: args.id },
+        })
+        if (!boardFound) {
+          reject('The requested resource does not exist')
+        } else if (boardFound.userId !== context.auth.userId) {
+          reject('You are not allowed to access details about this resource')
+        } else {
+          resolve({
+            ...boardFound.dataValues,
+            user: {
+              id: boardFound.userId,
             },
           })
           context.billingUpdater.update(QUERY_COST)
