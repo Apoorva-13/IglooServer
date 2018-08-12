@@ -8,6 +8,7 @@ import {
   MockStringValue,
   MockStringPlotValue,
   MockNotification,
+  MockDevice,
 } from './mocks'
 
 // checks that the resolver returns all the scalar props
@@ -188,9 +189,35 @@ function checkRejectUnauthenticated(propList, Resolver, Mock) {
   }
 }
 
+function checkDevicesProp(Resolver, id) {
+  test('should resolve the prop devices', async () => {
+    const mock = MockDevice()
+    const resolver = Resolver(mock)
+
+    const mockBillingUpdater = MockBillingUpdater()
+    const devices = await resolver.devices(
+      { id },
+      {},
+      {
+        auth: {
+          userId: 'fakeUserId',
+          accessLevel: 'OWNER',
+          tokenType: 'TEMPORARY',
+        },
+        billingUpdater: mockBillingUpdater,
+      },
+    )
+
+    expect(mock.findAll.called).toBe(true)
+    expect(devices.length).toBe(1)
+    expect(devices[0].id).toBe(mock.mockData.id)
+  })
+}
+
 module.exports = {
   checkScalarProps,
   checkValuesProp,
   checkNotificationsProp,
+  checkDevicesProp,
   checkRejectUnauthenticated,
 }

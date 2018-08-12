@@ -53,11 +53,19 @@ const mockUserData = {
   monthUsage: 200,
 }
 
+const mockBoardData = {
+  id: 'fakeBoardId',
+  customName: 'Example Board Name',
+  avatar: 'Example Avatar',
+  userId: 'fakeUserId',
+}
+
 const mockDeviceData = {
   id: 'fakeDeviceId',
   createdAt: '', // TODO: real dates
   updatedAt: '',
   userId: 'fakeUserId',
+  boardId: 'fakeBoardId',
   deviceType: 'Example Device Type',
   customName: 'Example Custom Name',
   icon: 'example icon',
@@ -153,6 +161,7 @@ const mockColourValueData = {
 
 module.exports = {
   MockUser: MockResolver(mockUserData),
+  MockBoard: MockResolver(mockBoardData),
   MockDevice: MockResolver(mockDeviceData),
   MockNotification: MockResolver(mockNotificationData),
   MockPermanentToken: MockResolver(mockPermanentTokenData),

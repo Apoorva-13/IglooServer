@@ -5,7 +5,7 @@ import {
   checkNotificationsProp,
   checkRejectUnauthenticated,
 } from './utilities'
-import { MockDevice, MockBillingUpdater } from './mocks'
+import { MockDevice, MockBillingUpdater, MockBoard } from './mocks'
 
 describe('Device resolver', () => {
   const deviceScalarProps = [
@@ -71,6 +71,28 @@ describe('Device resolver', () => {
       ),
     'fakeDeviceId',
   )
+
+  test('should resolve prop board', async () => {
+    const mockDevice = MockDevice()
+    const resolver = DeviceResolver(mockDevice)
+
+    const mockBillingUpdater = MockBillingUpdater()
+    const boardLoaded = await resolver.board(
+      { id: 'fakeDeviceId' },
+      {},
+      {
+        auth: {
+          userId: 'fakeUserId',
+          accessLevel: 'OWNER',
+          tokenType: 'TEMPORARY',
+        },
+        billingUpdater: mockBillingUpdater,
+      },
+    )
+
+    expect(mockDevice.find.called).toBe(true)
+    expect(boardLoaded.id).toBe(MockDevice.mockData.boardId)
+  })
 
   test('should resolve prop user', async () => {
     const mockDevice = MockDevice()

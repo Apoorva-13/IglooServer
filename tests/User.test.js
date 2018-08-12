@@ -2,12 +2,14 @@ import UserResolver from '../graphql/resolvers/User'
 import {
   MockUser,
   MockDevice,
+  MockBoard,
   MockBillingUpdater,
   MockPermanentToken,
 } from './mocks'
 import {
   checkScalarProps,
   checkValuesProp,
+  checkDevicesProp,
   checkNotificationsProp,
   checkRejectUnauthenticated,
 } from './utilities'
@@ -79,12 +81,17 @@ describe('User resolver', () => {
     expect(usageCap).toBe(MockUser.mockData.usageCap)
   })
 
-  test('should resolve the prop devices', async () => {
-    const mockDevice = MockDevice()
-    const resolver = UserResolver(null, null, mockDevice)
+  checkDevicesProp(
+    mockDevice => UserResolver(null, null, mockDevice),
+    'fakeUserId',
+  )
+
+  test('should resolve the prop boards', async () => {
+    const mockBoard = MockBoard()
+    const resolver = UserResolver(null, null, null, mockBoard)
 
     const mockBillingUpdater = MockBillingUpdater()
-    const devices = await resolver.devices(
+    const boards = await resolver.boards(
       { id: 'fakeUserId' },
       {},
       {
@@ -97,12 +104,9 @@ describe('User resolver', () => {
       },
     )
 
-    expect(mockDevice.findAll.called).toBe(true)
-    expect(devices.length).toBe(1)
-
-    // devices[0] should be a slice of the object returned by the mock resolver
-    delete devices[0].dataValues
-    expect(MockDevice.mockData).toEqual(expect.objectContaining(devices[0]))
+    expect(mockBoard.findAll.called).toBe(true)
+    expect(boards.length).toBe(1)
+    expect(boards[0].id).toBe(MockBoard.mockData.id)
   })
 
   test('should resolve the prop permanentTokens', async () => {
