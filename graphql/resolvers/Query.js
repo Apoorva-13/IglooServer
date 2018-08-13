@@ -17,10 +17,14 @@ const QueryResolver = (
   Notification,
 ) => ({
   user(root, args, context) {
-    return new Promise(authenticated(context, (resolve) => {
-      resolve({ id: context.auth.userId })
-      context.billingUpdater.update(QUERY_COST)
-    }))
+    return new Promise(authenticated(
+      context,
+      (resolve) => {
+        resolve({ id: context.auth.userId })
+        context.billingUpdater.update(QUERY_COST)
+      },
+      ['TEMPORARY', 'PERMANENT', 'PASSWORD_RECOVERY'],
+    ))
   },
   device(root, args, context) {
     return logErrorsPromise(

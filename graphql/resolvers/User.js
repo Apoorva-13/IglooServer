@@ -50,7 +50,6 @@ const UserResolver = (
   Notification,
 ) => ({
   ...scalarProps(User, [
-    'email',
     'createdAt',
     'updatedAt',
     'quietMode',
@@ -59,10 +58,27 @@ const UserResolver = (
     'devMode',
     'nightMode',
     'monthUsage',
-    'displayName',
-    'profileIcon',
-    'profileIconColor',
     'emailIsVerified',
+  ]),
+  email: retrieveUserScalarProp(User, 'email', [
+    'TEMPORARY',
+    'PERMANENT',
+    'PASSWORD_RECOVERY',
+  ]),
+  displayName: retrieveUserScalarProp(User, 'displayName', [
+    'TEMPORARY',
+    'PERMANENT',
+    'PASSWORD_RECOVERY',
+  ]),
+  profileIcon: retrieveUserScalarProp(User, 'profileIcon', [
+    'TEMPORARY',
+    'PERMANENT',
+    'PASSWORD_RECOVERY',
+  ]),
+  profileIconColor: retrieveUserScalarProp(User, 'profileIconColor', [
+    'TEMPORARY',
+    'PERMANENT',
+    'PASSWORD_RECOVERY',
   ]),
   paymentPlan: retrieveUserScalarProp(User, 'paymentPlan', [
     'TEMPORARY',
