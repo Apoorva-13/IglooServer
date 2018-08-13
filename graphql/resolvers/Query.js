@@ -44,7 +44,6 @@ const QueryResolver = (
             updatedAt,
             createdAt,
             customName,
-            tags,
             deviceType,
             userId,
           } = deviceFound
@@ -53,7 +52,6 @@ const QueryResolver = (
             updatedAt,
             createdAt,
             customName,
-            tags,
             deviceType,
             user: {
               id: userId,

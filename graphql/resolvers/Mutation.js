@@ -340,7 +340,6 @@ const MutationResolver = (
         const newDevice = await Device.create({
           customName: args.customName,
           deviceType: args.deviceType,
-          tags: args.tags || [],
           icon: args.icon,
           index,
           userId: context.auth.userId,
@@ -355,7 +354,6 @@ const MutationResolver = (
           deviceType,
           customName,
           userId,
-          tags,
           icon,
           signalStatus,
           batteryStatus,
@@ -369,7 +367,6 @@ const MutationResolver = (
           updatedAt,
           deviceType,
           customName,
-          tags,
           values,
           icon,
           signalStatus,

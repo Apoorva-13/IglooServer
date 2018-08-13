@@ -25,7 +25,6 @@ const DeviceResolver = (
     'updatedAt',
     'deviceType',
     'customName',
-    'tags',
     'icon',
     'index',
     'online',

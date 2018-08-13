@@ -135,9 +135,6 @@ const databaseDefinition = (sequelize) => {
     icon: {
       type: Sequelize.STRING,
     },
-    tags: {
-      type: Sequelize.ARRAY(Sequelize.STRING),
-    },
     index: {
       type: Sequelize.INTEGER,
     },
