@@ -44,7 +44,11 @@ type Mutation {
   DeletePermanentAccesToken(id: ID!): ID
 
   # Creates a new account
-  SignupUser(email: String!, password: String!): SignupUserPayload
+  SignupUser(
+    email: String!
+    password: String!
+    displayName: String
+  ): SignupUserPayload
 
   # Sends an email with a llink to change the password
   SendPasswordRecoveryEmail(email: String!): Boolean

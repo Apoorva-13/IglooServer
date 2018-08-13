@@ -195,6 +195,7 @@ const MutationResolver = (
             monthUsage: 0,
             paymentPlan: 'FREE',
             emailIsVerified: false,
+            displayName: args.displayName,
           })
 
           resolve({
