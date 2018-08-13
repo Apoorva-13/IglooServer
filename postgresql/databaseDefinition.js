@@ -144,9 +144,6 @@ const databaseDefinition = (sequelize) => {
     online: {
       type: Sequelize.BOOLEAN,
     },
-    lastSeen: {
-      type: Sequelize.DATE,
-    },
     batteryStatus: {
       type: Sequelize.FLOAT,
     },

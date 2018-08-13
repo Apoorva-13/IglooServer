@@ -619,7 +619,6 @@ type Device {
   icon: String
   notifications: [Notification!]!
   online: Boolean
-  lastSeen: DateTime
   signalStatus: Float
   batteryStatus: Float
 }

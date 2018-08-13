@@ -29,7 +29,6 @@ const DeviceResolver = (
     'icon',
     'index',
     'online',
-    'lastSeen',
     'signalStatus',
     'batteryStatus',
   ]),
