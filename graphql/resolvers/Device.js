@@ -30,6 +30,7 @@ const DeviceResolver = (
     'online',
     'signalStatus',
     'batteryStatus',
+    'batteryCharging',
   ]),
   values(root, args, context) {
     return logErrorsPromise(

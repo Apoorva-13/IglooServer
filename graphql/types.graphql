@@ -76,6 +76,7 @@ type Mutation {
     index: Int
     signalStatus: Float
     batteryStatus: Float
+    batteryCharging: Boolean
     boardId: ID
   ): Device
 
@@ -279,6 +280,7 @@ type Mutation {
     index: Int
     signalStatus: Float
     batteryStatus: Float
+    batteryCharging: Boolean
     boardId: ID
   ): Device
 
@@ -617,6 +619,7 @@ type Device {
   online: Boolean
   signalStatus: Float
   batteryStatus: Float
+  batteryCharging: Boolean
 }
 
 enum ValuePermission {

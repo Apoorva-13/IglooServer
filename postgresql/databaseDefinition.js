@@ -144,6 +144,9 @@ const databaseDefinition = (sequelize) => {
     batteryStatus: {
       type: Sequelize.FLOAT,
     },
+    batteryCharging: {
+      type: Sequelize.BOOLEAN,
+    },
     signalStatus: {
       type: Sequelize.FLOAT,
     },
