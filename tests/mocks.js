@@ -137,10 +137,28 @@ const mockPlotValueData = {
   id: 'fakePlotValueId',
 }
 
+const mockPlotNodeData = {
+  id: 'fakePlotNodeId',
+  plotId: 'fakePlotValueId',
+  deviceId: 'fakeDeviceId',
+  userId: 'fakeUserId',
+  value: 5,
+  timestamp: 'date', // TODO: use real date
+}
+
 const mockStringPlotValueData = {
   ...mockValueData,
   id: 'fakeStringPlotValueId',
   allowedValues: ['cat', 'dog'],
+}
+
+const mockStringPlotNodeData = {
+  id: 'fakeStringPlotNodeId',
+  plotId: 'fakeStringPlotValueId',
+  deviceId: 'fakeDeviceId',
+  userId: 'fakeUserId',
+  value: 'cat',
+  timestamp: 'date', // TODO: use real date
 }
 
 const mockMapValueData = {
@@ -172,5 +190,7 @@ module.exports = {
   MockStringPlotValue: MockResolver(mockStringPlotValueData),
   MockMapValue: MockResolver(mockMapValueData),
   MockColourValue: MockResolver(mockColourValueData),
+  MockPlotNode: MockResolver(mockPlotNodeData),
+  MockStringPlotNode: MockResolver(mockStringPlotNodeData),
   MockBillingUpdater,
 }
