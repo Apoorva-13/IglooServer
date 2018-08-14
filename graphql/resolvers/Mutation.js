@@ -830,7 +830,7 @@ const MutationResolver = (
             visualized: false,
             snackbarVisualized: false,
             userId: context.auth.userId,
-            date: new Date(),
+            date: args.date || new Date(),
           })
 
           const {

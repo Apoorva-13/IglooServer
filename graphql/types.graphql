@@ -91,6 +91,7 @@ type Mutation {
     # device associated with the notification
     deviceId: ID!
     content: String! # optional if you want to change the date # date: DateTime
+    date: DateTime
   ): Notification
 
   # Creates a new FloatValue
