@@ -15,6 +15,7 @@ const GenericResolver = Model => ({
   tileSize: retrieveScalarProp(Model, 'tileSize'),
   customName: retrieveScalarProp(Model, 'customName'),
   value: retrieveScalarProp(Model, 'value'),
+  index: retrieveScalarProp(Model, 'index'),
 })
 
 const BooleanValueResolver = GenericResolver

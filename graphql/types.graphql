@@ -106,6 +106,7 @@ type Mutation {
     customName: String
     # tile size in Igloo Aurora
     tileSize: TileSize
+    index: Int
   ): FloatValue
 
   # Creates a StringValue
@@ -127,6 +128,7 @@ type Mutation {
     tileSize: TileSize
     # allowed values for the string
     allowedValues: [String!]
+    index: Int
   ): StringValue
 
   # Creates a BooleanValue
@@ -144,6 +146,7 @@ type Mutation {
     customName: String
     # tile size in Igloo Aurora
     tileSize: TileSize
+    index: Int
   ): BooleanValue
 
   # Creates a ColourValue
@@ -164,6 +167,7 @@ type Mutation {
     tileSize: TileSize
     # allowed colours
     allowedValues: [String!]
+    index: Int
   ): ColourValue
 
   # Creates a MapValue
@@ -185,6 +189,7 @@ type Mutation {
     latitude: Float
     longitude: Float
     height: Float
+    index: Int
   ): MapValue
 
   # Creates a new PlotValue
@@ -207,6 +212,7 @@ type Mutation {
     tileSize: TileSize
     # alert threshold, values above the threshold will be displayed in red in Igloo Aurora
     threshold: Float
+    index: Int
   ): PlotValue
 
   # Creates a new node in a plot
@@ -234,6 +240,7 @@ type Mutation {
     tileSize: TileSize
     # allowed labels
     allowedValues: [String!]
+    index: Int
   ): StringPlotValue
 
   # Creates a new node in a plot
@@ -303,6 +310,7 @@ type Mutation {
     customName: String
     # tile size in Igloo Aurora
     tileSize: TileSize
+    index: Int
   ): FloatValue
 
   # changes stringValue's data
@@ -324,6 +332,7 @@ type Mutation {
     tileSize: TileSize
     # allowed values for the string
     allowedValues: [String!]
+    index: Int
   ): StringValue
 
   # changes booleanValue's data
@@ -341,6 +350,7 @@ type Mutation {
     customName: String
     # tile size in Igloo Aurora
     tileSize: TileSize
+    index: Int
   ): BooleanValue
 
   # changes colourValue's data
@@ -361,6 +371,7 @@ type Mutation {
     tileSize: TileSize
     # allowed colours
     allowedValues: [String!]
+    index: Int
   ): ColourValue
 
   # changes mapValue's data
@@ -382,6 +393,7 @@ type Mutation {
     latitude: Float
     longitude: Float
     height: Float
+    index: Int
   ): MapValue
 
   # changes plotValue's data
@@ -404,6 +416,7 @@ type Mutation {
     tileSize: TileSize
     # alert threshold, values above the threshold will be displayed in red in Igloo Aurora
     threshold: Float
+    index: Int
   ): PlotValue
 
   # change plotNode's data
@@ -432,6 +445,7 @@ type Mutation {
     tileSize: TileSize
     # allowed labels
     allowedValues: [String!]
+    index: Int
   ): PlotValue
 
   # change StringPlotNode's data
@@ -694,6 +708,7 @@ interface Value {
   valueDetails: String
   tileSize: TileSize!
   customName: String
+  index: Int
 }
 
 type FloatValue implements Value {
@@ -711,6 +726,7 @@ type FloatValue implements Value {
   # [min, max]
   boundaries: [Float!]
   tileSize: TileSize!
+  index: Int
   customName: String
 }
 
@@ -726,6 +742,7 @@ type StringValue implements Value {
   value: String!
   maxChars: Int
   tileSize: TileSize!
+  index: Int
   customName: String
   allowedValues: [String!]
 }
@@ -746,6 +763,7 @@ type PlotValue implements Value {
   boundaries: [Float!]
   tileSize: TileSize!
   customName: String
+  index: Int
 
   threshold: Float
 }
@@ -762,6 +780,7 @@ type StringPlotValue implements Value {
   value: [StringPlotNode!]!
   tileSize: TileSize!
   customName: String
+  index: Int
   allowedValues: [String!]
 }
 
@@ -777,6 +796,7 @@ type BooleanValue implements Value {
   value: Boolean!
   tileSize: TileSize!
   customName: String
+  index: Int
 }
 
 type ColourValue implements Value {
@@ -792,6 +812,7 @@ type ColourValue implements Value {
   value: String!
   tileSize: TileSize!
   customName: String
+  index: Int
   allowedValues: [String!]
 }
 
@@ -810,4 +831,5 @@ type MapValue implements Value {
   height: Float
   tileSize: TileSize!
   customName: String
+  index: Int
 }

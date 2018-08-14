@@ -148,7 +148,11 @@ const getPropsIfDefined = (args, props) => {
 
 const MUTATION_COST = 2
 // generic resolver for CreateXValue mutations
-const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
+const CreateGenericValue = (Device, Model, ValueModels, pubsub) => (
+  root,
+  args,
+  context,
+) =>
   new Promise(authenticated(context, async (resolve, reject) => {
     // looks for the device, if the device is owned by the user
     // creates a Value in the database and returns
@@ -161,10 +165,25 @@ const CreateGenericValue = (Device, Model, pubsub) => (root, args, context) =>
       } else if (deviceFound.userId !== context.auth.userId) {
         reject('You are not allowed to edit details about this device')
       } else {
+        async function calculateIndex() {
+          const valuesCountPromises = ValueModels.map(async model =>
+            await model.count({ where: { deviceId: args.deviceId } }))
+          const valuesCount = await Promise.all(valuesCountPromises)
+
+          const newIndex = valuesCount.reduce((a, b) => a + b)
+
+          return newIndex
+        }
+        const index =
+            args.index !== null && args.index !== undefined
+              ? args.index
+              : await calculateIndex()
+
         const newValue = (await Model.create({
           ...args,
           tileSize: args.tileSize || 'NORMAL',
           userId: context.auth.userId,
+          index,
         })).dataValues
 
         const resolveObj = {

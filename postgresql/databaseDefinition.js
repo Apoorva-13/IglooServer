@@ -190,6 +190,9 @@ const databaseDefinition = (sequelize) => {
     customName: {
       type: Sequelize.STRING,
     },
+    index: {
+      type: Sequelize.INTEGER,
+    },
   }
 
   const BoolValue = sequelize.define('boolValue', {

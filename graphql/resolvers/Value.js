@@ -79,6 +79,7 @@ const ValueResolver = SequelizeValues => ({
   valueDetails: retrieveValueScalarProp(SequelizeValues, 'valueDetails'),
   tileSize: retrieveValueScalarProp(SequelizeValues, 'tileSize'),
   customName: retrieveValueScalarProp(SequelizeValues, 'customName'),
+  index: retrieveValueScalarProp(SequelizeValues, 'index'),
   __resolveType: (root, context) =>
     logErrorsPromise(
       'value resolve type',
