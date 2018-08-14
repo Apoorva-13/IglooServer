@@ -54,7 +54,7 @@ const resolvers = {
     MapValue,
     Notification,
   ),
-  Board: BoardResolver(Board, Device),
+  Board: BoardResolver(Board, Device, Notification),
   Device: DeviceResolver(
     Device,
     User,

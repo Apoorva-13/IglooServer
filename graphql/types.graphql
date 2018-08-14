@@ -62,7 +62,13 @@ type Mutation {
   ResendVerificationEmail: Boolean
 
   # Creates a Board
-  CreateBoard(customName: String!, avatar: String): Board
+  CreateBoard(
+    customName: String!
+    avatar: String
+    favorite: Boolean
+    index: Int
+    quietMode: Boolean
+  ): Board
 
   # Creates a new Device
   CreateDevice(
@@ -271,7 +277,14 @@ type Mutation {
   updatePaymentInfo(stripeToken: String!): Boolean
 
   # changes board's data
-  board(id: ID!, customName: String, avatar: String): Board
+  board(
+    id: ID!
+    customName: String
+    avatar: String
+    favorite: Boolean
+    index: Int
+    quietMode: Boolean
+  ): Board
 
   # changes device's data
   device(
@@ -601,10 +614,16 @@ type User {
 
 type Board {
   id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   user: User!
   customName: String!
   avatar: String
   devices: [Device!]!
+  favorite: Boolean!
+  notificationsCount: Int!
+  index: Int!
+  quietMode: Boolean!
 }
 
 type PermanentToken {

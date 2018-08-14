@@ -308,6 +308,13 @@ const MutationResolver = (
       authenticated(context, async (resolve, reject) => {
         const newBoard = await Board.create({
           ...args,
+          // if favorite or quietMode are not passed then set them to false
+          favorite: !!args.favorite,
+          quietMode: !!args.quietMode,
+          index:
+            args.index !== null && args.index !== undefined
+              ? args.index
+              : await Board.count({ where: { userId: context.auth.userId } }),
           userId: context.auth.userId,
         })
 
@@ -334,8 +341,9 @@ const MutationResolver = (
       104,
       authenticated(context, async (resolve) => {
         const index =
-          args.index ||
-          (await Device.count({ where: { userId: context.auth.userId } }))
+          args.index !== null && args.index !== undefined
+            ? args.index
+            : await Device.count({ where: { userId: context.auth.userId } })
 
         const newDevice = await Device.create({
           customName: args.customName,

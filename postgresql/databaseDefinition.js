@@ -91,6 +91,15 @@ const databaseDefinition = (sequelize) => {
     avatar: {
       type: Sequelize.STRING,
     },
+    favorite: {
+      type: Sequelize.BOOLEAN,
+    },
+    index: {
+      type: Sequelize.INTEGER,
+    },
+    quietMode: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const PermanentToken = sequelize.define('permanentToken', {
