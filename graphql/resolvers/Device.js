@@ -142,6 +142,31 @@ const DeviceResolver = (
       }),
     )
   },
+  notificationsCount(root, args, context) {
+    return logErrorsPromise(
+      'notificationsCount device resolver',
+      916,
+      authenticated(context, async (resolve, reject) => {
+        const deviceFound = await Device.find({
+          where: { id: root.id },
+        })
+        /* istanbul ignore if */
+        if (!deviceFound) {
+          reject('The requested resource does not exist')
+        } else if (deviceFound.userId !== context.auth.userId) {
+          /* istanbul ignore next */
+          reject('You are not allowed to access details about this resource')
+        } else {
+          const count = await Notification.count({
+            where: { deviceId: root.id },
+          })
+
+          resolve(count)
+          context.billingUpdater.update(QUERY_COST)
+        }
+      }),
+    )
+  },
 })
 
 export default DeviceResolver

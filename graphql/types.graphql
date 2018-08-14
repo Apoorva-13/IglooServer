@@ -650,6 +650,7 @@ type Device {
   board: Board
   icon: String
   notifications: [Notification!]!
+  notificationsCount: Int!
   online: Boolean
   signalStatus: Float
   batteryStatus: Float
