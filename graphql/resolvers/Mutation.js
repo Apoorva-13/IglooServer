@@ -302,6 +302,41 @@ const MutationResolver = (
       }),
     )
   },
+  shareBoard(root, args, context) {
+    return logErrorsPromise(
+      'shareBoard',
+      921,
+      authorized(
+        args.boardId,
+        context,
+        Board,
+        3,
+        async (resolve, reject, boardFound) => {
+          // clear previous role
+          let { adminsIds, editorsIds, spectatorsIds } = boardFound
+
+          adminsIds = adminsIds.filter(id => id !== args.userId)
+          editorsIds = adminsIds.filter(id => id !== args.userId)
+          spectatorsIds = adminsIds.filter(id => id !== args.userId)
+
+          // add new role
+          if (args.role === 'ADMIN') adminsIds.push(args.userId)
+          else if (args.role === 'EDITOR') editorsIds.push(args.userId)
+          else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
+
+          const newBoard = await boardFound.update({
+            adminsIds,
+            editorsIds,
+            spectatorsIds,
+          })
+
+          resolve(newBoard)
+
+          context.billingUpdater.update(MUTATION_COST)
+        },
+      ),
+    )
+  },
   CreateBoard(root, args, context) {
     return logErrorsPromise(
       'CreateBoard',

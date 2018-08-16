@@ -26,6 +26,12 @@ type UpgradeTo2FactorPayload {
   qrCode: String
 }
 
+enum Role {
+  ADMIN
+  EDITOR
+  SPECTATOR
+}
+
 # All available mutations
 type Mutation {
   # Gets an authentication token
@@ -61,6 +67,9 @@ type Mutation {
 
   ResendVerificationEmail: Boolean
 
+  shareBoard(boardId: ID!, userId: ID!, role: Role!): Board
+  shareDevice(deviceId: ID!, userId: ID!, role: Role!): Device
+  shareValue(valueId: ID!, userId: ID!, role: Role!): Value
   # Creates a Board
   CreateBoard(
     customName: String!
