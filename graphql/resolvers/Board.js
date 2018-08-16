@@ -6,6 +6,27 @@ import {
 
 const QUERY_COST = 1
 
+const rolesResolver = (roleIdsField, Board) => (root, args, context) =>
+  logErrorsPromise(
+    'board rolesIds resolver',
+    922,
+    authorized(
+      root.id,
+      context,
+      Board,
+      1,
+      async (resolve, reject, boardFound) => {
+        const users = boardFound[roleIdsField].map(id => ({
+          id,
+        }))
+
+        resolve(users)
+
+        context.billingUpdater.update(QUERY_COST * users.length)
+      },
+    ),
+  )
+
 const BoardResolver = (Board, Device, Notification) => ({
   ...authorizedScalarPropsResolvers(Board, [
     'customName',
@@ -35,6 +56,9 @@ const BoardResolver = (Board, Device, Notification) => ({
       ),
     )
   },
+  admins: rolesResolver('adminsIds', Board),
+  editors: rolesResolver('editorsIds', Board),
+  spectators: rolesResolver('spectatorsIds', Board),
   devices(root, args, context) {
     return logErrorsPromise(
       'devices BoardResolver',
