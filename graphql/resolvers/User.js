@@ -1,4 +1,5 @@
 import { authenticated, logErrorsPromise, findAllValues } from './utilities'
+import { Op } from 'sequelize'
 
 const QUERY_COST = 1
 
@@ -120,7 +121,14 @@ const UserResolver = (
           reject('You are not allowed to access details about this user')
         } else {
           const boards = await Board.findAll({
-            where: { userId: root.id },
+            where: {
+              [Op.or]: [
+                { ownerId: root.id },
+                { adminsIds: { [Op.contains]: [root.id] } },
+                { editorsIds: { [Op.contains]: [root.id] } },
+                { spectatorsIds: { [Op.contains]: [root.id] } },
+              ],
+            },
           })
 
           resolve(boards)
