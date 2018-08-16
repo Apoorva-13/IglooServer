@@ -1,14 +1,13 @@
 import {
-  authenticated,
-  retrieveScalarProp,
   logErrorsPromise,
-  scalarPropsResolvers,
+  authorizedScalarPropsResolvers,
+  authorized,
 } from './utilities'
 
 const QUERY_COST = 1
 
 const BoardResolver = (Board, Device, Notification) => ({
-  ...scalarPropsResolvers(Board, [
+  ...authorizedScalarPropsResolvers(Board, [
     'customName',
     'avatar',
     'createdAt',
@@ -17,66 +16,54 @@ const BoardResolver = (Board, Device, Notification) => ({
     'favorite',
     'quietMode',
   ]),
-  user(root, args, context) {
+  owner(root, args, context) {
     return logErrorsPromise(
       'user BoardResolver',
       902,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({ where: { id: root.id } })
-
-        /* istanbul ignore if */
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Board,
+        1,
+        async (resolve, reject, boardFound) => {
           resolve({
-            id: boardFound.userId,
+            id: boardFound.ownerId,
           })
 
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+      ),
     )
   },
   devices(root, args, context) {
     return logErrorsPromise(
       'devices BoardResolver',
       903,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({ where: { id: root.id } })
-
-        /* istanbul ignore if */
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Board,
+        1,
+        async (resolve, reject, boardFound) => {
           const devices = await Device.findAll({ where: { boardId: root.id } })
 
           resolve(devices)
 
           context.billingUpdater.update(QUERY_COST * devices.length)
-        }
-      }),
+        },
+      ),
     )
   },
   notificationsCount(root, args, context) {
     return logErrorsPromise(
       'notificationsCount BoardResolver',
       915,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({ where: { id: root.id } })
-
-        /* istanbul ignore if */
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Board,
+        1,
+        async (resolve, reject, boardFound) => {
           const devices = await Device.findAll({ where: { boardId: root.id } })
 
           const notificationsCountsPromises = devices.map(device =>
@@ -91,8 +78,8 @@ const BoardResolver = (Board, Device, Notification) => ({
 
           resolve(totalCount)
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+      ),
     )
   },
 })

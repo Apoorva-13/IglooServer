@@ -1,4 +1,9 @@
-import { authenticated, logErrorsPromise, findValue } from './utilities'
+import {
+  authenticated,
+  logErrorsPromise,
+  findValue,
+  authorized,
+} from './utilities'
 import bcrypt from 'bcryptjs'
 
 const QUERY_COST = 1
@@ -66,24 +71,21 @@ const QueryResolver = (
     return logErrorsPromise(
       'board query',
       912,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({
-          where: { id: args.id },
-        })
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Board,
+        1,
+        async (resolve, reject, boardFound) => {
           resolve({
             ...boardFound.dataValues,
-            user: {
-              id: boardFound.userId,
+            owner: {
+              id: boardFound.ownerId,
             },
           })
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+      ),
     )
   },
   value(root, args, context) {

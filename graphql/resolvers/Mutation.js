@@ -15,6 +15,7 @@ import {
   sendPasswordRecoveryEmail,
   sendPasswordUpdatedEmail,
   sendTokenCreatedEmail,
+  authorized,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -314,13 +315,16 @@ const MutationResolver = (
           index:
             args.index !== null && args.index !== undefined
               ? args.index
-              : await Board.count({ where: { userId: context.auth.userId } }),
-          userId: context.auth.userId,
+              : await Board.count({ where: { ownerId: context.auth.userId } }),
+          ownerId: context.auth.userId,
+          adminsIds: [],
+          editorsIds: [],
+          spectatorsIds: [],
         })
 
         const resolveValue = {
           ...newBoard.dataValues,
-          user: { id: newBoard.userId },
+          owner: { id: newBoard.ownerId },
           devices: [],
         }
 
@@ -674,16 +678,12 @@ const MutationResolver = (
     return logErrorsPromise(
       'board mutation',
       911,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({
-          where: { id: args.id },
-        })
-
-        if (!boardFound) {
-          reject("Board doesn't exist. Use `CreateBoard` to create one")
-        } else if (boardFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Board,
+        2,
+        async (resolve, reject, boardFound) => {
           const newBoard = await boardFound.update(args)
 
           resolve(newBoard.dataValues)
@@ -693,8 +693,8 @@ const MutationResolver = (
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+      ),
     )
   },
   device(root, args, context) {

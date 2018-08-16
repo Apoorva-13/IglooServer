@@ -689,6 +689,66 @@ const scalarPropsResolvers = (Model, props) =>
     return acc
   }, {})
 
+async function authorizationLevel(instance, userId) {
+  if (!instance) throw new Error('The requested resource does not exist')
+
+  if (instance.ownerId === userId) return 4
+  else if (instance.adminsIds.indexOf(userId) !== -1) return 3
+  else if (instance.editorsIds.indexOf(userId) !== -1) return 2
+  else if (instance.spectatorsIds.indexOf(userId) !== -1) return 1
+  return 0
+}
+
+function authorized(
+  id,
+  context,
+  Model,
+  authorizationRequired,
+  callback,
+  acceptedTokenTypes,
+) {
+  return authenticated(
+    context,
+    async (resolve, reject) => {
+      const found = await Model.find({ where: { id } })
+
+      if (!found) {
+        reject('The requested resource does not exist')
+      } else if (
+        (await authorizationLevel(found, context.auth.userId)) <
+        authorizationRequired
+      ) {
+        /* istanbul ignore next */
+        reject('You are not allowed to access details about this resource')
+      } else {
+        callback(resolve, reject, found)
+      }
+    },
+    acceptedTokenTypes,
+  )
+}
+
+const authorizedRetrieveScalarProp = (Model, prop) => (root, args, context) =>
+  logErrorsPromise(
+    'authorizedRetrieveScalarProp',
+    920,
+    authorized(
+      root.id,
+      context,
+      Model,
+      1,
+      async (resolve, reject, resourceFound) => {
+        resolve(resourceFound[prop])
+      },
+    ),
+  )
+
+const authorizedScalarPropsResolvers = (Model, props) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = authorizedRetrieveScalarProp(Model, prop)
+    return acc
+  }, {})
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -712,4 +772,7 @@ module.exports = {
   sendPasswordUpdatedEmail,
   sendTokenCreatedEmail,
   scalarPropsResolvers,
+  authorizationLevel,
+  authorized,
+  authorizedScalarPropsResolvers,
 }

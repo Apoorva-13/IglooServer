@@ -617,7 +617,10 @@ type Board {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  user: User!
+  owner: User
+  admins: [User]
+  editors: [User]
+  spectators: [User]
   customName: String!
   avatar: String
   devices: [Device!]!

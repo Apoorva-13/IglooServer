@@ -81,9 +81,24 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  // TODO: could use a junction table instead, should we?
+  const othersIds = (fieldName, model, allowNull = false) => ({
+    [fieldName]: {
+      type: Sequelize.ARRAY(Sequelize.UUID),
+      allowNull,
+    },
+  })
+
+  const rolesIds = {
+    ...otherId('ownerId', User),
+    ...othersIds('adminsIds', User),
+    ...othersIds('editorsIds', User),
+    ...othersIds('spectatorsIds', User),
+  }
+
   const Board = sequelize.define('board', {
     ...selfId,
-    ...otherId('userId', User),
+    ...rolesIds,
     customName: {
       type: Sequelize.STRING,
       allowNull: false,
