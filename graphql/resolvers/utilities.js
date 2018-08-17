@@ -689,7 +689,7 @@ const scalarPropsResolvers = (Model, props) =>
     return acc
   }, {})
 
-async function authorizationLevel(instance, userId) {
+function instanceAuthorizationLevel(instance, userId) {
   if (!instance) throw new Error('The requested resource does not exist')
 
   if (instance.ownerId === userId) return 4
@@ -699,23 +699,33 @@ async function authorizationLevel(instance, userId) {
   return 0
 }
 
+function authorizationLevel(instances, userId) {
+  const authorizations = instances.map(instance =>
+    instanceAuthorizationLevel(instance, userId))
+  const maxAuthorization = Math.max(...authorizations)
+
+  return maxAuthorization
+}
+
 function authorized(
   id,
   context,
   Model,
   authorizationRequired,
   callback,
+  childToParents = found => Promise.resolve([]),
   acceptedTokenTypes,
 ) {
   return authenticated(
     context,
     async (resolve, reject) => {
       const found = await Model.find({ where: { id } })
+      const others = await childToParents(found)
 
       if (!found) {
         reject('The requested resource does not exist')
       } else if (
-        (await authorizationLevel(found, context.auth.userId)) <
+        authorizationLevel([found, ...others], context.auth.userId) <
         authorizationRequired
       ) {
         /* istanbul ignore next */
@@ -728,7 +738,12 @@ function authorized(
   )
 }
 
-const authorizedRetrieveScalarProp = (Model, prop) => (root, args, context) =>
+const authorizedRetrieveScalarProp = (
+  Model,
+  prop,
+  childToParents,
+  acceptedTokenTypes,
+) => (root, args, context) =>
   logErrorsPromise(
     'authorizedRetrieveScalarProp',
     920,
@@ -740,14 +755,62 @@ const authorizedRetrieveScalarProp = (Model, prop) => (root, args, context) =>
       async (resolve, reject, resourceFound) => {
         resolve(resourceFound[prop])
       },
+      childToParents,
+      acceptedTokenTypes,
     ),
   )
 
-const authorizedScalarPropsResolvers = (Model, props) =>
+const authorizedScalarPropsResolvers = (
+  Model,
+  props,
+  childToParents,
+  acceptedTokenTypes,
+) =>
   props.reduce((acc, prop) => {
-    acc[prop] = authorizedRetrieveScalarProp(Model, prop)
+    acc[prop] = authorizedRetrieveScalarProp(
+      Model,
+      prop,
+      childToParents,
+      acceptedTokenTypes,
+    )
     return acc
   }, {})
+
+const QUERY_COST = 1
+const rolesResolver = (roleIdsField, Model, childToParents) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'rolesIds resolver',
+    922,
+    authorized(
+      root.id,
+      context,
+      Model,
+      1,
+      async (resolve, reject, found) => {
+        const users = found[roleIdsField].map(id => ({
+          id,
+        }))
+
+        resolve(users)
+
+        context.billingUpdater.update(QUERY_COST * users.length)
+      },
+      childToParents,
+    ),
+  )
+
+const deviceToParents = Board => async (deviceFound) => {
+  const boardFound = deviceFound.boardId
+    ? await Board.find({ where: { id: deviceFound.boardId } })
+    : null
+
+  if (boardFound) return [boardFound]
+  return []
+}
 
 module.exports = {
   authenticated,
@@ -775,4 +838,6 @@ module.exports = {
   authorizationLevel,
   authorized,
   authorizedScalarPropsResolvers,
+  rolesResolver,
+  deviceToParents,
 }

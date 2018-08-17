@@ -58,7 +58,7 @@ const resolvers = {
   Device: DeviceResolver(
     Device,
     User,
-    Value,
+    Board,
     BoolValue,
     FloatValue,
     StringValue,

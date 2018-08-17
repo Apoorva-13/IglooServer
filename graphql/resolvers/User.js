@@ -101,7 +101,14 @@ const UserResolver = (
           reject('You are not allowed to access details about this user')
         } else {
           const devices = await Device.findAll({
-            where: { userId: root.id },
+            where: {
+              [Op.or]: [
+                { ownerId: root.id },
+                { adminsIds: { [Op.contains]: [root.id] } },
+                { editorsIds: { [Op.contains]: [root.id] } },
+                { spectatorsIds: { [Op.contains]: [root.id] } },
+              ],
+            },
             order: [['index', 'ASC']],
           })
 

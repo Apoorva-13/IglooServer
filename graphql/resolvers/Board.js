@@ -2,30 +2,10 @@ import {
   logErrorsPromise,
   authorizedScalarPropsResolvers,
   authorized,
+  rolesResolver,
 } from './utilities'
 
 const QUERY_COST = 1
-
-const rolesResolver = (roleIdsField, Board) => (root, args, context) =>
-  logErrorsPromise(
-    'board rolesIds resolver',
-    922,
-    authorized(
-      root.id,
-      context,
-      Board,
-      1,
-      async (resolve, reject, boardFound) => {
-        const users = boardFound[roleIdsField].map(id => ({
-          id,
-        }))
-
-        resolve(users)
-
-        context.billingUpdater.update(QUERY_COST * users.length)
-      },
-    ),
-  )
 
 const BoardResolver = (Board, Device, Notification) => ({
   ...authorizedScalarPropsResolvers(Board, [
@@ -94,11 +74,7 @@ const BoardResolver = (Board, Device, Notification) => ({
             Notification.count({ where: { deviceId: device.id } }))
 
           const notificationsCounts = await Promise.all(notificationsCountsPromises)
-          // avoid reducing an empty array
-          const totalCount =
-            notificationsCounts.length === 0
-              ? 0
-              : notificationsCounts.reduce((a, b) => a + b, 0)
+          const totalCount = notificationsCounts.reduce((a, b) => a + b, 0)
 
           resolve(totalCount)
           context.billingUpdater.update(QUERY_COST)

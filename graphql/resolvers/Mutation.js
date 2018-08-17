@@ -16,6 +16,7 @@ import {
   sendPasswordUpdatedEmail,
   sendTokenCreatedEmail,
   authorized,
+  deviceToParents,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -35,6 +36,46 @@ const SALT_ROUNDS = 10
 const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
+
+const genericShare = (Model, idField, childToParents) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'genericShare',
+    921,
+    authorized(
+      args[idField],
+      context,
+      Model,
+      3,
+      async (resolve, reject, found) => {
+        // clear previous role
+        let { adminsIds, editorsIds, spectatorsIds } = found
+
+        adminsIds = adminsIds.filter(id => id !== args.userId)
+        editorsIds = adminsIds.filter(id => id !== args.userId)
+        spectatorsIds = adminsIds.filter(id => id !== args.userId)
+
+        // add new role
+        if (args.role === 'ADMIN') adminsIds.push(args.userId)
+        else if (args.role === 'EDITOR') editorsIds.push(args.userId)
+        else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
+
+        const updated = await found.update({
+          adminsIds,
+          editorsIds,
+          spectatorsIds,
+        })
+
+        resolve(updated)
+
+        context.billingUpdater.update(MUTATION_COST)
+      },
+      childToParents,
+    ),
+  )
 
 const MutationResolver = (
   User,
@@ -302,41 +343,8 @@ const MutationResolver = (
       }),
     )
   },
-  shareBoard(root, args, context) {
-    return logErrorsPromise(
-      'shareBoard',
-      921,
-      authorized(
-        args.boardId,
-        context,
-        Board,
-        3,
-        async (resolve, reject, boardFound) => {
-          // clear previous role
-          let { adminsIds, editorsIds, spectatorsIds } = boardFound
-
-          adminsIds = adminsIds.filter(id => id !== args.userId)
-          editorsIds = adminsIds.filter(id => id !== args.userId)
-          spectatorsIds = adminsIds.filter(id => id !== args.userId)
-
-          // add new role
-          if (args.role === 'ADMIN') adminsIds.push(args.userId)
-          else if (args.role === 'EDITOR') editorsIds.push(args.userId)
-          else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
-
-          const newBoard = await boardFound.update({
-            adminsIds,
-            editorsIds,
-            spectatorsIds,
-          })
-
-          resolve(newBoard)
-
-          context.billingUpdater.update(MUTATION_COST)
-        },
-      ),
-    )
-  },
+  shareBoard: genericShare(Board, 'boardId'),
+  shareDevice: genericShare(Device, 'deviceId', deviceToParents(Board)),
   CreateBoard(root, args, context) {
     return logErrorsPromise(
       'CreateBoard',
@@ -382,51 +390,22 @@ const MutationResolver = (
         const index =
           args.index !== null && args.index !== undefined
             ? args.index
-            : await Device.count({ where: { userId: context.auth.userId } })
+            : await Device.count({ where: { ownerId: context.auth.userId } })
 
         const newDevice = await Device.create({
-          customName: args.customName,
-          deviceType: args.deviceType,
-          icon: args.icon,
+          ...args,
           index,
-          userId: context.auth.userId,
-          signalStatus: args.signalStatus,
-          batteryStatus: args.batteryStatus,
-          batteryCharging: args.batteryCharging,
-          boardId: args.boardId,
+          ownerId: context.auth.userId,
+          adminsIds: [],
+          editorsIds: [],
+          spectatorsIds: [],
         })
-        const {
-          id,
-          createdAt,
-          updatedAt,
-          deviceType,
-          customName,
-          userId,
-          icon,
-          signalStatus,
-          batteryStatus,
-          batteryCharging,
-          boardId,
-        } = newDevice.dataValues
-        const values = [] // values cannot be set when creating the device so no need to fetch them
 
         const resolveValue = {
-          id,
-          createdAt,
-          updatedAt,
-          deviceType,
-          customName,
-          values,
-          icon,
-          signalStatus,
-          batteryStatus,
-          batteryCharging,
-          user: {
-            id: userId,
-          },
-          board: boardId
+          ...newDevice.dataValues,
+          board: newDevice.boardId
             ? {
-              id: boardId,
+              id: newDevice.boardId,
             }
             : null,
         }
@@ -736,15 +715,12 @@ const MutationResolver = (
     return logErrorsPromise(
       'device mutation',
       116,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.id },
-        })
-        if (!deviceFound) {
-          reject("Device doesn't exist. Use `CreateDevice` to create one")
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Device,
+        2,
+        async (resolve, reject, deviceFound) => {
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
@@ -752,8 +728,9 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   floatValue: genericValueMutation(FloatValue, 'FloatValue', pubsub),

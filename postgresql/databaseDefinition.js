@@ -148,7 +148,7 @@ const databaseDefinition = (sequelize) => {
 
   const Device = sequelize.define('device', {
     ...selfId,
-    ...otherId('userId', User),
+    ...rolesIds,
     ...otherId('boardId', Board, true),
     deviceType: {
       type: Sequelize.STRING,

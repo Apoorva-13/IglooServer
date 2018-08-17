@@ -3,6 +3,7 @@ import {
   logErrorsPromise,
   findValue,
   authorized,
+  deviceToParents,
 } from './utilities'
 import bcrypt from 'bcryptjs'
 
@@ -35,36 +36,18 @@ const QueryResolver = (
     return logErrorsPromise(
       'device query',
       105,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.id },
-        })
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
-          const {
-            id,
-            updatedAt,
-            createdAt,
-            customName,
-            deviceType,
-            userId,
-          } = deviceFound
-          resolve({
-            id,
-            updatedAt,
-            createdAt,
-            customName,
-            deviceType,
-            user: {
-              id: userId,
-            },
-          })
+      authorized(
+        args.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
+          resolve(deviceFound.dataValues)
+
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   board(root, args, context) {
@@ -77,12 +60,7 @@ const QueryResolver = (
         Board,
         1,
         async (resolve, reject, boardFound) => {
-          resolve({
-            ...boardFound.dataValues,
-            owner: {
-              id: boardFound.ownerId,
-            },
-          })
+          resolve(boardFound.dataValues)
           context.billingUpdater.update(QUERY_COST)
         },
       ),

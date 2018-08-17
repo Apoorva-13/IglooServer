@@ -1,8 +1,10 @@
 import {
-  authenticated,
+  authorized,
   logErrorsPromise,
   findAllValues,
-  scalarPropsResolvers,
+  authorizedScalarPropsResolvers,
+  rolesResolver,
+  deviceToParents,
 } from './utilities'
 
 const QUERY_COST = 1
@@ -10,7 +12,7 @@ const QUERY_COST = 1
 const DeviceResolver = (
   Device,
   User,
-  Value,
+  Board,
   BoolValue,
   FloatValue,
   StringValue,
@@ -20,33 +22,32 @@ const DeviceResolver = (
   ColourValue,
   Notification,
 ) => ({
-  ...scalarPropsResolvers(Device, [
-    'createdAt',
-    'updatedAt',
-    'deviceType',
-    'customName',
-    'icon',
-    'index',
-    'online',
-    'signalStatus',
-    'batteryStatus',
-    'batteryCharging',
-  ]),
+  ...authorizedScalarPropsResolvers(
+    Device,
+    [
+      'createdAt',
+      'updatedAt',
+      'deviceType',
+      'customName',
+      'icon',
+      'index',
+      'online',
+      'signalStatus',
+      'batteryStatus',
+      'batteryCharging',
+    ],
+    deviceToParents(Board),
+  ),
   values(root, args, context) {
     return logErrorsPromise(
       'Device values resolver',
       110,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
           const valuesFound = await findAllValues(
             {
               BoolValue,
@@ -66,105 +67,94 @@ const DeviceResolver = (
           resolve(valuesFound)
 
           context.billingUpdater.update(QUERY_COST * valuesFound.length)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
-  user(root, args, context) {
+  owner(root, args, context) {
     return logErrorsPromise(
-      'Device user resolver',
-      111,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the user id
-          resolve({ id: deviceFound.userId })
+      'user BoardResolver',
+      902,
+      authorized(
+        root.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
+          resolve({
+            id: deviceFound.ownerId,
+          })
+
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
+  admins: rolesResolver('adminsIds', Device, deviceToParents(Board)),
+  editors: rolesResolver('editorsIds', Device, deviceToParents(Board)),
+  spectators: rolesResolver('spectatorsIds', Device, deviceToParents(Board)),
   board(root, args, context) {
     return logErrorsPromise(
       'Device board resolver',
       903,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
           // the Board resolver will take care of loading the other props,
           // it only needs to know the board id
           resolve(deviceFound.boardId ? { id: deviceFound.boardId } : null)
 
           if (deviceFound.boardId) context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   notifications(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',
       119,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
           const notifications = await Notification.findAll({
             where: { deviceId: root.id },
           })
 
           resolve(notifications)
           context.billingUpdater.update(QUERY_COST * notifications.length)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   notificationsCount(root, args, context) {
     return logErrorsPromise(
       'notificationsCount device resolver',
       916,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        root.id,
+        context,
+        Device,
+        1,
+        async (resolve, reject, deviceFound) => {
           const count = await Notification.count({
             where: { deviceId: root.id },
           })
 
           resolve(count)
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
 })

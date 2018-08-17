@@ -626,10 +626,10 @@ type Board {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  owner: User
-  admins: [User]
-  editors: [User]
-  spectators: [User]
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   customName: String!
   avatar: String
   devices: [Device!]!
@@ -658,7 +658,10 @@ type Device {
   # Custom name gave by the end-user to the device
   customName: String
   values: [Value!]!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   board: Board
   icon: String
   notifications: [Notification!]!
