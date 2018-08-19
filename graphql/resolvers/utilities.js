@@ -148,41 +148,41 @@ const getPropsIfDefined = (args, props) => {
 
 const MUTATION_COST = 2
 // generic resolver for CreateXValue mutations
-const CreateGenericValue = (Device, Model, ValueModels, pubsub) => (
+const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
   root,
   args,
   context,
 ) =>
-  new Promise(authenticated(context, async (resolve, reject) => {
-    // looks for the device, if the device is owned by the user
-    // creates a Value in the database and returns
-    try {
-      const deviceFound = await Device.find({
-        where: { id: args.deviceId },
-      })
-      if (!deviceFound) {
-        reject('The supplied deviceId does not exist')
-      } else if (deviceFound.userId !== context.auth.userId) {
-        reject('You are not allowed to edit details about this device')
-      } else {
+  logErrorsPromise(
+    'CreateGenericValue',
+    112,
+    authorized(
+      args.deviceId,
+      context,
+      Device,
+      2,
+      async (resolve, reject, deviceFound) => {
         async function calculateIndex() {
           const valuesCountPromises = ValueModels.map(async model =>
             await model.count({ where: { deviceId: args.deviceId } }))
           const valuesCount = await Promise.all(valuesCountPromises)
 
           const newIndex = valuesCount.reduce((a, b) => a + b)
-
           return newIndex
         }
+
         const index =
-            args.index !== null && args.index !== undefined
-              ? args.index
-              : await calculateIndex()
+          args.index !== null && args.index !== undefined
+            ? args.index
+            : await calculateIndex()
 
         const newValue = (await Model.create({
           ...args,
           tileSize: args.tileSize || 'NORMAL',
-          userId: context.auth.userId,
+          ownerId: context.auth.userId,
+          adminsIds: [],
+          editorsIds: [],
+          spectatorsIds: [],
           index,
         })).dataValues
 
@@ -203,12 +203,10 @@ const CreateGenericValue = (Device, Model, ValueModels, pubsub) => (
 
         resolve(resolveObj)
         context.billingUpdater.update(MUTATION_COST)
-      }
-    } catch (e) /* istanbul ignore next */ {
-      logger.error(e, { label: 'CreateGenericValue', code: 112 })
-      reject('112 - An internal error occured, please contact us. The error code is 112')
-    }
-  }))
+      },
+      deviceToParents(Board),
+    ),
+  )
 
 const logErrorsPromise = (name, code, callback) =>
   new Promise(async (resolve, reject) => {
@@ -224,21 +222,22 @@ const logErrorsPromise = (name, code, callback) =>
     }
   })
 
-const genericValueMutation = (childModel, __resolveType, pubsub) => (
-  root,
-  args,
-  context,
-) =>
+const genericValueMutation = (
+  childModel,
+  __resolveType,
+  pubsub,
+  Device,
+  Board,
+) => (root, args, context) =>
   logErrorsPromise(
     'genericValue mutation',
     117,
-    authenticated(context, async (resolve, reject) => {
-      const valueFound = await childModel.find({ where: { id: args.id } })
-      if (!valueFound) {
-        reject('The requested resource does not exist')
-      } else if (valueFound.userId !== context.auth.userId) {
-        reject('You are not allowed to update this resource')
-      } else {
+    authorized(
+      args.id,
+      context,
+      childModel,
+      2,
+      async (resolve, reject, valueFound) => {
         const newValue = await valueFound.update(args)
         const resolveObj = {
           ...newValue.dataValues,
@@ -256,8 +255,9 @@ const genericValueMutation = (childModel, __resolveType, pubsub) => (
           userId: context.auth.userId,
         })
         context.billingUpdater.update(MUTATION_COST)
-      }
-    }),
+      },
+      valueToParents(Device, Board),
+    ),
   )
 
 const create2FSecret = (user) => {
@@ -359,59 +359,59 @@ const findAllValues = (
     ...booleanValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'BooleanValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...floatValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'FloatValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...stringValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'StringValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...colourValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'ColourValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...plotValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'PlotValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...stringPlotValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'StringPlotValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
     ...mapValues
       .map(value => ({
         ...value.dataValues,
-        user: { id: value.dataValues.userId },
+        owner: { id: value.dataValues.ownerId },
         device: { id: value.dataValues.deviceId },
         __resolveType: 'MapValue',
       }))
-      .filter(value => value.userId === userId),
+      .filter(value => value.ownerId === userId),
   ])
 }
 
@@ -426,6 +426,8 @@ const findValue = (
     StringPlotValue,
     MapValue,
   },
+  Device,
+  Board,
   query,
   userId,
 ) => {
@@ -505,11 +507,29 @@ const findValue = (
     plotValue,
   ])
     .then(values => values.reduce((acc, val) => val || acc, null))
-    .then((value) => {
+    .then(async (value) => {
       if (!value) throw new Error('The requested resource does not exist')
-      else if (value.userId !== userId) {
-        throw new Error('You are not allowed to access details about this resource')
-      } else return value
+      else {
+        const deviceFound = await Device.find({
+          where: { id: value.deviceId },
+        })
+        const boardFound = deviceFound.boardId
+          ? await Board.find({
+            where: { id: deviceFound.boardId },
+          })
+          : null
+
+        if (
+          authorizationLevel(
+            boardFound
+              ? [value, deviceFound, boardFound]
+              : [value, deviceFound],
+            userId,
+          ) < 1
+        ) {
+          throw new Error('You are not allowed to access details about this resource')
+        } else return value
+      }
     })
 }
 
@@ -812,6 +832,17 @@ const deviceToParents = Board => async (deviceFound) => {
   return []
 }
 
+const valueToParents = (Device, Board) => async (valueFound) => {
+  const deviceFound = await Device.find({
+    where: { id: valueFound.deviceId },
+  })
+  const boardFound = deviceFound.boardId
+    ? await Board.find({ where: { id: deviceFound.boardId } })
+    : null
+
+  return boardFound ? [deviceFound, boardFound] : [deviceFound]
+}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -840,4 +871,5 @@ module.exports = {
   authorizedScalarPropsResolvers,
   rolesResolver,
   deviceToParents,
+  valueToParents,
 }

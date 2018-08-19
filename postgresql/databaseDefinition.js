@@ -197,7 +197,7 @@ const databaseDefinition = (sequelize) => {
 
   const Value = {
     ...selfId,
-    ...otherId('userId', User),
+    ...rolesIds,
     ...otherId('deviceId', Device),
     valueDetails: {
       type: Sequelize.STRING,

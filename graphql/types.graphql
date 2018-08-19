@@ -738,7 +738,10 @@ interface Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -752,7 +755,10 @@ type FloatValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -771,7 +777,10 @@ type StringValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -788,7 +797,10 @@ type PlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -809,7 +821,10 @@ type StringPlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -825,7 +840,10 @@ type BooleanValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -840,7 +858,10 @@ type ColourValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -857,7 +878,10 @@ type MapValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String

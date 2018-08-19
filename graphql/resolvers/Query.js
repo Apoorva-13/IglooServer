@@ -81,6 +81,8 @@ const QueryResolver = (
             StringPlotValue,
             MapValue,
           },
+          Device,
+          Board,
           { where: { id: args.id } },
           context.auth.userId,
         ).catch(e => reject(e))

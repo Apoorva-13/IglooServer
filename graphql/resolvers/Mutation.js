@@ -345,6 +345,42 @@ const MutationResolver = (
   },
   shareBoard: genericShare(Board, 'boardId'),
   shareDevice: genericShare(Device, 'deviceId', deviceToParents(Board)),
+  // TODO: implement shareValue, this is just a copy paste
+  shareValue: (root, args, context) =>
+    logErrorsPromise(
+      'genericShare',
+      921,
+      authorized(
+        args.valueId,
+        context,
+        Model,
+        3,
+        async (resolve, reject, found) => {
+          // clear previous role
+          let { adminsIds, editorsIds, spectatorsIds } = found
+
+          adminsIds = adminsIds.filter(id => id !== args.userId)
+          editorsIds = adminsIds.filter(id => id !== args.userId)
+          spectatorsIds = adminsIds.filter(id => id !== args.userId)
+
+          // add new role
+          if (args.role === 'ADMIN') adminsIds.push(args.userId)
+          else if (args.role === 'EDITOR') editorsIds.push(args.userId)
+          else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
+
+          const updated = await found.update({
+            adminsIds,
+            editorsIds,
+            spectatorsIds,
+          })
+
+          resolve(updated)
+
+          context.billingUpdater.update(MUTATION_COST)
+        },
+        childToParents,
+      ),
+    ),
   CreateBoard(root, args, context) {
     return logErrorsPromise(
       'CreateBoard',
@@ -423,6 +459,7 @@ const MutationResolver = (
   },
   CreateFloatValue: CreateGenericValue(
     Device,
+    Board,
     FloatValue,
     [
       FloatValue,
@@ -437,6 +474,7 @@ const MutationResolver = (
   ),
   CreateStringValue: CreateGenericValue(
     Device,
+    Board,
     StringValue,
     [
       FloatValue,
@@ -451,6 +489,7 @@ const MutationResolver = (
   ),
   CreateBooleanValue: CreateGenericValue(
     Device,
+    Board,
     BoolValue,
     [
       FloatValue,
@@ -465,6 +504,7 @@ const MutationResolver = (
   ),
   CreateColourValue: CreateGenericValue(
     Device,
+    Board,
     ColourValue,
     [
       FloatValue,
@@ -479,6 +519,7 @@ const MutationResolver = (
   ),
   CreateMapValue: CreateGenericValue(
     Device,
+    Board,
     MapValue,
     [
       FloatValue,
@@ -493,6 +534,7 @@ const MutationResolver = (
   ),
   CreatePlotValue: CreateGenericValue(
     Device,
+    Board,
     PlotValue,
     [
       FloatValue,
@@ -507,6 +549,7 @@ const MutationResolver = (
   ),
   CreateStringPlotValue: CreateGenericValue(
     Device,
+    Board,
     StringPlotValue,
     [
       FloatValue,
@@ -733,16 +776,48 @@ const MutationResolver = (
       ),
     )
   },
-  floatValue: genericValueMutation(FloatValue, 'FloatValue', pubsub),
-  stringValue: genericValueMutation(StringValue, 'StringValue', pubsub),
-  booleanValue: genericValueMutation(BoolValue, 'BooleanValue', pubsub),
-  colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
-  mapValue: genericValueMutation(MapValue, 'MapValue', pubsub),
-  plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
+  floatValue: genericValueMutation(
+    FloatValue,
+    'FloatValue',
+    pubsub,
+    Device,
+    Board,
+  ),
+  stringValue: genericValueMutation(
+    StringValue,
+    'StringValue',
+    pubsub,
+    Device,
+    Board,
+  ),
+  booleanValue: genericValueMutation(
+    BoolValue,
+    'BooleanValue',
+    pubsub,
+    Device,
+    Board,
+  ),
+  colourValue: genericValueMutation(
+    ColourValue,
+    'ColourValue',
+    pubsub,
+    Device,
+    Board,
+  ),
+  mapValue: genericValueMutation(MapValue, 'MapValue', pubsub, Device, Board),
+  plotValue: genericValueMutation(
+    PlotValue,
+    'PlotValue',
+    pubsub,
+    Device,
+    Board,
+  ),
   stringPlotValue: genericValueMutation(
     StringPlotValue,
     'StringPlotValue',
     pubsub,
+    Device,
+    Board,
   ),
   plotNode(root, args, context) {
     return logErrorsPromise(

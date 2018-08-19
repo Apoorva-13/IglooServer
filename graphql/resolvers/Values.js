@@ -1,70 +1,113 @@
 import {
   authenticated,
+  authorized,
   retrieveScalarProp,
+  authorizedScalarPropsResolvers,
   logErrorsPromise,
+  valueToParents,
 } from './utilities'
 
 const QUERY_COST = 1
 
-const GenericResolver = Model => ({
-  createdAt: retrieveScalarProp(Model, 'createdAt'),
-  updatedAt: retrieveScalarProp(Model, 'updatedAt'),
-  permission: retrieveScalarProp(Model, 'permission'),
-  relevance: retrieveScalarProp(Model, 'relevance'),
-  valueDetails: retrieveScalarProp(Model, 'valueDetails'),
-  tileSize: retrieveScalarProp(Model, 'tileSize'),
-  customName: retrieveScalarProp(Model, 'customName'),
-  value: retrieveScalarProp(Model, 'value'),
-  index: retrieveScalarProp(Model, 'index'),
-})
+const GenericResolver = (Model, Device, Board) =>
+  authorizedScalarPropsResolvers(
+    Model,
+    [
+      'createdAt',
+      'updatedAt',
+      'permission',
+      'relevance',
+      'valueDetails',
+      'tileSize',
+      'customName',
+      'value',
+      'index',
+    ],
+    valueToParents(Device, Board),
+  )
 
 const BooleanValueResolver = GenericResolver
-const FloatValueResolver = Model => ({
-  ...GenericResolver(Model),
-  precision: retrieveScalarProp(Model, 'precision'),
-  boundaries: retrieveScalarProp(Model, 'boundaries'),
+const FloatValueResolver = (Model, Device, Board) => ({
+  ...GenericResolver(Model, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    ['precision', 'boundaries'],
+    valueToParents(Device, Board),
+  ),
 })
-const StringValueResolver = Model => ({
-  ...GenericResolver(Model),
-  maxChars: retrieveScalarProp(Model, 'maxChars'),
-  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
+const StringValueResolver = (Model, Device, Board) => ({
+  ...GenericResolver(Model, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    ['maxChars', 'allowedValues'],
+    valueToParents(Device, Board),
+  ),
 })
-const ColourValueResolver = Model => ({
-  ...GenericResolver(Model),
-  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
+const ColourValueResolver = (Model, Device, Board) => ({
+  ...GenericResolver(Model, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    ['allowedValues'],
+    valueToParents(Device, Board),
+  ),
 })
-const PlotValueResolver = (PlotValue, PlotNode) => ({
-  ...GenericResolver(PlotValue),
-  precision: retrieveScalarProp(PlotValue, 'precision'),
-  boundaries: retrieveScalarProp(PlotValue, 'boundaries'),
-  threshold: retrieveScalarProp(PlotValue, 'threshold'),
+const PlotValueResolver = (PlotValue, PlotNode, Device, Board) => ({
+  ...GenericResolver(PlotValue, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    PlotValue,
+    ['precision', 'boundaries', 'threshold'],
+    valueToParents(Device, Board),
+  ),
   // overriding GenericResolver's value
   value: (root, args, context) =>
     logErrorsPromise(
       'PlotValueResolver',
       135,
-      authenticated(context, async (resolve, reject) => {
-        const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
-        resolve(nodes)
-        context.billingUpdater.update(QUERY_COST * nodes.length)
-      }),
+      authorized(
+        root.id,
+        context,
+        PlotValue,
+        1,
+        async (resolve, reject, plotFound) => {
+          const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
+          resolve(nodes)
+          context.billingUpdater.update(QUERY_COST * nodes.length)
+        },
+        valueToParents(Device, Board),
+      ),
     ),
 })
-const StringPlotValueResolver = (StringPlotValue, StringPlotNode) => ({
-  ...GenericResolver(StringPlotValue),
-  allowedValues: retrieveScalarProp(StringPlotValue, 'allowedValues'),
+const StringPlotValueResolver = (
+  StringPlotValue,
+  StringPlotNode,
+  Device,
+  Board,
+) => ({
+  ...GenericResolver(StringPlotValue, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    StringPlotValue,
+    ['allowedValues'],
+    valueToParents(Device, Board),
+  ),
   // overriding GenericResolver's value
   value: (root, args, context) =>
     logErrorsPromise(
       'StringPlotValueResolver',
       135,
-      authenticated(context, async (resolve, reject) => {
-        const nodes = await StringPlotNode.findAll({
-          where: { plotId: root.id },
-        })
-        resolve(nodes)
-        context.billingUpdater.update(QUERY_COST * nodes.length)
-      }),
+      authorized(
+        root.id,
+        context,
+        StringPlotValue,
+        1,
+        async (resolve, reject, plotFound) => {
+          const nodes = await StringPlotNode.findAll({
+            where: { plotId: root.id },
+          })
+          resolve(nodes)
+          context.billingUpdater.update(QUERY_COST * nodes.length)
+        },
+        valueToParents(Device, Board),
+      ),
     ),
 })
 const PlotNodeResolver = PlotNode => ({
@@ -141,22 +184,31 @@ const PlotNodeResolver = PlotNode => ({
   },
 })
 
-export default ({
-  BoolValue,
-  FloatValue,
-  StringValue,
-  ColourValue,
-  PlotValue,
-  PlotNode,
-  StringPlotValue,
-  StringPlotNode,
-}) => ({
-  BooleanValue: BooleanValueResolver(BoolValue),
-  FloatValue: FloatValueResolver(FloatValue),
-  StringValue: StringValueResolver(StringValue),
-  ColourValue: ColourValueResolver(ColourValue),
-  PlotValue: PlotValueResolver(PlotValue, PlotNode),
+export default (
+  {
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    PlotNode,
+    StringPlotValue,
+    StringPlotNode,
+  },
+  Device,
+  Board,
+) => ({
+  BooleanValue: BooleanValueResolver(BoolValue, Device, Board),
+  FloatValue: FloatValueResolver(FloatValue, Device, Board),
+  StringValue: StringValueResolver(StringValue, Device, Board),
+  ColourValue: ColourValueResolver(ColourValue, Device, Board),
+  PlotValue: PlotValueResolver(PlotValue, PlotNode, Device, Board),
   PlotNode: PlotNodeResolver(PlotNode),
-  StringPlotValue: StringPlotValueResolver(StringPlotValue, StringPlotNode),
+  StringPlotValue: StringPlotValueResolver(
+    StringPlotValue,
+    StringPlotNode,
+    Device,
+    Board,
+  ),
   StringPlotNode: PlotNodeResolver(StringPlotNode),
 })

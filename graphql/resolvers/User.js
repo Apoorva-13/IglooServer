@@ -182,7 +182,14 @@ const UserResolver = (
               MapValue,
             },
             {
-              where: { userId: root.id },
+              where: {
+                [Op.or]: [
+                  { ownerId: root.id },
+                  { adminsIds: { [Op.contains]: [root.id] } },
+                  { editorsIds: { [Op.contains]: [root.id] } },
+                  { spectatorsIds: { [Op.contains]: [root.id] } },
+                ],
+              },
             },
             context.auth.userId,
           )

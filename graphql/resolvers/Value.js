@@ -1,4 +1,8 @@
-import { authenticated, logErrorsPromise } from './utilities'
+import {
+  authenticated,
+  authorizationLevel,
+  logErrorsPromise,
+} from './utilities'
 
 const QUERY_COST = 1
 
@@ -28,7 +32,10 @@ const firstResolve = promises =>
   })
 // ^^^^^^^^^^^^^^^^
 
-const retrieveValueScalarProp = (SequelizeValues, prop) => (root, context) =>
+const retrieveValueScalarProp = (Values, prop, Device, Board) => (
+  root,
+  context,
+) =>
   logErrorsPromise(
     'retrieveValueScalarProp',
     130,
@@ -36,7 +43,7 @@ const retrieveValueScalarProp = (SequelizeValues, prop) => (root, context) =>
       const NOT_ALLOWED =
         'You are not allowed to access details about this resource'
       const NOT_EXIST = 'The requested resource does not exist'
-      const models = Object.values(SequelizeValues)
+      const models = Object.values(Values)
 
       // race all the models to find the looked for id, if a value is found
       // it is returned otherwise the correct error is returned
@@ -49,11 +56,29 @@ const retrieveValueScalarProp = (SequelizeValues, prop) => (root, context) =>
           /* istanbul ignore next */
           if (!resourceFound) {
             rejectInner(NOT_EXIST)
-          } else if (resourceFound.userId !== context.auth.userId) {
-            /* istanbul ignore next */
-            rejectInner(NOT_ALLOWED)
           } else {
-            resolveInner(resourceFound[prop])
+            const deviceFound = await Device.find({
+              where: { id: resourceFound.deviceId },
+            })
+            const boardFound = deviceFound.boardId
+              ? await Board.find({
+                where: { id: deviceFound.boardId },
+              })
+              : null
+
+            if (
+              authorizationLevel(
+                boardFound
+                  ? [resourceFound, deviceFound, boardFound]
+                  : [resourceFound, deviceFound],
+                context.auth.userId,
+              ) < 1
+            ) {
+              /* istanbul ignore next */
+              rejectInner(NOT_ALLOWED)
+            } else {
+              resolveInner(resourceFound[prop])
+            }
           }
         })))
         .then(propFound => resolve(propFound))
@@ -71,15 +96,28 @@ const retrieveValueScalarProp = (SequelizeValues, prop) => (root, context) =>
     }),
   )
 
-const ValueResolver = SequelizeValues => ({
-  createdAt: retrieveValueScalarProp(SequelizeValues, 'createdAt'),
-  updatedAt: retrieveValueScalarProp(SequelizeValues, 'updatedAt'),
-  permission: retrieveValueScalarProp(SequelizeValues, 'permission'),
-  relevance: retrieveValueScalarProp(SequelizeValues, 'relevance'),
-  valueDetails: retrieveValueScalarProp(SequelizeValues, 'valueDetails'),
-  tileSize: retrieveValueScalarProp(SequelizeValues, 'tileSize'),
-  customName: retrieveValueScalarProp(SequelizeValues, 'customName'),
-  index: retrieveValueScalarProp(SequelizeValues, 'index'),
+const valueScalarPropsResolvers = (Model, props, Device, Board) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = retrieveValueScalarProp(Model, prop, Device, Board)
+    return acc
+  }, {})
+
+const ValueResolver = (Values, Device, Board) => ({
+  ...valueScalarPropsResolvers(
+    Values,
+    [
+      'createdAt',
+      'updatedAt',
+      'permission',
+      'relevance',
+      'valueDetails',
+      'tileSize',
+      'customName',
+      'index',
+    ],
+    Device,
+    Board,
+  ),
   __resolveType: (root, context) =>
     logErrorsPromise(
       'value resolve type',
@@ -88,11 +126,11 @@ const ValueResolver = SequelizeValues => ({
         const NOT_ALLOWED =
           'You are not allowed to access details about this resource'
         const NOT_EXIST = 'The requested resource does not exist'
-        const models = Object.values(SequelizeValues)
+        const models = Object.values(Values)
 
         // TODO: resolve this stuff
         function indexToType(idx) {
-          const modelName = Object.keys(SequelizeValues)[idx]
+          const modelName = Object.keys(Values)[idx]
 
           return modelName === 'BoolValue' ? 'BooleanValue' : modelName
         }
@@ -104,14 +142,33 @@ const ValueResolver = SequelizeValues => ({
             const resourceFound = await Model.find({
               where: { id: root.id },
             })
+
             /* istanbul ignore next */
             if (!resourceFound) {
               rejectInner(NOT_EXIST)
-            } else if (resourceFound.userId !== context.auth.userId) {
-              /* istanbul ignore next */
-              rejectInner(NOT_ALLOWED)
             } else {
-              resolveInner(indexToType(idx))
+              const deviceFound = await Device.find({
+                where: { id: resourceFound.deviceId },
+              })
+              const boardFound = deviceFound.boardId
+                ? await Board.find({
+                  where: { id: deviceFound.boardId },
+                })
+                : null
+
+              if (
+                authorizationLevel(
+                  boardFound
+                    ? [resourceFound, deviceFound, boardFound]
+                    : [resourceFound, deviceFound],
+                  context.auth.userId,
+                ) < 1
+              ) {
+                /* istanbul ignore next */
+                rejectInner(NOT_ALLOWED)
+              } else {
+                resolveInner(indexToType(idx))
+              }
             }
           }))
 
