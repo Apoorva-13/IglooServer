@@ -843,6 +843,71 @@ const valueToParents = (Device, Board) => async (valueFound) => {
   return boardFound ? [deviceFound, boardFound] : [deviceFound]
 }
 
+const authorizedValue = (
+  id,
+  context,
+  Values,
+  authorizationRequired,
+  callbackFunc,
+  Device,
+  Board,
+) =>
+  authenticated(context, async (resolve, reject) => {
+    const NOT_ALLOWED =
+      'You are not allowed to access details about this resource'
+    const NOT_EXIST = 'The requested resource does not exist'
+    const models = Object.values(Values)
+
+    const findPromises = models.map(async (Model) => {
+      const resourceFound = await Model.find({
+        where: { id },
+      })
+
+      if (!resourceFound) {
+        throw new Error(NOT_EXIST)
+      } else {
+        const deviceFound = await Device.find({
+          where: { id: resourceFound.deviceId },
+        })
+        const boardFound = deviceFound.boardId
+          ? await Board.find({
+            where: { id: deviceFound.boardId },
+          })
+          : null
+
+        if (
+          authorizationLevel(
+            boardFound
+              ? [resourceFound, deviceFound, boardFound]
+              : [resourceFound, deviceFound],
+            context.auth.userId,
+          ) < authorizationRequired
+        ) {
+          throw new Error(NOT_ALLOWED)
+        } else {
+          return resourceFound
+        }
+      }
+    })
+    // race all the models to find the looked for id, if a value is found
+    // it is returned otherwise the correct error is returned
+    const resourceFound = await firstResolve(findPromises).catch((e) => {
+      // choose the correct error, because normally most models
+      // will reject with NOT_EXIST, simply because the value
+      // looked for is of another type
+
+      reject(e.reduce(
+        (acc, val) =>
+          (acc === NOT_ALLOWED || val === NOT_ALLOWED
+            ? NOT_ALLOWED
+            : NOT_EXIST),
+        NOT_EXIST,
+      ))
+    })
+
+    return callbackFunc(resolve, reject, resourceFound)
+  })
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -872,4 +937,6 @@ module.exports = {
   rolesResolver,
   deviceToParents,
   valueToParents,
+  authorizedValue,
+  firstResolve,
 }

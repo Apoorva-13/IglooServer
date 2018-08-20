@@ -17,6 +17,7 @@ import {
   sendTokenCreatedEmail,
   authorized,
   deviceToParents,
+  authorizedValue,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -345,19 +346,26 @@ const MutationResolver = (
   },
   shareBoard: genericShare(Board, 'boardId'),
   shareDevice: genericShare(Device, 'deviceId', deviceToParents(Board)),
-  // TODO: implement shareValue, this is just a copy paste
   shareValue: (root, args, context) =>
     logErrorsPromise(
-      'genericShare',
+      'shareValue',
       921,
-      authorized(
+      authorizedValue(
         args.valueId,
         context,
-        Model,
+        {
+          FloatValue,
+          StringValue,
+          BoolValue,
+          ColourValue,
+          MapValue,
+          PlotValue,
+          StringPlotValue,
+        },
         3,
-        async (resolve, reject, found) => {
+        async (resolve, reject, valueFound) => {
           // clear previous role
-          let { adminsIds, editorsIds, spectatorsIds } = found
+          let { adminsIds, editorsIds, spectatorsIds } = valueFound
 
           adminsIds = adminsIds.filter(id => id !== args.userId)
           editorsIds = adminsIds.filter(id => id !== args.userId)
@@ -368,7 +376,7 @@ const MutationResolver = (
           else if (args.role === 'EDITOR') editorsIds.push(args.userId)
           else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
 
-          const updated = await found.update({
+          const updated = await valueFound.update({
             adminsIds,
             editorsIds,
             spectatorsIds,
@@ -378,7 +386,8 @@ const MutationResolver = (
 
           context.billingUpdater.update(MUTATION_COST)
         },
-        childToParents,
+        Device,
+        Board,
       ),
     ),
   CreateBoard(root, args, context) {
