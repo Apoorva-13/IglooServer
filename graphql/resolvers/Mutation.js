@@ -38,7 +38,7 @@ const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
-const genericShare = (Model, idField, childToParents) => (
+const genericShare = (Model, idField, User, childToParents) => (
   root,
   args,
   context,
@@ -52,17 +52,19 @@ const genericShare = (Model, idField, childToParents) => (
       Model,
       3,
       async (resolve, reject, found) => {
+        const userFound = await User.find({ where: { email: args.email } })
+
         // clear previous role
         let { adminsIds, editorsIds, spectatorsIds } = found
 
-        adminsIds = adminsIds.filter(id => id !== args.userId)
-        editorsIds = adminsIds.filter(id => id !== args.userId)
-        spectatorsIds = adminsIds.filter(id => id !== args.userId)
+        adminsIds = adminsIds.filter(id => id !== userFound.id)
+        editorsIds = adminsIds.filter(id => id !== userFound.id)
+        spectatorsIds = adminsIds.filter(id => id !== userFound.id)
 
         // add new role
-        if (args.role === 'ADMIN') adminsIds.push(args.userId)
-        else if (args.role === 'EDITOR') editorsIds.push(args.userId)
-        else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
+        if (args.role === 'ADMIN') adminsIds.push(userFound.id)
+        else if (args.role === 'EDITOR') editorsIds.push(userFound.id)
+        else if (args.role === 'SPECTATOR') spectatorsIds.push(userFound.id)
 
         const updated = await found.update({
           adminsIds,
@@ -344,8 +346,8 @@ const MutationResolver = (
       }),
     )
   },
-  shareBoard: genericShare(Board, 'boardId'),
-  shareDevice: genericShare(Device, 'deviceId', deviceToParents(Board)),
+  shareBoard: genericShare(Board, 'boardId', User),
+  shareDevice: genericShare(Device, 'deviceId', User, deviceToParents(Board)),
   shareValue: (root, args, context) =>
     logErrorsPromise(
       'shareValue',
@@ -364,17 +366,19 @@ const MutationResolver = (
         },
         3,
         async (resolve, reject, valueFound) => {
+          const userFound = await User.find({ where: { email: args.email } })
+
           // clear previous role
           let { adminsIds, editorsIds, spectatorsIds } = valueFound
 
-          adminsIds = adminsIds.filter(id => id !== args.userId)
-          editorsIds = adminsIds.filter(id => id !== args.userId)
-          spectatorsIds = adminsIds.filter(id => id !== args.userId)
+          adminsIds = adminsIds.filter(id => id !== userFound.id)
+          editorsIds = adminsIds.filter(id => id !== userFound.id)
+          spectatorsIds = adminsIds.filter(id => id !== userFound.id)
 
           // add new role
-          if (args.role === 'ADMIN') adminsIds.push(args.userId)
-          else if (args.role === 'EDITOR') editorsIds.push(args.userId)
-          else if (args.role === 'SPECTATOR') spectatorsIds.push(args.userId)
+          if (args.role === 'ADMIN') adminsIds.push(userFound.id)
+          else if (args.role === 'EDITOR') editorsIds.push(userFound.id)
+          else if (args.role === 'SPECTATOR') spectatorsIds.push(userFound.id)
 
           const updated = await valueFound.update({
             adminsIds,
