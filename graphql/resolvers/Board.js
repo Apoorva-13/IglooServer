@@ -3,6 +3,7 @@ import {
   authorizedScalarPropsResolvers,
   authorized,
   rolesResolver,
+  instanceToRole,
 } from './utilities'
 
 const QUERY_COST = 1
@@ -78,6 +79,23 @@ const BoardResolver = (Board, Device, Notification) => ({
 
           resolve(totalCount)
           context.billingUpdater.update(QUERY_COST)
+        },
+      ),
+    )
+  },
+  myRole(root, args, context) {
+    return logErrorsPromise(
+      'myRole BoardResolver',
+      931,
+      authorized(
+        root.id,
+        context,
+        Board,
+        1,
+        async (resolve, reject, boardFound) => {
+          const myRole = instanceToRole([boardFound], context.auth.userId)
+
+          resolve(myRole)
         },
       ),
     )

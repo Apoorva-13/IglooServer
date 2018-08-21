@@ -318,6 +318,7 @@ const firstResolve = promises =>
     })
   })
 
+// !! doesn't check if the user has the authorizations needed
 const findAllValues = (
   {
     BoolValue,
@@ -356,62 +357,48 @@ const findAllValues = (
     stringPlotValues,
     mapValues,
   ]) => [
-    ...booleanValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'BooleanValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...floatValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'FloatValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...stringValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'StringValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...colourValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'ColourValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...plotValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'PlotValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...stringPlotValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'StringPlotValue',
-      }))
-      .filter(value => value.ownerId === userId),
-    ...mapValues
-      .map(value => ({
-        ...value.dataValues,
-        owner: { id: value.dataValues.ownerId },
-        device: { id: value.dataValues.deviceId },
-        __resolveType: 'MapValue',
-      }))
-      .filter(value => value.ownerId === userId),
+    ...booleanValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'BooleanValue',
+    })),
+    ...floatValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'FloatValue',
+    })),
+    ...stringValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'StringValue',
+    })),
+    ...colourValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'ColourValue',
+    })),
+    ...plotValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'PlotValue',
+    })),
+    ...stringPlotValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'StringPlotValue',
+    })),
+    ...mapValues.map(value => ({
+      ...value.dataValues,
+      owner: { id: value.dataValues.ownerId },
+      device: { id: value.dataValues.deviceId },
+      __resolveType: 'MapValue',
+    })),
   ])
 }
 
@@ -751,7 +738,7 @@ function authorized(
         /* istanbul ignore next */
         reject('You are not allowed to access details about this resource')
       } else {
-        callback(resolve, reject, found)
+        callback(resolve, reject, found, [found, ...others])
       }
     },
     acceptedTokenTypes,
@@ -875,23 +862,22 @@ const authorizedValue = (
           })
           : null
 
+        const valueAndParents = boardFound
+          ? [resourceFound, deviceFound, boardFound]
+          : [resourceFound, deviceFound]
         if (
-          authorizationLevel(
-            boardFound
-              ? [resourceFound, deviceFound, boardFound]
-              : [resourceFound, deviceFound],
-            context.auth.userId,
-          ) < authorizationRequired
+          authorizationLevel(valueAndParents, context.auth.userId) <
+          authorizationRequired
         ) {
           throw new Error(NOT_ALLOWED)
         } else {
-          return resourceFound
+          return [resourceFound, valueAndParents]
         }
       }
     })
     // race all the models to find the looked for id, if a value is found
     // it is returned otherwise the correct error is returned
-    const resourceFound = await firstResolve(findPromises).catch((e) => {
+    const resourcesFound = await firstResolve(findPromises).catch((e) => {
       // choose the correct error, because normally most models
       // will reject with NOT_EXIST, simply because the value
       // looked for is of another type
@@ -905,8 +891,25 @@ const authorizedValue = (
       ))
     })
 
-    return callbackFunc(resolve, reject, resourceFound)
+    return callbackFunc(resolve, reject, ...resourcesFound)
   })
+
+const instanceToRole = (instances, userId) => {
+  const roleLevel = authorizationLevel(instances, userId)
+
+  switch (roleLevel) {
+    case 4:
+      return 'OWNER'
+    case 3:
+      return 'ADMIN'
+    case 2:
+      return 'EDITOR'
+    case 1:
+      return 'SPECTATOR'
+    case 0:
+      return null
+  }
+}
 
 module.exports = {
   authenticated,
@@ -939,4 +942,5 @@ module.exports = {
   valueToParents,
   authorizedValue,
   firstResolve,
+  instanceToRole,
 }

@@ -5,12 +5,13 @@ import {
   authorizedScalarPropsResolvers,
   logErrorsPromise,
   valueToParents,
+  instanceToRole,
 } from './utilities'
 
 const QUERY_COST = 1
 
-const GenericResolver = (Model, Device, Board) =>
-  authorizedScalarPropsResolvers(
+const GenericResolver = (Model, Device, Board) => ({
+  ...authorizedScalarPropsResolvers(
     Model,
     [
       'createdAt',
@@ -24,7 +25,28 @@ const GenericResolver = (Model, Device, Board) =>
       'index',
     ],
     valueToParents(Device, Board),
-  )
+  ),
+  myRole(root, args, context) {
+    return logErrorsPromise(
+      'GenericValueResolver myRole',
+      932,
+      authorized(
+        root.id,
+        context,
+        Model,
+        1,
+        async (resolve, reject, valueFound, valueAndParentsFound) => {
+          const myRole = instanceToRole(
+            valueAndParentsFound,
+            context.auth.userId,
+          )
+          resolve(myRole)
+        },
+        valueToParents(Device, Board),
+      ),
+    )
+  },
+})
 
 const BooleanValueResolver = GenericResolver
 const FloatValueResolver = (Model, Device, Board) => ({

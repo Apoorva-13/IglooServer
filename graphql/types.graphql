@@ -622,10 +622,18 @@ type User {
   emailIsVerified: Boolean
 }
 
+enum RoleExtended {
+  OWNER
+  ADMIN
+  EDITOR
+  SPECTATOR
+}
+
 type Board {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -658,6 +666,7 @@ type Device {
   # Custom name gave by the end-user to the device
   customName: String
   values: [Value!]!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -738,6 +747,7 @@ interface Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -755,6 +765,7 @@ type FloatValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -777,6 +788,7 @@ type StringValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -797,6 +809,7 @@ type PlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -821,6 +834,7 @@ type StringPlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -840,6 +854,7 @@ type BooleanValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -858,6 +873,7 @@ type ColourValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
@@ -878,6 +894,7 @@ type MapValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
+  myRole: RoleExtended!
   owner: User!
   admins: [User!]!
   editors: [User!]!
