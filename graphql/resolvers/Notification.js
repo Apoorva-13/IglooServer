@@ -7,7 +7,7 @@ import {
 const QUERY_COST = 1
 
 const UserResolver = (Notification, User, Device) => ({
-  content: retrieveScalarProp(Notification, 'content'),
+  // content: retrieveScalarProp(Notification, 'content'),
   date: retrieveScalarProp(Notification, 'date'),
   visualized: retrieveScalarProp(Notification, 'visualized'),
   snackbarVisualized: retrieveScalarProp(Notification, 'snackbarVisualized'),
