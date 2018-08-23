@@ -907,6 +907,80 @@ const instancesToSharedIds = instances =>
     [],
   )
 
+const inheritAuthorized = (
+  ownId,
+  ownModel,
+  ownIstanceToParentId,
+  context,
+  parentModel,
+  authorizationRequired,
+  callback,
+  childToParents,
+  acceptedTokenTypes,
+) => async (resolve, reject) => {
+  const entityFound = await ownModel.find({
+    where: { id: ownId },
+  })
+
+  if (!entityFound) {
+    throw new Error('The requested resource does not exist')
+  } else {
+    return authorized(
+      ownIstanceToParentId(entityFound),
+      context,
+      parentModel,
+      authorizationRequired,
+      (resolve, reject, parentFound, allParents) => callback(resolve, reject, entityFound, parentFound, allParents),
+      childToParents,
+      acceptedTokenTypes,
+    )(resolve, reject)
+  }
+}
+
+const inheritAuthorizedRetrieveScalarProp = (
+  Model,
+  prop,
+  ownIstanceToParentId,
+  parentModel,
+  childToParents,
+  acceptedTokenTypes,
+) => (root, args, context) =>
+  logErrorsPromise(
+    'inheritAuthorizedRetrieveScalarProp',
+    1003,
+    inheritAuthorized(
+      root.id,
+      Model,
+      ownIstanceToParentId,
+      context,
+      parentModel,
+      1,
+      (resolve, reject, resourceFound) => resolve(resourceFound[prop]),
+      childToParents,
+      acceptedTokenTypes,
+    ),
+  )
+
+const inheritAuthorizedScalarPropsResolvers = (
+  Model,
+  props,
+  ownIstanceToParentId,
+  parentModel,
+  childToParents,
+  acceptedTokenTypes,
+) =>
+  props.reduce((acc, prop) => {
+    acc[prop] = inheritAuthorizedRetrieveScalarProp(
+      Model,
+      prop,
+      ownIstanceToParentId,
+      parentModel,
+      childToParents,
+      acceptedTokenTypes,
+    )
+    return acc
+  }, {})
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -940,4 +1014,6 @@ module.exports = {
   instanceToRole,
   instancesToSharedIds,
   subscriptionFilterOwnedOrShared,
+  inheritAuthorized,
+  inheritAuthorizedScalarPropsResolvers,
 }

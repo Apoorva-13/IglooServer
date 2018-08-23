@@ -21,6 +21,7 @@ import {
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
+import { Op } from 'sequelize'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -979,7 +980,11 @@ const MutationResolver = (
 
           if (!userFound.quietMode) {
             const notificationSubscriptions = await WebPushSubscription.findAll({
-              where: { userId: context.auth.userId },
+              where: {
+                userId: {
+                  [Op.in]: deviceSharedIds,
+                },
+              },
             })
 
             notificationSubscriptions.map(notificationSubscription =>

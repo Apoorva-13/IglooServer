@@ -1,60 +1,58 @@
 import {
   authenticated,
-  retrieveScalarProp,
+  inheritAuthorized,
   logErrorsPromise,
+  inheritAuthorizedScalarPropsResolvers,
+  deviceToParents,
 } from './utilities'
 
 const QUERY_COST = 1
+const notificationToParent = notificationFound => notificationFound.deviceId
 
-const UserResolver = (Notification, User, Device) => ({
-  // content: retrieveScalarProp(Notification, 'content'),
-  date: retrieveScalarProp(Notification, 'date'),
-  visualized: retrieveScalarProp(Notification, 'visualized'),
-  snackbarVisualized: retrieveScalarProp(Notification, 'snackbarVisualized'),
+const UserResolver = (Notification, User, Device, Board) => ({
+  ...inheritAuthorizedScalarPropsResolvers(
+    Notification,
+    ['content', 'date', 'visualized', 'snackbarVisualized'],
+    notificationToParent,
+    Device,
+    deviceToParents(Board),
+  ),
   user(root, args, context) {
     return logErrorsPromise(
       'Notification user resolver',
       120,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the user id
+      inheritAuthorized(
+        root.id,
+        Notification,
+        notificationToParent,
+        context,
+        Device,
+        1,
+        async (resolve, reject, notificationFound) => {
           resolve({ id: notificationFound.userId })
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   device(root, args, context) {
     return logErrorsPromise(
       'Notification device resolver',
       121,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the device id
+      inheritAuthorized(
+        root.id,
+        Notification,
+        notificationToParent,
+        context,
+        Device,
+        1,
+        async (resolve, reject, notificationFound) => {
           resolve({ id: notificationFound.deviceId })
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
 })
