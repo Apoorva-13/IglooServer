@@ -910,21 +910,12 @@ const MutationResolver = (
     return logErrorsPromise(
       'create notification mutation',
       122,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.deviceId },
-        })
-        const userFound = await User.find({
-          where: { id: context.auth.userId },
-        })
-
-        if (!userFound) {
-          reject('This user was deleted')
-        } else if (!deviceFound) {
-          reject("Device doesn't exist. Use `CreateDevice` to create one")
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.deviceId,
+        context,
+        Device,
+        2,
+        async (resolve, reject, deviceFound) => {
           const newNotification = await Notification.create({
             ...args,
             visualized: false,
@@ -960,6 +951,22 @@ const MutationResolver = (
             notificationCreated: resolveValue,
             userId: context.auth.userId,
           })
+
+          // the notificationsCount props are updated so send the device and board subscriptions
+          pubsub.publish('deviceUpdated', {
+            deviceUpdated: {
+              id: deviceId,
+            },
+            userId: context.auth.userId,
+          })
+          if (deviceFound.boardId) {
+            pubsub.publish('boardUpdated', {
+              boardUpdated: {
+                id: deviceFound.boardId,
+              },
+              userId: context.auth.userId,
+            })
+          }
           context.billingUpdater.update(MUTATION_COST)
 
           if (!userFound.quietMode) {
@@ -984,8 +991,9 @@ const MutationResolver = (
                 }),
               ))
           }
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   notification(root, args, context) {
