@@ -161,7 +161,7 @@ const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
       context,
       Device,
       2,
-      async (resolve, reject, deviceFound) => {
+      async (resolve, reject, deviceFound, deviceAndParent) => {
         async function calculateIndex() {
           const valuesCountPromises = ValueModels.map(async model =>
             await model.count({ where: { deviceId: args.deviceId } }))
@@ -198,7 +198,7 @@ const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
 
         pubsub.publish('valueCreated', {
           valueCreated: resolveObj,
-          userId: context.auth.userId,
+          userIds: instancesToSharedIds(deviceAndParent),
         })
 
         resolve(resolveObj)
@@ -237,7 +237,7 @@ const genericValueMutation = (
       context,
       childModel,
       2,
-      async (resolve, reject, valueFound) => {
+      async (resolve, reject, valueFound, valueAndParents) => {
         const newValue = await valueFound.update(args)
         const resolveObj = {
           ...newValue.dataValues,
@@ -252,7 +252,7 @@ const genericValueMutation = (
 
         pubsub.publish('valueUpdated', {
           valueUpdated: { ...resolveObj, __resolveType },
-          userId: context.auth.userId,
+          userIds: instancesToSharedIds(valueAndParents),
         })
         context.billingUpdater.update(MUTATION_COST)
       },
@@ -286,6 +286,19 @@ const subscriptionFilterOnlyMine = (subscriptionName, pubsub) => ({
       return withFilter(
         () => pubsub.asyncIterator(subscriptionName),
         payload => payload.userId === myUserId,
+      )(root, args, context, info)
+    }
+    throw new Error('No authorization token')
+  },
+})
+
+const subscriptionFilterOwnedOrShared = (subscriptionName, pubsub) => ({
+  subscribe: (root, args, context, info) => {
+    if (context.auth) {
+      const myUserId = context.auth.userId
+      return withFilter(
+        () => pubsub.asyncIterator(subscriptionName),
+        payload => payload.userIds.indexOf(myUserId) !== -1,
       )(root, args, context, info)
     }
     throw new Error('No authorization token')
@@ -738,7 +751,7 @@ function authorized(
         /* istanbul ignore next */
         reject('You are not allowed to access details about this resource')
       } else {
-        callback(resolve, reject, found, [found, ...others])
+        return callback(resolve, reject, found, [found, ...others])
       }
     },
     acceptedTokenTypes,
@@ -911,6 +924,18 @@ const instanceToRole = (instances, userId) => {
   }
 }
 
+const instancesToSharedIds = instances =>
+  instances.reduce(
+    (acc, curr) => [
+      ...acc,
+      curr.ownerId,
+      ...curr.adminsIds,
+      ...curr.editorsIds,
+      ...curr.spectatorsIds,
+    ],
+    [],
+  )
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -943,4 +968,6 @@ module.exports = {
   authorizedValue,
   firstResolve,
   instanceToRole,
+  instancesToSharedIds,
+  subscriptionFilterOwnedOrShared,
 }

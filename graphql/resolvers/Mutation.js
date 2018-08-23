@@ -18,6 +18,7 @@ import {
   authorized,
   deviceToParents,
   authorizedValue,
+  instancesToSharedIds,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -435,6 +436,7 @@ const MutationResolver = (
     return logErrorsPromise(
       'CreateDevice',
       104,
+      // REPLACE WITH authorized(boardId) also in the subscription
       authenticated(context, async (resolve) => {
         const index =
           args.index !== null && args.index !== undefined
@@ -461,7 +463,7 @@ const MutationResolver = (
 
         pubsub.publish('deviceCreated', {
           deviceCreated: resolveValue,
-          userId: context.auth.userId,
+          userIds: [context.auth.userId],
         })
 
         resolve(resolveValue)
@@ -759,7 +761,7 @@ const MutationResolver = (
           resolve(newBoard.dataValues)
           pubsub.publish('boardUpdated', {
             boardUpdated: newBoard.dataValues,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds([boardFound]),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -776,12 +778,12 @@ const MutationResolver = (
         context,
         Device,
         2,
-        async (resolve, reject, deviceFound) => {
+        async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
             deviceUpdated: newDevice.dataValues,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(deviceAndBoard),
           })
           context.billingUpdater.update(MUTATION_COST)
         },
@@ -915,7 +917,7 @@ const MutationResolver = (
         context,
         Device,
         2,
-        async (resolve, reject, deviceFound) => {
+        async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newNotification = await Notification.create({
             ...args,
             visualized: false,
@@ -947,9 +949,11 @@ const MutationResolver = (
           }
 
           resolve(resolveValue)
+
+          const deviceSharedIds = instancesToSharedIds(deviceAndBoard)
           pubsub.publish('notificationCreated', {
             notificationCreated: resolveValue,
-            userId: context.auth.userId,
+            userIds: deviceSharedIds,
           })
 
           // the notificationsCount props are updated so send the device and board subscriptions
@@ -957,14 +961,15 @@ const MutationResolver = (
             deviceUpdated: {
               id: deviceId,
             },
-            userId: context.auth.userId,
+            userIds: deviceSharedIds,
           })
           if (deviceFound.boardId) {
+            const boardFound = await Board.find({
+              where: { id: deviceFound.boardId },
+            })
             pubsub.publish('boardUpdated', {
-              boardUpdated: {
-                id: deviceFound.boardId,
-              },
-              userId: context.auth.userId,
+              boardUpdated: boardFound.dataValues,
+              userIds: instancesToSharedIds([boardFound]),
             })
           }
           context.billingUpdater.update(MUTATION_COST)
@@ -996,54 +1001,59 @@ const MutationResolver = (
       ),
     )
   },
-  notification(root, args, context) {
-    return logErrorsPromise(
-      'notification mutation',
-      123,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: args.id },
-        })
+  async notification(root, args, context) {
+    const notificationFound = await Notification.find({
+      where: { id: args.id },
+    })
 
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          reject('You are not allowed to update this resource')
-        } else {
-          const updateQuery = getPropsIfDefined(args, [
-            'content',
-            'date',
-            'visualized',
-          ])
+    if (!notificationFound) {
+      reject('The requested resource does not exist')
+    } else {
+      return logErrorsPromise(
+        'notification mutation',
+        123,
+        authorized(
+          notificationFound.deviceId,
+          context,
+          Device,
+          1,
+          async (resolve, reject, deviceFound, deviceAndParent) => {
+            const updateQuery = getPropsIfDefined(args, [
+              'content',
+              'date',
+              'visualized',
+            ])
 
-          const {
-            date,
-            visualized,
-            content,
-            id,
-            userId,
-            deviceId,
-          } = (await notificationFound.update(updateQuery)).dataValues
+            const {
+              date,
+              visualized,
+              content,
+              id,
+              userId,
+              deviceId,
+            } = (await notificationFound.update(updateQuery)).dataValues
 
-          const resolveValue = {
-            date,
-            visualized,
-            content,
-            id,
-            user: { id: userId },
-            device: { id: deviceId },
-          }
+            const resolveValue = {
+              date,
+              visualized,
+              content,
+              id,
+              user: { id: userId },
+              device: { id: deviceId },
+            }
 
-          resolve(resolveValue)
+            resolve(resolveValue)
 
-          pubsub.publish('notificationUpdated', {
-            notificationUpdated: resolveValue,
-            userId: context.auth.userId,
-          })
-          context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
-    )
+            pubsub.publish('notificationUpdated', {
+              notificationUpdated: resolveValue,
+              userIds: instancesToSharedIds(deviceAndParent),
+            })
+            context.billingUpdater.update(MUTATION_COST)
+          },
+          deviceToParents(Board),
+        ),
+      )
+    }
   },
   deleteNotification: genericDelete(
     Notification,

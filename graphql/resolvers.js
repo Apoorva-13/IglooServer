@@ -100,7 +100,7 @@ const resolvers = {
     MapValue,
     Notification,
   ),
-  Subscription: SubscriptionsResolver(pubsub, Device),
+  Subscription: SubscriptionsResolver(pubsub, Device, Board),
   Value: ValueResolver(
     {
       BoolValue,
