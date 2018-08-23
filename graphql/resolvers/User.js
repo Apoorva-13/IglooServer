@@ -14,7 +14,6 @@ const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
     authenticated(
       context,
       async (resolve, reject) => {
-        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
@@ -35,6 +34,28 @@ const scalarProps = (User, props) =>
     acc[prop] = retrieveUserScalarProp(User, prop)
     return acc
   }, {})
+
+const retrievePublicUserScalarProp = (User, prop, acceptedTokens) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'retrieveScalarProp',
+    106,
+    authenticated(
+      context,
+      async (resolve, reject) => {
+        const userFound = await User.find({ where: { id: root.id } })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          resolve(userFound[prop])
+        }
+      },
+      acceptedTokens,
+    ),
+  )
 
 const UserResolver = (
   User,
@@ -61,22 +82,22 @@ const UserResolver = (
     'monthUsage',
     'emailIsVerified',
   ]),
-  email: retrieveUserScalarProp(User, 'email', [
+  email: retrievePublicUserScalarProp(User, 'email', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  displayName: retrieveUserScalarProp(User, 'displayName', [
+  displayName: retrievePublicUserScalarProp(User, 'displayName', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  profileIcon: retrieveUserScalarProp(User, 'profileIcon', [
+  profileIcon: retrievePublicUserScalarProp(User, 'profileIcon', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  profileIconColor: retrieveUserScalarProp(User, 'profileIconColor', [
+  profileIconColor: retrievePublicUserScalarProp(User, 'profileIconColor', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
