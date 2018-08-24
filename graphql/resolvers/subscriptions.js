@@ -13,8 +13,8 @@ const subscriptionResolver = (pubsub, Device, Board) => ({
   deviceCreated: subscriptionFilterOwnedOrShared('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOwnedOrShared('valueCreated', pubsub),
   tokenCreated: subscriptionFilterOnlyMine('tokenCreated', pubsub),
-  plotNodeCreated: subscriptionFilterOnlyMine('plotNodeCreated', pubsub),
-  stringPlotNodeCreated: subscriptionFilterOnlyMine(
+  plotNodeCreated: subscriptionFilterOwnedOrShared('plotNodeCreated', pubsub),
+  stringPlotNodeCreated: subscriptionFilterOwnedOrShared(
     'stringPlotNodeCreated',
     pubsub,
   ),
@@ -26,8 +26,8 @@ const subscriptionResolver = (pubsub, Device, Board) => ({
   deviceUpdated: subscriptionFilterOwnedOrShared('deviceUpdated', pubsub),
   boardUpdated: subscriptionFilterOwnedOrShared('boardUpdated', pubsub),
   valueUpdated: subscriptionFilterOwnedOrShared('valueUpdated', pubsub),
-  plotNodeUpdated: subscriptionFilterOnlyMine('plotNodeUpdated', pubsub),
-  stringPlotNodeUpdated: subscriptionFilterOnlyMine(
+  plotNodeUpdated: subscriptionFilterOwnedOrShared('plotNodeUpdated', pubsub),
+  stringPlotNodeUpdated: subscriptionFilterOwnedOrShared(
     'stringPlotNodeUpdated',
     pubsub,
   ),
@@ -42,8 +42,8 @@ const subscriptionResolver = (pubsub, Device, Board) => ({
   valueDeleted: subscriptionFilterOwnedOrShared('valueDeleted', pubsub),
   deviceDeleted: subscriptionFilterOwnedOrShared('deviceDeleted', pubsub),
   boardDeleted: subscriptionFilterOwnedOrShared('boardDeleted', pubsub),
-  plotNodeDeleted: subscriptionFilterOnlyMine('plotNodeDeleted', pubsub),
-  stringPlotNodeDeleted: subscriptionFilterOnlyMine(
+  plotNodeDeleted: subscriptionFilterOwnedOrShared('plotNodeDeleted', pubsub),
+  stringPlotNodeDeleted: subscriptionFilterOwnedOrShared(
     'stringPlotNodeDeleted',
     pubsub,
   ),

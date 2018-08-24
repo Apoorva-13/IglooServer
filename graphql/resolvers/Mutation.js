@@ -18,6 +18,8 @@ import {
   deviceToParents,
   authorizedValue,
   instancesToSharedIds,
+  inheritAuthorized,
+  valueToParents,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -581,18 +583,16 @@ const MutationResolver = (
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const plot = await PlotValue.find({ where: { id: args.plotId } })
-
-        if (!plot) {
-          reject("This plot doesn't exist")
-        } else if (plot.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
+      authorized(
+        args.plotId,
+        context,
+        PlotValue,
+        2,
+        async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await PlotNode.create({
             ...args,
             timestamp: args.timestamp || new Date(),
-            deviceId: plot.deviceId,
+            deviceId: plotValueFound.deviceId,
             userId: context.auth.userId,
           })
 
@@ -612,30 +612,29 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeCreated', {
             plotNodeCreated: resolveObj,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   CreateStringPlotNode(root, args, context) {
     return logErrorsPromise(
       'CreateStringPlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const plot = await StringPlotValue.find({ where: { id: args.plotId } })
-
-        if (!plot) {
-          reject("This plot doesn't exist")
-        } else if (plot.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
+      authorized(
+        args.plotId,
+        context,
+        StringPlotValue,
+        2,
+        async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await StringPlotNode.create({
             ...args,
             timestamp: args.timestamp || new Date(),
-            deviceId: plot.deviceId,
+            deviceId: plotValueFound.deviceId,
             userId: context.auth.userId,
           })
 
@@ -655,11 +654,12 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeCreated', {
             stringPlotNodeCreated: resolveObj,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(plotAndParents),
           })
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   user(root, args, context) {
@@ -838,15 +838,21 @@ const MutationResolver = (
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await PlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.update(args)
+      inheritAuthorized(
+        args.id,
+        PlotNode,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          const newNode = await plotNodeFound.update(args)
 
           const resolveObj = {
             ...newNode.dataValues,
@@ -863,27 +869,34 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeUpdated', {
             plotNodeUpdated: resolveObj,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   stringPlotNode(root, args, context) {
     return logErrorsPromise(
       'stringPlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await StringPlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.update(args)
+      inheritAuthorized(
+        args.id,
+        StringPlotNode,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        StringPlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          const newNode = await plotNodeFound.update(args)
 
           const resolveObj = {
             ...newNode.dataValues,
@@ -900,12 +913,13 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeUpdated', {
             stringPlotNodeUpdated: resolveObj,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   CreateNotification(root, args, context) {
@@ -1242,52 +1256,66 @@ const MutationResolver = (
     ),
   deletePlotNode(root, args, context) {
     return logErrorsPromise(
-      'CreatePlotNode mutation',
+      'deletePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await PlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.destroy()
+      inheritAuthorized(
+        args.id,
+        PlotNode,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          await plotNodeFound.destroy()
 
           resolve(args.id)
           pubsub.publish('plotNodeDeleted', {
             plotNodeDeleted: args.id,
-            userId: context.auth.userId,
+            userIds: instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   deleteStringPlotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await StringPlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.destroy()
+      inheritAuthorized(
+        args.id,
+        StringPlotNode,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        StringPlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          await plotNodeFound.destroy()
 
           resolve(args.id)
-          pubsub.publish('stringPlotNodeDeleted', {
-            stringPlotNodeDeleted: args.id,
-            userId: context.auth.userId,
+          pubsub.publish('plotNodeDeleted', {
+            plotNodeDeleted: args.id,
+            userIds: instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   // TODO: implement this
