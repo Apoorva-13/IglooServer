@@ -680,19 +680,26 @@ const scalarPropsResolvers = (Model, props) =>
     return acc
   }, {})
 
-function instanceAuthorizationLevel(instance, userId) {
-  if (!instance) throw new Error('The requested resource does not exist')
+async function instanceAuthorizationLevel(instance, userFound) {
+  const modelNameLowerCase = instance._modelOptions.name.singular
+  const ModelName =
+    modelNameLowerCase[0].toUpperCase() + modelNameLowerCase.slice(1)
 
-  if (instance.ownerId === userId) return 4
-  else if (instance.adminsIds.indexOf(userId) !== -1) return 3
-  else if (instance.editorsIds.indexOf(userId) !== -1) return 2
-  else if (instance.spectatorsIds.indexOf(userId) !== -1) return 1
+  const isOwner = await userFound[`hasOwn${ModelName}`](instance)
+  const isAdmin = await userFound[`hasAdmin${ModelName}`](instance)
+  const isEditor = await userFound[`hasEditor${ModelName}`](instance)
+  const isSpectator = await userFound[`hasSpectator${ModelName}`](instance)
+
+  if (isOwner) return 4
+  else if (isAdmin) return 3
+  else if (isEditor) return 2
+  else if (isSpectator) return 1
   return 0
 }
 
-function authorizationLevel(instances, userId) {
+function authorizationLevel(instances, userFound) {
   const authorizations = instances.map(instance =>
-    instanceAuthorizationLevel(instance, userId))
+    instanceAuthorizationLevel(instance, userFound))
   const maxAuthorization = Math.max(...authorizations)
 
   return maxAuthorization
@@ -702,6 +709,7 @@ function authorized(
   id,
   context,
   Model,
+  User,
   authorizationRequired,
   callback,
   childToParents = found => Promise.resolve([]),
@@ -713,10 +721,12 @@ function authorized(
       const found = await Model.find({ where: { id } })
       const others = await childToParents(found)
 
+      const userFound = await User.find({ where: { id: context.auth.id } })
+
       if (!found) {
         reject('The requested resource does not exist')
       } else if (
-        authorizationLevel([found, ...others], context.auth.userId) <
+        authorizationLevel([found, ...others], userFound) <
         authorizationRequired
       ) {
         /* istanbul ignore next */
@@ -731,6 +741,7 @@ function authorized(
 
 const authorizedRetrieveScalarProp = (
   Model,
+  User,
   prop,
   childToParents,
   acceptedTokenTypes,
@@ -742,6 +753,7 @@ const authorizedRetrieveScalarProp = (
       root.id,
       context,
       Model,
+      User,
       1,
       async (resolve, reject, resourceFound) => {
         resolve(resourceFound[prop])
@@ -753,6 +765,7 @@ const authorizedRetrieveScalarProp = (
 
 const authorizedScalarPropsResolvers = (
   Model,
+  User,
   props,
   childToParents,
   acceptedTokenTypes,
@@ -760,6 +773,7 @@ const authorizedScalarPropsResolvers = (
   props.reduce((acc, prop) => {
     acc[prop] = authorizedRetrieveScalarProp(
       Model,
+      User,
       prop,
       childToParents,
       acceptedTokenTypes,
@@ -794,6 +808,7 @@ const rolesResolver = (roleIdsField, Model, childToParents) => (
     ),
   )
 
+// FIXME: will those work??
 const deviceToParents = Board => async (deviceFound) => {
   const boardFound = deviceFound.boardId
     ? await Board.find({ where: { id: deviceFound.boardId } })
@@ -818,6 +833,7 @@ const authorizedValue = (
   id,
   context,
   Values,
+  User,
   authorizationRequired,
   callbackFunc,
   Device,
@@ -828,6 +844,8 @@ const authorizedValue = (
       'You are not allowed to access details about this resource'
     const NOT_EXIST = 'The requested resource does not exist'
     const models = Object.values(Values)
+
+    const userFound = await User.find({ where: { id: context.auth.userId } })
 
     const findPromises = models.map(async (Model) => {
       const resourceFound = await Model.find({
@@ -850,8 +868,7 @@ const authorizedValue = (
           ? [resourceFound, deviceFound, boardFound]
           : [resourceFound, deviceFound]
         if (
-          authorizationLevel(valueAndParents, context.auth.userId) <
-          authorizationRequired
+          authorizationLevel(valueAndParents, userFound) < authorizationRequired
         ) {
           throw new Error(NOT_ALLOWED)
         } else {
@@ -878,8 +895,8 @@ const authorizedValue = (
     return callbackFunc(resolve, reject, ...resourcesFound)
   })
 
-const instanceToRole = (instances, userId) => {
-  const roleLevel = authorizationLevel(instances, userId)
+const instanceToRole = (instances, userFound) => {
+  const roleLevel = authorizationLevel(instances, userFound)
 
   switch (roleLevel) {
     case 4:
@@ -895,6 +912,7 @@ const instanceToRole = (instances, userId) => {
   }
 }
 
+// FIXME: no longer working
 const instancesToSharedIds = instances =>
   instances.reduce(
     (acc, curr) => [
@@ -930,7 +948,8 @@ const inheritAuthorized = (
       context,
       parentModel,
       authorizationRequired,
-      (resolve, reject, parentFound, allParents) => callback(resolve, reject, entityFound, parentFound, allParents),
+      (resolve, reject, parentFound, allParents) =>
+        callback(resolve, reject, entityFound, parentFound, allParents),
       childToParents,
       acceptedTokenTypes,
     )(resolve, reject)

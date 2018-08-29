@@ -354,14 +354,16 @@ const databaseDefinition = (sequelize) => {
 
   const associations = []
   for (let i = 0; i < modelNames.length; i++) {
-    modelObjects[i].Owner = modelObjects[i].belongsTo(User, { as: 'owner' })
+    modelObjects[i].Owner = `Own${modelNames[i]}s`
+    modelObjects[i].belongsTo(User, { as: 'owner' })
     User[`Own${modelNames[i]}s`] = User.hasMany(modelObjects[i], {
       as: `Own${modelNames[i]}s`,
     })
 
     const adminAssociation = sequelize.define(`${modelNames[i]}Admins`, {})
     associations.push(adminAssociation)
-    modelObjects[i].Admin = modelObjects[i].belongsToMany(User, {
+    modelObjects[i].Admins = `Admin${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
       as: 'admin',
       through: `${modelNames[i]}Admins`,
     })
@@ -372,7 +374,8 @@ const databaseDefinition = (sequelize) => {
 
     const editorAssociation = sequelize.define(`${modelNames[i]}Editors`, {})
     associations.push(editorAssociation)
-    modelObjects[i].Editor = modelObjects[i].belongsToMany(User, {
+    modelObjects[i].Editors = `Editor${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
       as: 'editor',
       through: `${modelNames[i]}Editors`,
     })
@@ -386,7 +389,8 @@ const databaseDefinition = (sequelize) => {
       {},
     )
     associations.push(spectatorAssociation)
-    modelObjects[i].Spectator = modelObjects[i].belongsToMany(User, {
+    modelObjects[i].Spectators = `Spectator${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
       as: 'spectator',
       through: `${modelNames[i]}Spectators`,
     })
