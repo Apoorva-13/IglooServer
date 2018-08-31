@@ -8,7 +8,19 @@ import SubscriptionsResolver from './resolvers/subscriptions'
 import NotificationResolver from './resolvers/Notification'
 import ValueResolver from './resolvers/Value'
 import ValueResolvers from './resolvers/Values'
-import {
+import SequelizeConnections from '../postgresql/databaseConnection'
+import { pubsub } from '../shared'
+
+require('dotenv').config()
+
+/* istanbul ignore if */
+if (!process.env.JWT_SECRET) {
+  throw new Error('Could not load .env')
+}
+
+const { JWT_SECRET } = process.env
+
+const {
   User,
   Board,
   PermanentToken,
@@ -25,49 +37,14 @@ import {
   WebPushSubscription,
   StringPlotNode,
   StringPlotValue,
-} from '../postgresql/databaseConnection'
-import { pubsub } from '../shared'
-
-require('dotenv').config()
-
-/* istanbul ignore if */
-if (!process.env.JWT_SECRET) {
-  throw new Error('Could not load .env')
-}
-
-const { JWT_SECRET } = process.env
+} = SequelizeConnections
 
 const resolvers = {
   DateTime: GraphQLToolsTypes.Date({ name: 'DateTime' }),
   Json: GraphQLToolsTypes.JSON({ name: 'Json' }),
-  User: UserResolver(
-    User,
-    PermanentToken,
-    Device,
-    Board,
-    FloatValue,
-    StringValue,
-    BoolValue,
-    ColourValue,
-    PlotValue,
-    StringPlotValue,
-    MapValue,
-    Notification,
-  ),
-  Board: BoardResolver(Board, Device, Notification),
-  Device: DeviceResolver(
-    Device,
-    User,
-    Board,
-    BoolValue,
-    FloatValue,
-    StringValue,
-    PlotValue,
-    StringPlotValue,
-    MapValue,
-    ColourValue,
-    Notification,
-  ),
+  User: UserResolver(SequelizeConnections),
+  Board: BoardResolver(SequelizeConnections),
+  Device: DeviceResolver(SequelizeConnections),
   Mutation: MutationResolver(
     User,
     PermanentToken,
@@ -128,7 +105,7 @@ const resolvers = {
     Device,
     Board,
   ),
-  Notification: NotificationResolver(Notification, User, Device),
+  Notification: NotificationResolver(SequelizeConnections),
 }
 
 export default resolvers

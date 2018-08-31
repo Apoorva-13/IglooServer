@@ -9,9 +9,12 @@ import {
 const QUERY_COST = 1
 const notificationToParent = notificationFound => notificationFound.deviceId
 
-const UserResolver = (Notification, User, Device, Board) => ({
+const UserResolver = ({
+  Notification, User, Device, Board,
+}) => ({
   ...inheritAuthorizedScalarPropsResolvers(
     Notification,
+    User,
     ['content', 'date', 'visualized', 'snackbarVisualized'],
     notificationToParent,
     Device,
@@ -24,6 +27,7 @@ const UserResolver = (Notification, User, Device, Board) => ({
       inheritAuthorized(
         root.id,
         Notification,
+        User,
         notificationToParent,
         context,
         Device,
@@ -43,6 +47,7 @@ const UserResolver = (Notification, User, Device, Board) => ({
       inheritAuthorized(
         root.id,
         Notification,
+        User,
         notificationToParent,
         context,
         Device,

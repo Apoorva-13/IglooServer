@@ -343,7 +343,6 @@ const findAllValues = (
     MapValue,
   },
   query,
-  userId,
 ) => {
   const booleanValues = BoolValue.findAll(query)
   const floatValues = FloatValue.findAll(query)
@@ -732,7 +731,7 @@ function authorized(
         /* istanbul ignore next */
         reject('You are not allowed to access details about this resource')
       } else {
-        return callback(resolve, reject, found, [found, ...others])
+        return callback(resolve, reject, found, [found, ...others], userFound)
       }
     },
     acceptedTokenTypes,
@@ -782,11 +781,14 @@ const authorizedScalarPropsResolvers = (
   }, {})
 
 const QUERY_COST = 1
-const rolesResolver = (roleIdsField, Model, childToParents) => (
-  root,
-  args,
-  context,
-) =>
+const rolesResolver = (
+  roleName,
+  modelIdField,
+  ModelName,
+  User,
+  joinTables,
+  childToParents,
+) => (root, args, context) =>
   logErrorsPromise(
     'rolesIds resolver',
     922,
@@ -794,9 +796,17 @@ const rolesResolver = (roleIdsField, Model, childToParents) => (
       root.id,
       context,
       Model,
+      User,
       1,
       async (resolve, reject, found) => {
-        const users = found[roleIdsField].map(id => ({
+        const usersFound = await joinTables[`${ModelName}${roleName}s`]
+          .findAll({
+            where: { [modelIdField]: found.id },
+          })
+          .then(joinTables =>
+            joinTables.map(joinTable => joinTable.dataValues.userId))
+
+        const users = usersFound.map(id => ({
           id,
         }))
 
@@ -808,7 +818,6 @@ const rolesResolver = (roleIdsField, Model, childToParents) => (
     ),
   )
 
-// FIXME: will those work??
 const deviceToParents = Board => async (deviceFound) => {
   const boardFound = deviceFound.boardId
     ? await Board.find({ where: { id: deviceFound.boardId } })
@@ -928,6 +937,7 @@ const instancesToSharedIds = instances =>
 const inheritAuthorized = (
   ownId,
   ownModel,
+  User,
   ownIstanceToParentId,
   context,
   parentModel,
@@ -947,6 +957,7 @@ const inheritAuthorized = (
       ownIstanceToParentId(entityFound),
       context,
       parentModel,
+      User,
       authorizationRequired,
       (resolve, reject, parentFound, allParents) =>
         callback(resolve, reject, entityFound, parentFound, allParents),
@@ -958,6 +969,7 @@ const inheritAuthorized = (
 
 const inheritAuthorizedRetrieveScalarProp = (
   Model,
+  User,
   prop,
   ownIstanceToParentId,
   parentModel,
@@ -970,6 +982,7 @@ const inheritAuthorizedRetrieveScalarProp = (
     inheritAuthorized(
       root.id,
       Model,
+      User,
       ownIstanceToParentId,
       context,
       parentModel,
@@ -982,6 +995,7 @@ const inheritAuthorizedRetrieveScalarProp = (
 
 const inheritAuthorizedScalarPropsResolvers = (
   Model,
+  User,
   props,
   ownIstanceToParentId,
   parentModel,
@@ -991,6 +1005,7 @@ const inheritAuthorizedScalarPropsResolvers = (
   props.reduce((acc, prop) => {
     acc[prop] = inheritAuthorizedRetrieveScalarProp(
       Model,
+      User,
       prop,
       ownIstanceToParentId,
       parentModel,
@@ -999,6 +1014,50 @@ const inheritAuthorizedScalarPropsResolvers = (
     )
     return acc
   }, {})
+
+async function getAll(Model, User, userId, includesList = []) {
+  // for some reason sequelize needs the includes to be different instances,
+  // so we shallow clone every include object
+  const allAccessibles = await User.find({
+    where: { id: userId },
+    attributes: ['id'],
+    include: [
+      {
+        model: Model,
+        as: Model.Owner,
+        attributes: ['id'],
+        include: includesList.map(({ ...args }) => ({ ...args })),
+      },
+      {
+        model: Model,
+        as: Model.Admins,
+        attributes: ['id'],
+        include: includesList.map(({ ...args }) => ({ ...args })),
+      },
+      {
+        model: Model,
+        as: Model.Editors,
+        attributes: ['id'],
+        include: includesList.map(({ ...args }) => ({ ...args })),
+      },
+      {
+        model: Model,
+        as: Model.Spectators,
+        attributes: ['id'],
+        include: includesList.map(({ ...args }) => ({ ...args })),
+      },
+    ],
+  })
+
+  const allFlattened = [
+    ...allAccessibles[Model.Owner],
+    ...allAccessibles[Model.Admins],
+    ...allAccessibles[Model.Editors],
+    ...allAccessibles[Model.Spectators],
+  ]
+
+  return allFlattened
+}
 
 module.exports = {
   authenticated,
@@ -1035,4 +1094,5 @@ module.exports = {
   subscriptionFilterOwnedOrShared,
   inheritAuthorized,
   inheritAuthorizedScalarPropsResolvers,
+  getAll,
 }

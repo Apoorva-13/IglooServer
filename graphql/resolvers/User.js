@@ -1,4 +1,9 @@
-import { authenticated, logErrorsPromise, findAllValues } from './utilities'
+import {
+  authenticated,
+  logErrorsPromise,
+  findAllValues,
+  getAll,
+} from './utilities'
 import { Op } from 'sequelize'
 
 const QUERY_COST = 1
@@ -57,7 +62,7 @@ const retrievePublicUserScalarProp = (User, prop, acceptedTokens) => (
     ),
   )
 
-const UserResolver = (
+const UserResolver = ({
   User,
   PermanentToken,
   Device,
@@ -70,7 +75,7 @@ const UserResolver = (
   StringPlotValue,
   MapValue,
   Notification,
-) => ({
+}) => ({
   ...scalarProps(User, [
     'createdAt',
     'updatedAt',
@@ -121,19 +126,12 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const devices = await Device.findAll({
-            where: {
-              [Op.or]: [
-                { ownerId: root.id },
-                { adminsIds: { [Op.contains]: [root.id] } },
-                { editorsIds: { [Op.contains]: [root.id] } },
-                { spectatorsIds: { [Op.contains]: [root.id] } },
-              ],
-            },
-            order: [['index', 'ASC']],
-          })
+          const devices = await getAll(Device, User, root.id)
+          const devicesInheritedByBoards = await getAll(Board, User, root.id, [
+            { model: Device },
+          ])
 
-          resolve(devices)
+          resolve([...devices, ...devicesInheritedByBoards])
           context.billingUpdater.update(QUERY_COST * devices.length)
         }
       }),
@@ -148,16 +146,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const boards = await Board.findAll({
-            where: {
-              [Op.or]: [
-                { ownerId: root.id },
-                { adminsIds: { [Op.contains]: [root.id] } },
-                { editorsIds: { [Op.contains]: [root.id] } },
-                { spectatorsIds: { [Op.contains]: [root.id] } },
-              ],
-            },
-          })
+          const boards = await getAll(Board, User, root.id)
 
           resolve(boards)
           context.billingUpdater.update(QUERY_COST * boards.length)
@@ -174,6 +163,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
+          // TODO: fetch all devices and include the notifications then flatten
           const notifications = await Notification.findAll({
             where: { userId: root.id },
           })
@@ -192,6 +182,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
+          // TODO: fetch all the values (also inherited ones) and tag them with the right __resolveType
           const values = await findAllValues(
             {
               BoolValue,

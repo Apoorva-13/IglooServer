@@ -10,7 +10,7 @@ import {
 
 const QUERY_COST = 1
 
-const DeviceResolver = (
+const DeviceResolver = ({
   Device,
   User,
   Board,
@@ -22,9 +22,11 @@ const DeviceResolver = (
   MapValue,
   ColourValue,
   Notification,
-) => ({
+  joinTables,
+}) => ({
   ...authorizedScalarPropsResolvers(
     Device,
+    User,
     [
       'createdAt',
       'updatedAt',
@@ -47,6 +49,7 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
         async (resolve, reject, deviceFound) => {
           const valuesFound = await findAllValues(
@@ -62,7 +65,6 @@ const DeviceResolver = (
             {
               where: { deviceId: deviceFound.id },
             },
-            context.auth.userId,
           )
 
           resolve(valuesFound)
@@ -81,12 +83,16 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
-        async (resolve, reject, deviceFound, deviceAndParentFound) => {
-          const myRole = instanceToRole(
-            deviceAndParentFound,
-            context.auth.userId,
-          )
+        async (
+          resolve,
+          reject,
+          deviceFound,
+          deviceAndParentFound,
+          userFound,
+        ) => {
+          const myRole = instanceToRole(deviceAndParentFound, userFound)
 
           resolve(myRole)
         },
@@ -102,6 +108,7 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
         async (resolve, reject, deviceFound) => {
           resolve({
@@ -114,9 +121,30 @@ const DeviceResolver = (
       ),
     )
   },
-  admins: rolesResolver('adminsIds', Device, deviceToParents(Board)),
-  editors: rolesResolver('editorsIds', Device, deviceToParents(Board)),
-  spectators: rolesResolver('spectatorsIds', Device, deviceToParents(Board)),
+  admins: rolesResolver(
+    'Admin',
+    'deviceId',
+    'Device',
+    User,
+    joinTables,
+    deviceToParents(Board),
+  ),
+  editors: rolesResolver(
+    'Editor',
+    'deviceId',
+    'Device',
+    User,
+    joinTables,
+    deviceToParents(Board),
+  ),
+  spectators: rolesResolver(
+    'Spectator',
+    'deviceId',
+    'Device',
+    User,
+    joinTables,
+    deviceToParents(Board),
+  ),
   board(root, args, context) {
     return logErrorsPromise(
       'Device board resolver',
@@ -125,6 +153,7 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
         async (resolve, reject, deviceFound) => {
           // the Board resolver will take care of loading the other props,
@@ -145,6 +174,7 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
         async (resolve, reject, deviceFound) => {
           const notifications = await Notification.findAll({
@@ -166,6 +196,7 @@ const DeviceResolver = (
         root.id,
         context,
         Device,
+        User,
         1,
         async (resolve, reject, deviceFound) => {
           const count = await Notification.count({
@@ -173,7 +204,6 @@ const DeviceResolver = (
           })
 
           resolve(count)
-          context.billingUpdater.update(QUERY_COST)
         },
         deviceToParents(Board),
       ),

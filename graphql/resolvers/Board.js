@@ -8,8 +8,10 @@ import {
 
 const QUERY_COST = 1
 
-const BoardResolver = (Board, Device, Notification) => ({
-  ...authorizedScalarPropsResolvers(Board, [
+const BoardResolver = ({
+  Board, Device, Notification, joinTables,
+}) => ({
+  ...authorizedScalarPropsResolvers(Board, User, [
     'customName',
     'avatar',
     'createdAt',
@@ -26,6 +28,7 @@ const BoardResolver = (Board, Device, Notification) => ({
         root.id,
         context,
         Board,
+        User,
         1,
         async (resolve, reject, boardFound) => {
           resolve({
@@ -37,9 +40,9 @@ const BoardResolver = (Board, Device, Notification) => ({
       ),
     )
   },
-  admins: rolesResolver('adminsIds', Board),
-  editors: rolesResolver('editorsIds', Board),
-  spectators: rolesResolver('spectatorsIds', Board),
+  admins: rolesResolver('Admin', 'boardId', 'Board', User, joinTables),
+  editors: rolesResolver('Editor', 'boardId', 'Board', User, joinTables),
+  spectators: rolesResolver('Spectator', 'boardId', 'Board', User, joinTables),
   devices(root, args, context) {
     return logErrorsPromise(
       'devices BoardResolver',
@@ -48,6 +51,7 @@ const BoardResolver = (Board, Device, Notification) => ({
         root.id,
         context,
         Board,
+        User,
         1,
         async (resolve, reject, boardFound) => {
           const devices = await Device.findAll({ where: { boardId: root.id } })
@@ -67,6 +71,7 @@ const BoardResolver = (Board, Device, Notification) => ({
         root.id,
         context,
         Board,
+        User,
         1,
         async (resolve, reject, boardFound) => {
           const devices = await Device.findAll({ where: { boardId: root.id } })
@@ -91,9 +96,10 @@ const BoardResolver = (Board, Device, Notification) => ({
         root.id,
         context,
         Board,
+        User,
         1,
-        async (resolve, reject, boardFound) => {
-          const myRole = instanceToRole([boardFound], context.auth.userId)
+        async (resolve, reject, boardFound, boardAndParents, userFound) => {
+          const myRole = instanceToRole([boardFound], userFound)
 
           resolve(myRole)
         },

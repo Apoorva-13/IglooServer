@@ -353,6 +353,7 @@ const databaseDefinition = (sequelize) => {
   const modelObjects = Object.values(models)
 
   const associations = []
+  const joinTables = {}
   for (let i = 0; i < modelNames.length; i++) {
     modelObjects[i].Owner = `Own${modelNames[i]}s`
     modelObjects[i].belongsTo(User, { as: 'owner' })
@@ -362,6 +363,7 @@ const databaseDefinition = (sequelize) => {
 
     const adminAssociation = sequelize.define(`${modelNames[i]}Admins`, {})
     associations.push(adminAssociation)
+    joinTables[`${modelNames[i]}Admins`] = adminAssociation
     modelObjects[i].Admins = `Admin${modelNames[i]}s`
     modelObjects[i].belongsToMany(User, {
       as: 'admin',
@@ -373,6 +375,7 @@ const databaseDefinition = (sequelize) => {
     })
 
     const editorAssociation = sequelize.define(`${modelNames[i]}Editors`, {})
+    joinTables[`${modelNames[i]}Editors`] = editorAssociation
     associations.push(editorAssociation)
     modelObjects[i].Editors = `Editor${modelNames[i]}s`
     modelObjects[i].belongsToMany(User, {
@@ -388,6 +391,7 @@ const databaseDefinition = (sequelize) => {
       `${modelNames[i]}Spectators`,
       {},
     )
+    joinTables[`${modelNames[i]}Spectators`] = spectatorAssociation
     associations.push(spectatorAssociation)
     modelObjects[i].Spectators = `Spectator${modelNames[i]}s`
     modelObjects[i].belongsToMany(User, {
@@ -417,6 +421,7 @@ const databaseDefinition = (sequelize) => {
     StringPlotValue,
     StringPlotNode,
     associations,
+    joinTables,
   }
 }
 
