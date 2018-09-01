@@ -12,9 +12,10 @@ import {
 
 const QUERY_COST = 1
 
-const GenericResolver = (Model, Device, Board) => ({
+const GenericResolver = (Model, User, Device, Board) => ({
   ...authorizedScalarPropsResolvers(
     Model,
+    User,
     [
       'createdAt',
       'updatedAt',
@@ -36,12 +37,16 @@ const GenericResolver = (Model, Device, Board) => ({
         root.id,
         context,
         Model,
+        User,
         1,
-        async (resolve, reject, valueFound, valueAndParentsFound) => {
-          const myRole = instanceToRole(
-            valueAndParentsFound,
-            context.auth.userId,
-          )
+        async (
+          resolve,
+          reject,
+          valueFound,
+          valueAndParentsFound,
+          userFound,
+        ) => {
+          const myRole = instanceToRole(valueAndParentsFound, userFound)
           resolve(myRole)
         },
         valueToParents(Device, Board),
@@ -51,34 +56,38 @@ const GenericResolver = (Model, Device, Board) => ({
 })
 
 const BooleanValueResolver = GenericResolver
-const FloatValueResolver = (Model, Device, Board) => ({
-  ...GenericResolver(Model, Device, Board),
+const FloatValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
   ...authorizedScalarPropsResolvers(
     Model,
+    User,
     ['precision', 'boundaries'],
     valueToParents(Device, Board),
   ),
 })
-const StringValueResolver = (Model, Device, Board) => ({
-  ...GenericResolver(Model, Device, Board),
+const StringValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
   ...authorizedScalarPropsResolvers(
     Model,
+    User,
     ['maxChars', 'allowedValues'],
     valueToParents(Device, Board),
   ),
 })
-const ColourValueResolver = (Model, Device, Board) => ({
-  ...GenericResolver(Model, Device, Board),
+const ColourValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
   ...authorizedScalarPropsResolvers(
     Model,
+    User,
     ['allowedValues'],
     valueToParents(Device, Board),
   ),
 })
-const PlotValueResolver = (PlotValue, PlotNode, Device, Board) => ({
-  ...GenericResolver(PlotValue, Device, Board),
+const PlotValueResolver = (PlotValue, PlotNode, User, Device, Board) => ({
+  ...GenericResolver(PlotValue, User, Device, Board),
   ...authorizedScalarPropsResolvers(
     PlotValue,
+    User,
     ['precision', 'boundaries', 'threshold'],
     valueToParents(Device, Board),
   ),
@@ -91,6 +100,7 @@ const PlotValueResolver = (PlotValue, PlotNode, Device, Board) => ({
         root.id,
         context,
         PlotValue,
+        User,
         1,
         async (resolve, reject, plotFound) => {
           const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
@@ -104,12 +114,14 @@ const PlotValueResolver = (PlotValue, PlotNode, Device, Board) => ({
 const StringPlotValueResolver = (
   StringPlotValue,
   StringPlotNode,
+  User,
   Device,
   Board,
 ) => ({
-  ...GenericResolver(StringPlotValue, Device, Board),
+  ...GenericResolver(StringPlotValue, User, Device, Board),
   ...authorizedScalarPropsResolvers(
     StringPlotValue,
+    User,
     ['allowedValues'],
     valueToParents(Device, Board),
   ),
@@ -122,6 +134,7 @@ const StringPlotValueResolver = (
         root.id,
         context,
         StringPlotValue,
+        User,
         1,
         async (resolve, reject, plotFound) => {
           const nodes = await StringPlotNode.findAll({
@@ -135,9 +148,10 @@ const StringPlotValueResolver = (
     ),
 })
 
-const PlotNodeResolver = (PlotNode, PlotValue, Device, Board) => ({
+const PlotNodeResolver = (PlotNode, PlotValue, User, Device, Board) => ({
   ...inheritAuthorizedScalarPropsResolvers(
     PlotNode,
+    User,
     ['timestamp', 'value'],
     plotNodeFound => plotNodeFound.plotId,
     PlotValue,
@@ -150,6 +164,7 @@ const PlotNodeResolver = (PlotNode, PlotValue, Device, Board) => ({
       inheritAuthorized(
         root.id,
         PlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         PlotValue,
@@ -175,6 +190,7 @@ const PlotNodeResolver = (PlotNode, PlotValue, Device, Board) => ({
       inheritAuthorized(
         root.id,
         PlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         PlotValue,
@@ -200,6 +216,7 @@ const PlotNodeResolver = (PlotNode, PlotValue, Device, Board) => ({
       inheritAuthorized(
         root.id,
         PlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         PlotValue,
@@ -231,24 +248,27 @@ export default (
     StringPlotValue,
     StringPlotNode,
   },
+  User,
   Device,
   Board,
 ) => ({
-  BooleanValue: BooleanValueResolver(BoolValue, Device, Board),
-  FloatValue: FloatValueResolver(FloatValue, Device, Board),
-  StringValue: StringValueResolver(StringValue, Device, Board),
-  ColourValue: ColourValueResolver(ColourValue, Device, Board),
-  PlotValue: PlotValueResolver(PlotValue, PlotNode, Device, Board),
-  PlotNode: PlotNodeResolver(PlotNode, PlotValue, Device, Board),
+  BooleanValue: BooleanValueResolver(BoolValue, User, Device, Board),
+  FloatValue: FloatValueResolver(FloatValue, User, Device, Board),
+  StringValue: StringValueResolver(StringValue, User, Device, Board),
+  ColourValue: ColourValueResolver(ColourValue, User, Device, Board),
+  PlotValue: PlotValueResolver(PlotValue, PlotNode, User, Device, Board),
+  PlotNode: PlotNodeResolver(PlotNode, PlotValue, User, Device, Board),
   StringPlotValue: StringPlotValueResolver(
     StringPlotValue,
     StringPlotNode,
+    User,
     Device,
     Board,
   ),
   StringPlotNode: PlotNodeResolver(
     StringPlotNode,
     StringPlotValue,
+    User,
     Device,
     Board,
   ),

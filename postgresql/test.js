@@ -83,6 +83,7 @@ async function instanceAuthorizationLevel(userFound, instance) {
 
   await userFound.addOwnDevices(newDevice)
 
+  await userFound.removeOwnDevices(newDevice)
   const newDevice2 = await Device.create({
     customName: 'test',
     index: 0,

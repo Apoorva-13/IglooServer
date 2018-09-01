@@ -53,30 +53,23 @@ const genericShare = (Model, idField, User, childToParents) => (
       args[idField],
       context,
       Model,
+      User,
       3,
       async (resolve, reject, found) => {
         const userFound = await User.find({ where: { email: args.email } })
 
-        // clear previous role
-        let { adminsIds, editorsIds, spectatorsIds } = found
-
-        adminsIds = adminsIds.filter(id => id !== userFound.id)
-        editorsIds = adminsIds.filter(id => id !== userFound.id)
-        spectatorsIds = adminsIds.filter(id => id !== userFound.id)
+        // remove old role
+        await Promise.all([
+          userFound[`remove${found.Admins}`](found),
+          userFound[`remove${found.Editors}`](found),
+          userFound[`remove${found.Spectators}`](found),
+        ])
 
         // add new role
-        if (args.role === 'ADMIN') adminsIds.push(userFound.id)
-        else if (args.role === 'EDITOR') editorsIds.push(userFound.id)
-        else if (args.role === 'SPECTATOR') spectatorsIds.push(userFound.id)
+        const parsedRole = `${args.role[0] + args.role.slice(1).toLowerCase()}s`
+        await userFound[`add${found[parsedRole]}`](found)
 
-        const updated = await found.update({
-          adminsIds,
-          editorsIds,
-          spectatorsIds,
-        })
-
-        resolve(updated)
-
+        resolve(found)
         context.billingUpdater.update(MUTATION_COST)
       },
       childToParents,
@@ -84,20 +77,22 @@ const genericShare = (Model, idField, User, childToParents) => (
   )
 
 const MutationResolver = (
-  User,
-  PermanentToken,
-  Device,
-  Board,
-  FloatValue,
-  StringValue,
-  BoolValue,
-  ColourValue,
-  MapValue,
-  PlotValue,
-  PlotNode,
-  StringPlotValue,
-  StringPlotNode,
-  Notification,
+  {
+    User,
+    PermanentToken,
+    Device,
+    Board,
+    FloatValue,
+    StringValue,
+    BoolValue,
+    ColourValue,
+    MapValue,
+    PlotValue,
+    PlotNode,
+    StringPlotValue,
+    StringPlotNode,
+    Notification,
+  },
   WebPushSubscription,
   pubsub,
   JWT_SECRET,
@@ -297,8 +292,7 @@ const MutationResolver = (
       }),
     )
   },
-  // checks that the provided email and password are correct
-  // if so changes the password and returns an access token
+  // changes the password and returns an access token
   ChangePassword(root, args, context) {
     return logErrorsPromise(
       'ChangePassword',
@@ -367,29 +361,24 @@ const MutationResolver = (
           PlotValue,
           StringPlotValue,
         },
+        User,
         3,
         async (resolve, reject, valueFound) => {
           const userFound = await User.find({ where: { email: args.email } })
 
-          // clear previous role
-          let { adminsIds, editorsIds, spectatorsIds } = valueFound
-
-          adminsIds = adminsIds.filter(id => id !== userFound.id)
-          editorsIds = adminsIds.filter(id => id !== userFound.id)
-          spectatorsIds = adminsIds.filter(id => id !== userFound.id)
+          // remove old role
+          await Promise.all([
+            userFound[`remove${valueFound.Admins}`](valueFound),
+            userFound[`remove${valueFound.Editors}`](valueFound),
+            userFound[`remove${valueFound.Spectators}`](valueFound),
+          ])
 
           // add new role
-          if (args.role === 'ADMIN') adminsIds.push(userFound.id)
-          else if (args.role === 'EDITOR') editorsIds.push(userFound.id)
-          else if (args.role === 'SPECTATOR') spectatorsIds.push(userFound.id)
+          const parsedRole = `${args.role[0] +
+            args.role.slice(1).toLowerCase()}s`
+          await userFound[`add${valueFound[parsedRole]}`](valueFound)
 
-          const updated = await valueFound.update({
-            adminsIds,
-            editorsIds,
-            spectatorsIds,
-          })
-
-          resolve(updated)
+          resolve(valueFound)
 
           context.billingUpdater.update(MUTATION_COST)
         },
@@ -445,6 +434,7 @@ const MutationResolver = (
             ? args.index
             : await Device.count({ where: { ownerId: context.auth.userId } })
 
+        // TODO: check that the boardId passed is a board to which the user has access
         const newDevice = await Device.create({
           ...args,
           index,

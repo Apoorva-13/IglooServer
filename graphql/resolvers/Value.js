@@ -17,21 +17,23 @@ const retrieveValueScalarProp = (Values, prop, Device, Board) => (
     root.id,
     context,
     Values,
+    User,
     1,
     (resolve, reject, valueFound) => resolve(valueFound[prop]),
     Device,
     Board,
   )
 
-const valueScalarPropsResolvers = (Model, props, Device, Board) =>
+const valueScalarPropsResolvers = (Model, User, props, Device, Board) =>
   props.reduce((acc, prop) => {
     acc[prop] = retrieveValueScalarProp(Model, prop, Device, Board)
     return acc
   }, {})
 
-const ValueResolver = (Values, Device, Board) => ({
+const ValueResolver = (Values, User, Device, Board) => ({
   ...valueScalarPropsResolvers(
     Values,
+    User,
     [
       'createdAt',
       'updatedAt',
@@ -50,10 +52,10 @@ const ValueResolver = (Values, Device, Board) => ({
       root.id,
       context,
       Values,
+      User,
       1,
-      (resolve, reject, valueFound, valueAndParents) => {
-        const myRole = instanceToRole(valueAndParents, context.auth.userId)
-        console.log(myRole)
+      (resolve, reject, valueFound, valueAndParents, userFound) => {
+        const myRole = instanceToRole(valueAndParents, userFound)
         resolve(myRole)
       },
       Device,
@@ -89,6 +91,9 @@ const ValueResolver = (Values, Device, Board) => ({
             if (!resourceFound) {
               rejectInner(NOT_EXIST)
             } else {
+              const userFound = await User.find({
+                where: { id: context.auth.userId },
+              })
               const deviceFound = await Device.find({
                 where: { id: resourceFound.deviceId },
               })
@@ -103,7 +108,7 @@ const ValueResolver = (Values, Device, Board) => ({
                   boardFound
                     ? [resourceFound, deviceFound, boardFound]
                     : [resourceFound, deviceFound],
-                  context.auth.userId,
+                  userFound,
                 ) < 1
               ) {
                 /* istanbul ignore next */

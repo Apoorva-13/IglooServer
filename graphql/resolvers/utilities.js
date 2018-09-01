@@ -428,7 +428,7 @@ const findValue = (
   Device,
   Board,
   query,
-  userId,
+  userFound,
 ) => {
   const booleanValue = BoolValue.find(query).then(value =>
     (value
@@ -523,7 +523,7 @@ const findValue = (
             boardFound
               ? [value, deviceFound, boardFound]
               : [value, deviceFound],
-            userId,
+            userFound,
           ) < 1
         ) {
           throw new Error('You are not allowed to access details about this resource')
@@ -901,7 +901,7 @@ const authorizedValue = (
       ))
     })
 
-    return callbackFunc(resolve, reject, ...resourcesFound)
+    return callbackFunc(resolve, reject, ...resourcesFound, userFound)
   })
 
 const instanceToRole = (instances, userFound) => {
