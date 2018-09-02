@@ -8,7 +8,7 @@ import {
   instancesToSharedIds,
 } from './utilities'
 
-const subscriptionResolver = (pubsub, Device, Board) => ({
+const subscriptionResolver = (pubsub, { User, Device, Board }) => ({
   boardCreated: subscriptionFilterOnlyMine('boardCreated', pubsub),
   deviceCreated: subscriptionFilterOwnedOrShared('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOwnedOrShared('valueCreated', pubsub),
@@ -57,10 +57,11 @@ const subscriptionResolver = (pubsub, Device, Board) => ({
           args.deviceId,
           context,
           Device,
+          User,
           2,
           async (resolve, reject, deviceFound, deviceAndBoard) => {
             const newDevice = await deviceFound.update({ online: true })
-            const userIds = instancesToSharedIds(deviceAndBoard)
+            const userIds = await instancesToSharedIds(deviceAndBoard)
 
             pubsub.publish('deviceUpdated', {
               deviceUpdated: newDevice.dataValues,

@@ -52,7 +52,7 @@ const resolvers = {
     JWT_SECRET,
   ),
   Query: QueryResolver(SequelizeConnections),
-  Subscription: SubscriptionsResolver(pubsub, Device, Board),
+  Subscription: SubscriptionsResolver(pubsub, SequelizeConnections),
   Value: ValueResolver(
     {
       BoolValue,
