@@ -89,16 +89,8 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  const rolesIds = {
-    ...otherId('ownerId', User),
-    ...othersIds('adminsIds', User),
-    ...othersIds('editorsIds', User),
-    ...othersIds('spectatorsIds', User),
-  }
-
   const Board = sequelize.define('board', {
     ...selfId,
-    ...rolesIds,
     customName: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -148,7 +140,6 @@ const databaseDefinition = (sequelize) => {
 
   const Device = sequelize.define('device', {
     ...selfId,
-    ...rolesIds,
     deviceType: {
       type: Sequelize.STRING,
     },
@@ -196,7 +187,6 @@ const databaseDefinition = (sequelize) => {
 
   const Value = {
     ...selfId,
-    ...rolesIds,
     valueDetails: {
       type: Sequelize.STRING,
     },

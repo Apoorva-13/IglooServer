@@ -9,7 +9,7 @@ import {
 const QUERY_COST = 1
 
 const BoardResolver = ({
-  Board, Device, Notification, joinTables,
+  User, Board, Device, Notification, joinTables,
 }) => ({
   ...authorizedScalarPropsResolvers(Board, User, [
     'customName',

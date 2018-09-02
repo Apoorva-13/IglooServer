@@ -465,6 +465,7 @@ const MutationResolver = (
     )
   },
   CreateFloatValue: CreateGenericValue(
+    User,
     Device,
     Board,
     FloatValue,
@@ -480,6 +481,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreateStringValue: CreateGenericValue(
+    User,
     Device,
     Board,
     StringValue,
@@ -495,6 +497,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreateBooleanValue: CreateGenericValue(
+    User,
     Device,
     Board,
     BoolValue,
@@ -510,6 +513,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreateColourValue: CreateGenericValue(
+    User,
     Device,
     Board,
     ColourValue,
@@ -525,6 +529,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreateMapValue: CreateGenericValue(
+    User,
     Device,
     Board,
     MapValue,
@@ -540,6 +545,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreatePlotValue: CreateGenericValue(
+    User,
     Device,
     Board,
     PlotValue,
@@ -555,6 +561,7 @@ const MutationResolver = (
     pubsub,
   ),
   CreateStringPlotValue: CreateGenericValue(
+    User,
     Device,
     Board,
     StringPlotValue,
@@ -577,6 +584,7 @@ const MutationResolver = (
         args.plotId,
         context,
         PlotValue,
+        User,
         2,
         async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await PlotNode.create({
@@ -602,7 +610,7 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeCreated', {
             plotNodeCreated: resolveObj,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -619,6 +627,7 @@ const MutationResolver = (
         args.plotId,
         context,
         StringPlotValue,
+        User,
         2,
         async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await StringPlotNode.create({
@@ -644,7 +653,7 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeCreated', {
             stringPlotNodeCreated: resolveObj,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
           context.billingUpdater.update(MUTATION_COST)
         },
@@ -744,6 +753,7 @@ const MutationResolver = (
         args.id,
         context,
         Board,
+        User,
         2,
         async (resolve, reject, boardFound) => {
           const newBoard = await boardFound.update(args)
@@ -751,7 +761,7 @@ const MutationResolver = (
           resolve(newBoard.dataValues)
           pubsub.publish('boardUpdated', {
             boardUpdated: newBoard.dataValues,
-            userIds: instancesToSharedIds([boardFound]),
+            userIds: await instancesToSharedIds([boardFound]),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -767,13 +777,14 @@ const MutationResolver = (
         args.id,
         context,
         Device,
+        User,
         2,
         async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
             deviceUpdated: newDevice.dataValues,
-            userIds: instancesToSharedIds(deviceAndBoard),
+            userIds: await instancesToSharedIds(deviceAndBoard),
           })
           context.billingUpdater.update(MUTATION_COST)
         },
@@ -785,6 +796,7 @@ const MutationResolver = (
     FloatValue,
     'FloatValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
@@ -792,6 +804,7 @@ const MutationResolver = (
     StringValue,
     'StringValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
@@ -799,6 +812,7 @@ const MutationResolver = (
     BoolValue,
     'BooleanValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
@@ -806,14 +820,23 @@ const MutationResolver = (
     ColourValue,
     'ColourValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
-  mapValue: genericValueMutation(MapValue, 'MapValue', pubsub, Device, Board),
+  mapValue: genericValueMutation(
+    MapValue,
+    'MapValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
   plotValue: genericValueMutation(
     PlotValue,
     'PlotValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
@@ -821,6 +844,7 @@ const MutationResolver = (
     StringPlotValue,
     'StringPlotValue',
     pubsub,
+    User,
     Device,
     Board,
   ),
@@ -831,6 +855,7 @@ const MutationResolver = (
       inheritAuthorized(
         args.id,
         PlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         PlotValue,
@@ -859,7 +884,7 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeUpdated', {
             plotNodeUpdated: resolveObj,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -875,6 +900,7 @@ const MutationResolver = (
       inheritAuthorized(
         args.id,
         StringPlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         StringPlotValue,
@@ -903,7 +929,7 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeUpdated', {
             stringPlotNodeUpdated: resolveObj,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -920,6 +946,7 @@ const MutationResolver = (
         args.deviceId,
         context,
         Device,
+        User,
         2,
         async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newNotification = await Notification.create({
@@ -954,7 +981,7 @@ const MutationResolver = (
 
           resolve(resolveValue)
 
-          const deviceSharedIds = instancesToSharedIds(deviceAndBoard)
+          const deviceSharedIds = await instancesToSharedIds(deviceAndBoard)
           pubsub.publish('notificationCreated', {
             notificationCreated: resolveValue,
             userIds: deviceSharedIds,
@@ -973,11 +1000,12 @@ const MutationResolver = (
             })
             pubsub.publish('boardUpdated', {
               boardUpdated: boardFound.dataValues,
-              userIds: instancesToSharedIds([boardFound]),
+              userIds: await instancesToSharedIds([boardFound]),
             })
           }
           context.billingUpdater.update(MUTATION_COST)
 
+          // TODO: get userFound from callback
           const userFound = await User.find({
             where: { id: context.auth.userId },
           })
@@ -1028,7 +1056,8 @@ const MutationResolver = (
           notificationFound.deviceId,
           context,
           Device,
-          1,
+          User,
+          2,
           async (resolve, reject, deviceFound, deviceAndParent) => {
             const updateQuery = getPropsIfDefined(args, [
               'content',
@@ -1056,7 +1085,7 @@ const MutationResolver = (
 
             resolve(resolveValue)
 
-            const deviceSharedIds = instancesToSharedIds(deviceAndParent)
+            const deviceSharedIds = await instancesToSharedIds(deviceAndParent)
             pubsub.publish('notificationUpdated', {
               notificationUpdated: resolveValue,
               userIds: deviceSharedIds,
@@ -1084,13 +1113,14 @@ const MutationResolver = (
           notificationFound.deviceId,
           context,
           Device,
-          1,
+          User,
+          2,
           async (resolve, reject, deviceFound, deviceAndParent) => {
             await notificationFound.destroy()
 
             resolve(args.id)
 
-            const deviceSharedIds = instancesToSharedIds(deviceAndParent)
+            const deviceSharedIds = await instancesToSharedIds(deviceAndParent)
             pubsub.publish('notificationDeleted', {
               notificationDeleted: args.id,
               userIds: deviceSharedIds,
@@ -1109,7 +1139,7 @@ const MutationResolver = (
               })
               pubsub.publish('boardUpdated', {
                 boardUpdated: boardFound.dataValues,
-                userIds: instancesToSharedIds([boardFound]),
+                userIds: await instancesToSharedIds([boardFound]),
               })
             }
             context.billingUpdater.update(MUTATION_COST)
@@ -1135,14 +1165,17 @@ const MutationResolver = (
           PlotValue,
           StringPlotValue,
         },
+        User,
         3,
         async (resolve, reject, valueFound, valueAndParents) => {
+          const authorizedUsersIds = await instancesToSharedIds(valueAndParents)
+
           // TODO: if value is plot remove nodes
           await valueFound.destroy()
 
           pubsub.publish('valueDeleted', {
             valueDeleted: args.id,
-            userIds: instancesToSharedIds(valueAndParents),
+            userIds: authorizedUsersIds,
           })
           resolve(args.id)
           context.billingUpdater.update(MUTATION_COST)
@@ -1159,8 +1192,10 @@ const MutationResolver = (
         args.id,
         context,
         Device,
+        User,
         3,
         async (resolve, reject, deviceFound, deviceAndParent) => {
+          const authorizedUsersIds = await instancesToSharedIds(deviceAndParent)
           const deleteChild = Model =>
             Model.destroy({
               where: {
@@ -1185,7 +1220,7 @@ const MutationResolver = (
 
           pubsub.publish('deviceDeleted', {
             deviceDeleted: args.id,
-            userIds: instancesToSharedIds(deviceAndParent),
+            userIds: authorizedUsersIds,
           })
 
           resolve(args.id)
@@ -1202,8 +1237,10 @@ const MutationResolver = (
         args.id,
         context,
         Board,
+        User,
         3,
         async (resolve, reject, boardFound) => {
+          const authorizedUsersIds = instancesToSharedIds([boardFound])
           const devices = await Device.findAll({
             where: { boardId: boardFound.id },
           })
@@ -1236,7 +1273,7 @@ const MutationResolver = (
 
           pubsub.publish('boardDeleted', {
             boardDeleted: args.id,
-            userIds: instancesToSharedIds([boardFound]),
+            userIds: authorizedUsersIds,
           })
           resolve(args.id)
 
@@ -1251,6 +1288,7 @@ const MutationResolver = (
       inheritAuthorized(
         args.id,
         PlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         PlotValue,
@@ -1267,7 +1305,7 @@ const MutationResolver = (
           resolve(args.id)
           pubsub.publish('plotNodeDeleted', {
             plotNodeDeleted: args.id,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
@@ -1283,6 +1321,7 @@ const MutationResolver = (
       inheritAuthorized(
         args.id,
         StringPlotNode,
+        User,
         plotNodeFound => plotNodeFound.plotId,
         context,
         StringPlotValue,
@@ -1299,7 +1338,7 @@ const MutationResolver = (
           resolve(args.id)
           pubsub.publish('plotNodeDeleted', {
             plotNodeDeleted: args.id,
-            userIds: instancesToSharedIds(plotAndParents),
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)

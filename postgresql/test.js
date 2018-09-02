@@ -6,6 +6,15 @@ import {
   joinTables,
 } from './databaseConnection'
 
+async function getAllUsers(modelFound) {
+  const owner = await modelFound.getOwner()
+  const admins = await modelFound.getAdmin()
+  const editors = await modelFound.getEditor()
+  const spectators = await modelFound.getSpectator()
+
+  return [owner, ...admins, ...editors, ...spectators].map(user => user.id)
+}
+
 async function getAll(Model, User, userId, includesList = []) {
   // for some reason sequelize needs the includes to be different instances,
   // so we shallow clone every include object
@@ -76,9 +85,6 @@ async function instanceAuthorizationLevel(userFound, instance) {
     permission: 'READ_WRITE',
     relevance: 'VISIBLE',
     ownerId: userFound.id,
-    adminsIds: [],
-    editorsIds: [],
-    spectatorsIds: [],
   })
 
   await userFound.addOwnDevices(newDevice)
@@ -90,19 +96,18 @@ async function instanceAuthorizationLevel(userFound, instance) {
     permission: 'READ_WRITE',
     relevance: 'VISIBLE',
     ownerId: userFound.id,
-    adminsIds: [],
-    editorsIds: [],
-    spectatorsIds: [],
   })
 
   await userFound.addAdminDevices(newDevice2)
 
+  console.log(await getAllUsers(newDevice2))
+
+  return
   const admins = await joinTables.DeviceAdmins.findAll({
     where: { userId: userFound.id },
   })
   console.log(admins.map(admin => admin.dataValues))
 
-  return
   console.log(await instanceAuthorizationLevel(userFound, newDevice2))
 
   const myDevicesFlatten = await getAll(Device, User, userFound.id, [

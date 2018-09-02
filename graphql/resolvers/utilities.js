@@ -148,11 +148,14 @@ const getPropsIfDefined = (args, props) => {
 
 const MUTATION_COST = 2
 // generic resolver for CreateXValue mutations
-const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
-  root,
-  args,
-  context,
-) =>
+const CreateGenericValue = (
+  User,
+  Device,
+  Board,
+  Model,
+  ValueModels,
+  pubsub,
+) => (root, args, context) =>
   logErrorsPromise(
     'CreateGenericValue',
     112,
@@ -160,6 +163,7 @@ const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
       args.deviceId,
       context,
       Device,
+      User,
       2,
       async (resolve, reject, deviceFound, deviceAndParent) => {
         async function calculateIndex() {
@@ -180,9 +184,6 @@ const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
           ...args,
           tileSize: args.tileSize || 'NORMAL',
           ownerId: context.auth.userId,
-          adminsIds: [],
-          editorsIds: [],
-          spectatorsIds: [],
           index,
         })).dataValues
 
@@ -198,7 +199,7 @@ const CreateGenericValue = (Device, Board, Model, ValueModels, pubsub) => (
 
         pubsub.publish('valueCreated', {
           valueCreated: resolveObj,
-          userIds: instancesToSharedIds(deviceAndParent),
+          userIds: await instancesToSharedIds(deviceAndParent),
         })
 
         resolve(resolveObj)
@@ -226,6 +227,7 @@ const genericValueMutation = (
   childModel,
   __resolveType,
   pubsub,
+  User,
   Device,
   Board,
 ) => (root, args, context) =>
@@ -236,12 +238,13 @@ const genericValueMutation = (
       args.id,
       context,
       childModel,
+      User,
       2,
       async (resolve, reject, valueFound, valueAndParents) => {
         const newValue = await valueFound.update(args)
         const resolveObj = {
           ...newValue.dataValues,
-          user: {
+          owner: {
             id: newValue.dataValues.userId,
           },
           device: {
@@ -252,7 +255,7 @@ const genericValueMutation = (
 
         pubsub.publish('valueUpdated', {
           valueUpdated: { ...resolveObj, __resolveType },
-          userIds: instancesToSharedIds(valueAndParents),
+          userIds: await instancesToSharedIds(valueAndParents),
         })
         context.billingUpdater.update(MUTATION_COST)
       },
@@ -680,6 +683,7 @@ const scalarPropsResolvers = (Model, props) =>
   }, {})
 
 async function instanceAuthorizationLevel(instance, userFound) {
+  // FIXME: probably doesn't work with FloatValue, BooleanValue, ...
   const modelNameLowerCase = instance._modelOptions.name.singular
   const ModelName =
     modelNameLowerCase[0].toUpperCase() + modelNameLowerCase.slice(1)
@@ -921,18 +925,21 @@ const instanceToRole = (instances, userFound) => {
   }
 }
 
-// FIXME: no longer working
-const instancesToSharedIds = instances =>
-  instances.reduce(
-    (acc, curr) => [
-      ...acc,
-      curr.ownerId,
-      ...curr.adminsIds,
-      ...curr.editorsIds,
-      ...curr.spectatorsIds,
-    ],
-    [],
-  )
+const instanceToSharedIds = async (instance) => {
+  const owner = await modelFound.getOwner()
+  const admins = await modelFound.getAdmin()
+  const editors = await modelFound.getEditor()
+  const spectators = await modelFound.getSpectator()
+
+  return [owner, ...admins, ...editors, ...spectators].map(user => user.id)
+}
+
+const instancesToSharedIds = async (instances) => {
+  const idsList = await Promise.all(instances.map(instanceToSharedIds))
+  const flattenedIdsList = idsList.reduce((acc, curr) => [...acc, ...curr], [])
+
+  return flattenedIdsList
+}
 
 const inheritAuthorized = (
   ownId,
