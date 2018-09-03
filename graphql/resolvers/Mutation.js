@@ -968,6 +968,9 @@ const MutationResolver = (
             date: args.date || new Date(),
           })
 
+          deviceFound.addNotification(newNotification)
+          newNotification.setDevice(deviceFound)
+
           const {
             visualized,
             content,

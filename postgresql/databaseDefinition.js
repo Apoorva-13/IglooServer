@@ -312,6 +312,9 @@ const databaseDefinition = (sequelize) => {
   })
 
   Board.hasMany(Device)
+  Device.belongsTo(Board)
+  Device.hasMany(Notification)
+  Notification.belongsTo(Device)
 
   const values = [
     BoolValue,

@@ -177,9 +177,7 @@ const DeviceResolver = ({
         User,
         1,
         async (resolve, reject, deviceFound) => {
-          const notifications = await Notification.findAll({
-            where: { deviceId: root.id },
-          })
+          const notifications = await deviceFound.getNotifications()
 
           resolve(notifications)
           context.billingUpdater.update(QUERY_COST * notifications.length)
