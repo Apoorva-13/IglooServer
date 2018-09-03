@@ -60,14 +60,14 @@ const genericShare = (Model, idField, User, childToParents) => (
 
         // remove old role
         await Promise.all([
-          userFound[`remove${found.Admins}`](found),
-          userFound[`remove${found.Editors}`](found),
-          userFound[`remove${found.Spectators}`](found),
+          userFound[`remove${Model.Admins}`](found),
+          userFound[`remove${Model.Editors}`](found),
+          userFound[`remove${Model.Spectators}`](found),
         ])
 
         // add new role
         const parsedRole = `${args.role[0] + args.role.slice(1).toLowerCase()}s`
-        await userFound[`add${found[parsedRole]}`](found)
+        await userFound[`add${Model[parsedRole]}`](found)
 
         resolve(found)
         context.billingUpdater.update(MUTATION_COST)
@@ -368,15 +368,15 @@ const MutationResolver = (
 
           // remove old role
           await Promise.all([
-            userFound[`remove${valueFound.Admins}`](valueFound),
-            userFound[`remove${valueFound.Editors}`](valueFound),
-            userFound[`remove${valueFound.Spectators}`](valueFound),
+            userFound[`remove${valueFound.Model.Admins}`](valueFound),
+            userFound[`remove${valueFound.Model.Editors}`](valueFound),
+            userFound[`remove${valueFound.Model.Spectators}`](valueFound),
           ])
 
           // add new role
           const parsedRole = `${args.role[0] +
             args.role.slice(1).toLowerCase()}s`
-          await userFound[`add${valueFound[parsedRole]}`](valueFound)
+          await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
 
           resolve(valueFound)
 
@@ -400,11 +400,13 @@ const MutationResolver = (
             args.index !== null && args.index !== undefined
               ? args.index
               : await Board.count({ where: { ownerId: context.auth.userId } }),
-          ownerId: context.auth.userId,
-          adminsIds: [],
-          editorsIds: [],
-          spectatorsIds: [],
         })
+
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        await userFound.addOwnBoard(newBoard)
+        await newBoard.setOwner(userFound)
 
         const resolveValue = {
           ...newBoard.dataValues,
@@ -438,11 +440,13 @@ const MutationResolver = (
         const newDevice = await Device.create({
           ...args,
           index,
-          ownerId: context.auth.userId,
-          adminsIds: [],
-          editorsIds: [],
-          spectatorsIds: [],
         })
+
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        await userFound.addOwnDevice(newDevice)
+        await newDevice.setOwner(userFound)
 
         const resolveValue = {
           ...newDevice.dataValues,
@@ -469,6 +473,7 @@ const MutationResolver = (
     Device,
     Board,
     FloatValue,
+    'FloatValue',
     [
       FloatValue,
       StringValue,
@@ -485,6 +490,7 @@ const MutationResolver = (
     Device,
     Board,
     StringValue,
+    'StringValue',
     [
       FloatValue,
       StringValue,
@@ -501,6 +507,7 @@ const MutationResolver = (
     Device,
     Board,
     BoolValue,
+    'BoolValue',
     [
       FloatValue,
       StringValue,
@@ -517,6 +524,7 @@ const MutationResolver = (
     Device,
     Board,
     ColourValue,
+    'ColourValue',
     [
       FloatValue,
       StringValue,
@@ -533,6 +541,7 @@ const MutationResolver = (
     Device,
     Board,
     MapValue,
+    'MapValue',
     [
       FloatValue,
       StringValue,
@@ -549,6 +558,7 @@ const MutationResolver = (
     Device,
     Board,
     PlotValue,
+    'PlotValue',
     [
       FloatValue,
       StringValue,
@@ -565,6 +575,7 @@ const MutationResolver = (
     Device,
     Board,
     StringPlotValue,
+    'StringPlotValue',
     [
       FloatValue,
       StringValue,

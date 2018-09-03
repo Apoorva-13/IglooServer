@@ -153,6 +153,7 @@ const CreateGenericValue = (
   Device,
   Board,
   Model,
+  ModelName,
   ValueModels,
   pubsub,
 ) => (root, args, context) =>
@@ -165,7 +166,7 @@ const CreateGenericValue = (
       Device,
       User,
       2,
-      async (resolve, reject, deviceFound, deviceAndParent) => {
+      async (resolve, reject, deviceFound, deviceAndParent, userFound) => {
         async function calculateIndex() {
           const valuesCountPromises = ValueModels.map(async model =>
             await model.count({ where: { deviceId: args.deviceId } }))
@@ -180,15 +181,17 @@ const CreateGenericValue = (
             ? args.index
             : await calculateIndex()
 
-        const newValue = (await Model.create({
+        const newValue = await Model.create({
           ...args,
           tileSize: args.tileSize || 'NORMAL',
           ownerId: context.auth.userId,
           index,
-        })).dataValues
+        })
+        await userFound[`addOwn${ModelName}`](newValue)
+        await newValue.setOwner(userFound)
 
         const resolveObj = {
-          ...newValue,
+          ...newValue.dataValues,
           user: {
             id: newValue.userId,
           },
@@ -724,7 +727,7 @@ function authorized(
       const found = await Model.find({ where: { id } })
       const others = await childToParents(found)
 
-      const userFound = await User.find({ where: { id: context.auth.id } })
+      const userFound = await User.find({ where: { id: context.auth.userId } })
 
       if (!found) {
         reject('The requested resource does not exist')
@@ -885,6 +888,7 @@ const authorizedValue = (
         ) {
           throw new Error(NOT_ALLOWED)
         } else {
+          resourceFound.Model = Model
           return [resourceFound, valueAndParents]
         }
       }
@@ -926,10 +930,10 @@ const instanceToRole = (instances, userFound) => {
 }
 
 const instanceToSharedIds = async (instance) => {
-  const owner = await modelFound.getOwner()
-  const admins = await modelFound.getAdmin()
-  const editors = await modelFound.getEditor()
-  const spectators = await modelFound.getSpectator()
+  const owner = await instance.getOwner()
+  const admins = await instance.getAdmin()
+  const editors = await instance.getEditor()
+  const spectators = await instance.getSpectator()
 
   return [owner, ...admins, ...editors, ...spectators].map(user => user.id)
 }
@@ -1024,7 +1028,27 @@ const inheritAuthorizedScalarPropsResolvers = (
 
 async function getAll(Model, User, userId, includesList = []) {
   // for some reason sequelize needs the includes to be different instances,
-  // so we shallow clone every include object
+  // so we clone every include object
+  function deepCloneIncludes(includes) {
+    const clonedList = []
+
+    for (let i = 0; i < includes.length; i++) {
+      const clonedInclude = {}
+      for (const key in includes[i]) {
+        if (includes[i].hasOwnProperty(key)) {
+          if (key !== 'include') {
+            clonedInclude[key] = includes[i][key]
+          } else {
+            clonedInclude[key] = deepCloneIncludes(includes[i][key])
+          }
+        }
+      }
+      clonedList.push(clonedInclude)
+    }
+
+    return clonedList
+  }
+
   const allAccessibles = await User.find({
     where: { id: userId },
     attributes: ['id'],
@@ -1033,25 +1057,25 @@ async function getAll(Model, User, userId, includesList = []) {
         model: Model,
         as: Model.Owner,
         attributes: ['id'],
-        include: includesList.map(({ ...args }) => ({ ...args })),
+        include: deepCloneIncludes(includesList),
       },
       {
         model: Model,
         as: Model.Admins,
         attributes: ['id'],
-        include: includesList.map(({ ...args }) => ({ ...args })),
+        include: deepCloneIncludes(includesList),
       },
       {
         model: Model,
         as: Model.Editors,
         attributes: ['id'],
-        include: includesList.map(({ ...args }) => ({ ...args })),
+        include: deepCloneIncludes(includesList),
       },
       {
         model: Model,
         as: Model.Spectators,
         attributes: ['id'],
-        include: includesList.map(({ ...args }) => ({ ...args })),
+        include: deepCloneIncludes(includesList),
       },
     ],
   })

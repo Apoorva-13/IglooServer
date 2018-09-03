@@ -183,31 +183,75 @@ const UserResolver = ({
           reject('You are not allowed to access details about this user')
         } else {
           // TODO: fetch all the values (also inherited ones) and tag them with the right __resolveType
-          const values = await findAllValues(
+          const valueModels = [
+            FloatValue,
+            StringValue,
+            BoolValue,
+            ColourValue,
+            PlotValue,
+            StringPlotValue,
+            MapValue,
+          ]
+          const directlySharedValues = await Promise.all(valueModels.map(Model => getAll(Model, User, root.id)))
+          const flattenedDirectlySharedValues = directlySharedValues.reduce(
+            (acc, curr) => [...acc, ...curr],
+            [],
+          )
+          const valuesInheritedFromDevices = await getAll(
+            Device,
+            User,
+            root.id,
+            valueModels.map(Model => ({ model: Model })),
+          )
+          const flattenedValuesInheritedFromDevices = valuesInheritedFromDevices.reduce(
+            (acc, device) => [
+              ...acc,
+              ...device.floatValues,
+              ...device.stringValues,
+              ...device.boolValues,
+              ...device.colourValues,
+              ...device.plotValues,
+              ...device.stringPlotValues,
+              ...device.mapValues,
+            ],
+            [],
+          )
+          console.log(flattenedValuesInheritedFromDevices)
+
+          const valuesInheritedFromBoards = await getAll(Board, User, root.id, [
             {
-              BoolValue,
-              FloatValue,
-              StringValue,
-              ColourValue,
-              PlotValue,
-              StringPlotValue,
-              MapValue,
+              model: Device,
+              include: valueModels.map(Model => ({ model: Model })),
             },
-            {
-              where: {
-                [Op.or]: [
-                  { ownerId: root.id },
-                  { adminsIds: { [Op.contains]: [root.id] } },
-                  { editorsIds: { [Op.contains]: [root.id] } },
-                  { spectatorsIds: { [Op.contains]: [root.id] } },
+          ])
+          const flattenedValuesInheritedFromBoards = valuesInheritedFromBoards.reduce(
+            (acc, curr) => [
+              ...acc,
+              ...curr.devices.reduce(
+                (acc, device) => [
+                  ...acc,
+                  ...device.floatValues,
+                  ...device.stringValues,
+                  ...device.boolValues,
+                  ...device.colourValues,
+                  ...device.plotValues,
+                  ...device.stringPlotValues,
+                  ...device.mapValues,
                 ],
-              },
-            },
-            context.auth.userId,
+                [],
+              ),
+            ],
+            [],
           )
 
-          resolve(values)
-          context.billingUpdater.update(QUERY_COST * values.length)
+          // TODO: remove duplicates
+          const flattenedAllValues = [
+            ...flattenedDirectlySharedValues,
+            ...flattenedValuesInheritedFromDevices,
+            ...flattenedValuesInheritedFromBoards,
+          ]
+          resolve(flattenedAllValues)
+          context.billingUpdater.update(QUERY_COST * flattenedAllValues.length)
         }
       }),
     )
