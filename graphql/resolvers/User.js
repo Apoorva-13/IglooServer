@@ -216,7 +216,6 @@ const UserResolver = ({
             ],
             [],
           )
-          console.log(flattenedValuesInheritedFromDevices)
 
           const valuesInheritedFromBoards = await getAll(Board, User, root.id, [
             {
@@ -244,12 +243,20 @@ const UserResolver = ({
             [],
           )
 
-          // TODO: remove duplicates
-          const flattenedAllValues = [
-            ...flattenedDirectlySharedValues,
-            ...flattenedValuesInheritedFromDevices,
-            ...flattenedValuesInheritedFromBoards,
-          ]
+          const flattenedAllValues = []
+          const alreadyAddedIds = []
+          const addIgnoringDuplicates = arr =>
+            arr.forEach((value) => {
+              if (alreadyAddedIds.indexOf(value.id) === -1) {
+                flattenedAllValues.push(value)
+                alreadyAddedIds.push(value.id)
+              }
+            })
+
+          addIgnoringDuplicates(flattenedDirectlySharedValues)
+          addIgnoringDuplicates(flattenedValuesInheritedFromDevices)
+          addIgnoringDuplicates(flattenedValuesInheritedFromBoards)
+
           resolve(flattenedAllValues)
           context.billingUpdater.update(QUERY_COST * flattenedAllValues.length)
         }

@@ -725,20 +725,24 @@ function authorized(
     context,
     async (resolve, reject) => {
       const found = await Model.find({ where: { id } })
-      const others = await childToParents(found)
-
-      const userFound = await User.find({ where: { id: context.auth.userId } })
 
       if (!found) {
         reject('The requested resource does not exist')
-      } else if (
-        authorizationLevel([found, ...others], userFound) <
-        authorizationRequired
-      ) {
-        /* istanbul ignore next */
-        reject('You are not allowed to access details about this resource')
       } else {
-        return callback(resolve, reject, found, [found, ...others], userFound)
+        const others = await childToParents(found)
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+
+        if (
+          authorizationLevel([found, ...others], userFound) <
+          authorizationRequired
+        ) {
+          /* istanbul ignore next */
+          reject('You are not allowed to access details about this resource')
+        } else {
+          return callback(resolve, reject, found, [found, ...others], userFound)
+        }
       }
     },
     acceptedTokenTypes,
