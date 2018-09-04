@@ -3,6 +3,7 @@ import {
   logErrorsPromise,
   findAllValues,
   getAll,
+  mergeIgnoringDuplicates,
 } from './utilities'
 import { Op } from 'sequelize'
 
@@ -159,16 +160,37 @@ const UserResolver = ({
       'User devices resolver',
       119,
       authenticated(context, async (resolve, reject) => {
-        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          // TODO: fetch all devices and include the notifications then flatten
-          const notifications = await Notification.findAll({
-            where: { userId: root.id },
-          })
-          resolve(notifications)
-          context.billingUpdater.update(QUERY_COST * notifications.length)
+          const directlyOwnedDevices = await getAll(Device, User, root.id, [
+            { model: Notification },
+          ])
+          const devicesInheritedByBoards = await getAll(Board, User, root.id, [
+            { model: Device, include: [{ model: Notification }] },
+          ])
+
+          const directlyOwnedNotifications = directlyOwnedDevices.reduce(
+            (acc, device) => [...acc, ...device.notifications],
+            [],
+          )
+          const notificationsInheritedByBoards = devicesInheritedByBoards.reduce(
+            (acc, board) => [
+              ...acc,
+              ...board.devices.reduce(
+                (acc, device) => [...acc, ...device.notifications],
+                [],
+              ),
+            ],
+            [],
+          )
+
+          const allNotifications = mergeIgnoringDuplicates(
+            directlyOwnedNotifications,
+            notificationsInheritedByBoards,
+          )
+          resolve(allNotifications)
+          context.billingUpdater.update(QUERY_COST * allNotifications.length)
         }
       }),
     )
@@ -243,19 +265,11 @@ const UserResolver = ({
             [],
           )
 
-          const flattenedAllValues = []
-          const alreadyAddedIds = []
-          const addIgnoringDuplicates = arr =>
-            arr.forEach((value) => {
-              if (alreadyAddedIds.indexOf(value.id) === -1) {
-                flattenedAllValues.push(value)
-                alreadyAddedIds.push(value.id)
-              }
-            })
-
-          addIgnoringDuplicates(flattenedDirectlySharedValues)
-          addIgnoringDuplicates(flattenedValuesInheritedFromDevices)
-          addIgnoringDuplicates(flattenedValuesInheritedFromBoards)
+          const flattenedAllValues = mergeIgnoringDuplicates(
+            flattenedDirectlySharedValues,
+            flattenedValuesInheritedFromDevices,
+            flattenedValuesInheritedFromBoards,
+          )
 
           resolve(flattenedAllValues)
           context.billingUpdater.update(QUERY_COST * flattenedAllValues.length)

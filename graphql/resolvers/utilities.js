@@ -1094,6 +1094,19 @@ async function getAll(Model, User, userId, includesList = []) {
   return allFlattened
 }
 
+const mergeIgnoringDuplicates = (...args) => {
+  const flattenedAllValues = []
+  const alreadyAddedIds = []
+  args.forEach(arr =>
+    arr.forEach((value) => {
+      if (alreadyAddedIds.indexOf(value.id) === -1) {
+        flattenedAllValues.push(value)
+        alreadyAddedIds.push(value.id)
+      }
+    }))
+  return flattenedAllValues
+}
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -1130,4 +1143,5 @@ module.exports = {
   inheritAuthorized,
   inheritAuthorizedScalarPropsResolvers,
   getAll,
+  mergeIgnoringDuplicates,
 }
