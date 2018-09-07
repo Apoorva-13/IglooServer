@@ -83,7 +83,6 @@ const databaseDefinition = (sequelize) => {
 
   const Board = sequelize.define('board', {
     ...selfId,
-    ...otherId('userId', User),
     customName: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -133,8 +132,6 @@ const databaseDefinition = (sequelize) => {
 
   const Device = sequelize.define('device', {
     ...selfId,
-    ...otherId('userId', User),
-    ...otherId('boardId', Board, true),
     deviceType: {
       type: Sequelize.STRING,
     },
@@ -164,7 +161,6 @@ const databaseDefinition = (sequelize) => {
   const Notification = sequelize.define('notification', {
     ...selfId,
     ...otherId('userId', User),
-    ...otherId('deviceId', Device),
     content: {
       type: Sequelize.STRING,
     },
@@ -182,8 +178,6 @@ const databaseDefinition = (sequelize) => {
 
   const Value = {
     ...selfId,
-    ...otherId('userId', User),
-    ...otherId('deviceId', Device),
     valueDetails: {
       type: Sequelize.STRING,
     },
@@ -308,6 +302,99 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
+  Board.hasMany(Device)
+  Device.belongsTo(Board)
+
+  Device.hasMany(Notification)
+  Notification.belongsTo(Device)
+
+  PlotValue.hasMany(PlotNode)
+  PlotNode.belongsTo(PlotValue, { as: 'plot' })
+
+  StringPlotValue.hasMany(StringPlotNode)
+  StringPlotNode.belongsTo(StringPlotValue, { as: 'plot' })
+
+  const values = [
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    MapValue,
+    PlotValue,
+    StringPlotValue,
+  ]
+  values.forEach((Value) => {
+    Device.hasMany(Value)
+    Board.hasMany(Value)
+  })
+
+  // sets up all the OWNER, ADMIN, EDITOR, SPECTATOR relationships using a join table for the last 3
+  const models = {
+    Board,
+    Device,
+    BoolValue,
+    FloatValue,
+    StringValue,
+    PlotValue,
+    StringPlotValue,
+    MapValue,
+    ColourValue,
+  }
+  const modelNames = Object.keys(models)
+  const modelObjects = Object.values(models)
+
+  const associations = []
+  const joinTables = {}
+  for (let i = 0; i < modelNames.length; i++) {
+    modelObjects[i].Owner = `Own${modelNames[i]}s`
+    modelObjects[i].belongsTo(User, { as: 'owner' })
+    User[`Own${modelNames[i]}s`] = User.hasMany(modelObjects[i], {
+      as: `Own${modelNames[i]}s`,
+    })
+
+    const adminAssociation = sequelize.define(`${modelNames[i]}Admins`, {})
+    associations.push(adminAssociation)
+    joinTables[`${modelNames[i]}Admins`] = adminAssociation
+    modelObjects[i].Admins = `Admin${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
+      as: 'admin',
+      through: `${modelNames[i]}Admins`,
+    })
+    User[`Admin${modelNames[i]}s`] = User.belongsToMany(modelObjects[i], {
+      through: `${modelNames[i]}Admins`,
+      as: `Admin${modelNames[i]}s`,
+    })
+
+    const editorAssociation = sequelize.define(`${modelNames[i]}Editors`, {})
+    joinTables[`${modelNames[i]}Editors`] = editorAssociation
+    associations.push(editorAssociation)
+    modelObjects[i].Editors = `Editor${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
+      as: 'editor',
+      through: `${modelNames[i]}Editors`,
+    })
+    User[`Editor${modelNames[i]}s`] = User.belongsToMany(modelObjects[i], {
+      as: `Editor${modelNames[i]}s`,
+      through: `${modelNames[i]}Editors`,
+    })
+
+    const spectatorAssociation = sequelize.define(
+      `${modelNames[i]}Spectators`,
+      {},
+    )
+    joinTables[`${modelNames[i]}Spectators`] = spectatorAssociation
+    associations.push(spectatorAssociation)
+    modelObjects[i].Spectators = `Spectator${modelNames[i]}s`
+    modelObjects[i].belongsToMany(User, {
+      as: 'spectator',
+      through: `${modelNames[i]}Spectators`,
+    })
+    User[`Spectator${modelNames[i]}s`] = User.belongsToMany(modelObjects[i], {
+      as: `Spectator${modelNames[i]}s`,
+      through: `${modelNames[i]}Spectators`,
+    })
+  }
+
   return {
     User,
     Board,
@@ -324,6 +411,8 @@ const databaseDefinition = (sequelize) => {
     WebPushSubscription,
     StringPlotValue,
     StringPlotNode,
+    associations,
+    joinTables,
   }
 }
 

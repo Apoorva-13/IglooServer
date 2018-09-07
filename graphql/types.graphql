@@ -26,6 +26,12 @@ type UpgradeTo2FactorPayload {
   qrCode: String
 }
 
+enum Role {
+  ADMIN
+  EDITOR
+  SPECTATOR
+}
+
 # All available mutations
 type Mutation {
   # Gets an authentication token
@@ -61,6 +67,9 @@ type Mutation {
 
   ResendVerificationEmail: Boolean
 
+  shareBoard(boardId: ID!, email: String!, role: Role!): Board
+  shareDevice(deviceId: ID!, email: String!, role: Role!): Device
+  shareValue(valueId: ID!, email: String!, role: Role!): Value
   # Creates a Board
   CreateBoard(
     customName: String!
@@ -613,11 +622,22 @@ type User {
   emailIsVerified: Boolean
 }
 
+enum RoleExtended {
+  OWNER
+  ADMIN
+  EDITOR
+  SPECTATOR
+}
+
 type Board {
   id: ID!
   createdAt: DateTime!
   updatedAt: DateTime!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   customName: String!
   avatar: String
   devices: [Device!]!
@@ -646,7 +666,11 @@ type Device {
   # Custom name gave by the end-user to the device
   customName: String
   values: [Value!]!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   board: Board
   icon: String
   notifications: [Notification!]!
@@ -723,7 +747,11 @@ interface Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -737,7 +765,11 @@ type FloatValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -756,7 +788,11 @@ type StringValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -773,7 +809,11 @@ type PlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -794,7 +834,11 @@ type StringPlotValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -810,7 +854,11 @@ type BooleanValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -825,7 +873,11 @@ type ColourValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String
@@ -842,7 +894,11 @@ type MapValue implements Value {
   createdAt: DateTime!
   updatedAt: DateTime!
   device: Device!
-  user: User!
+  myRole: RoleExtended!
+  owner: User!
+  admins: [User!]!
+  editors: [User!]!
+  spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
   relevance: ValueRelevance! @defaultValue(value: NORMAL)
   valueDetails: String

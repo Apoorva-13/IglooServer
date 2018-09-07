@@ -1,162 +1,274 @@
 import {
   authenticated,
+  authorized,
   retrieveScalarProp,
+  authorizedScalarPropsResolvers,
   logErrorsPromise,
+  valueToParents,
+  instanceToRole,
+  inheritAuthorizedScalarPropsResolvers,
+  inheritAuthorized,
 } from './utilities'
 
 const QUERY_COST = 1
 
-const GenericResolver = Model => ({
-  createdAt: retrieveScalarProp(Model, 'createdAt'),
-  updatedAt: retrieveScalarProp(Model, 'updatedAt'),
-  permission: retrieveScalarProp(Model, 'permission'),
-  relevance: retrieveScalarProp(Model, 'relevance'),
-  valueDetails: retrieveScalarProp(Model, 'valueDetails'),
-  tileSize: retrieveScalarProp(Model, 'tileSize'),
-  customName: retrieveScalarProp(Model, 'customName'),
-  value: retrieveScalarProp(Model, 'value'),
-  index: retrieveScalarProp(Model, 'index'),
+const GenericResolver = (Model, User, Device, Board) => ({
+  ...authorizedScalarPropsResolvers(
+    Model,
+    User,
+    [
+      'createdAt',
+      'updatedAt',
+      'permission',
+      'relevance',
+      'valueDetails',
+      'tileSize',
+      'customName',
+      'value',
+      'index',
+    ],
+    valueToParents(Device, Board),
+  ),
+  myRole(root, args, context) {
+    return logErrorsPromise(
+      'GenericValueResolver myRole',
+      932,
+      authorized(
+        root.id,
+        context,
+        Model,
+        User,
+        1,
+        async (
+          resolve,
+          reject,
+          valueFound,
+          valueAndParentsFound,
+          userFound,
+        ) => {
+          const myRole = instanceToRole(valueAndParentsFound, userFound)
+          resolve(myRole)
+        },
+        valueToParents(Device, Board),
+      ),
+    )
+  },
 })
 
 const BooleanValueResolver = GenericResolver
-const FloatValueResolver = Model => ({
-  ...GenericResolver(Model),
-  precision: retrieveScalarProp(Model, 'precision'),
-  boundaries: retrieveScalarProp(Model, 'boundaries'),
+const FloatValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    User,
+    ['precision', 'boundaries'],
+    valueToParents(Device, Board),
+  ),
 })
-const StringValueResolver = Model => ({
-  ...GenericResolver(Model),
-  maxChars: retrieveScalarProp(Model, 'maxChars'),
-  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
+const StringValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    User,
+    ['maxChars', 'allowedValues'],
+    valueToParents(Device, Board),
+  ),
 })
-const ColourValueResolver = Model => ({
-  ...GenericResolver(Model),
-  allowedValues: retrieveScalarProp(Model, 'allowedValues'),
+const ColourValueResolver = (Model, User, Device, Board) => ({
+  ...GenericResolver(Model, User, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    Model,
+    User,
+    ['allowedValues'],
+    valueToParents(Device, Board),
+  ),
 })
-const PlotValueResolver = (PlotValue, PlotNode) => ({
-  ...GenericResolver(PlotValue),
-  precision: retrieveScalarProp(PlotValue, 'precision'),
-  boundaries: retrieveScalarProp(PlotValue, 'boundaries'),
-  threshold: retrieveScalarProp(PlotValue, 'threshold'),
+const PlotValueResolver = (PlotValue, PlotNode, User, Device, Board) => ({
+  ...GenericResolver(PlotValue, User, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    PlotValue,
+    User,
+    ['precision', 'boundaries', 'threshold'],
+    valueToParents(Device, Board),
+  ),
   // overriding GenericResolver's value
   value: (root, args, context) =>
     logErrorsPromise(
       'PlotValueResolver',
       135,
-      authenticated(context, async (resolve, reject) => {
-        const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
-        resolve(nodes)
-        context.billingUpdater.update(QUERY_COST * nodes.length)
-      }),
+      authorized(
+        root.id,
+        context,
+        PlotValue,
+        User,
+        1,
+        async (resolve, reject, plotFound) => {
+          const nodes = await plotFound.getPlotNodes()
+          resolve(nodes)
+          context.billingUpdater.update(QUERY_COST * nodes.length)
+        },
+        valueToParents(Device, Board),
+      ),
     ),
 })
-const StringPlotValueResolver = (StringPlotValue, StringPlotNode) => ({
-  ...GenericResolver(StringPlotValue),
-  allowedValues: retrieveScalarProp(StringPlotValue, 'allowedValues'),
+const StringPlotValueResolver = (
+  StringPlotValue,
+  StringPlotNode,
+  User,
+  Device,
+  Board,
+) => ({
+  ...GenericResolver(StringPlotValue, User, Device, Board),
+  ...authorizedScalarPropsResolvers(
+    StringPlotValue,
+    User,
+    ['allowedValues'],
+    valueToParents(Device, Board),
+  ),
   // overriding GenericResolver's value
   value: (root, args, context) =>
     logErrorsPromise(
       'StringPlotValueResolver',
       135,
-      authenticated(context, async (resolve, reject) => {
-        const nodes = await StringPlotNode.findAll({
-          where: { plotId: root.id },
-        })
-        resolve(nodes)
-        context.billingUpdater.update(QUERY_COST * nodes.length)
-      }),
+      authorized(
+        root.id,
+        context,
+        StringPlotValue,
+        User,
+        1,
+        async (resolve, reject, plotFound) => {
+          const nodes = await plotFound.getStringPlotNodes()
+
+          resolve(nodes)
+          context.billingUpdater.update(QUERY_COST * nodes.length)
+        },
+        valueToParents(Device, Board),
+      ),
     ),
 })
-const PlotNodeResolver = PlotNode => ({
-  timestamp: retrieveScalarProp(PlotNode, 'timestamp'),
-  value: retrieveScalarProp(PlotNode, 'value'),
+
+const PlotNodeResolver = (PlotNode, PlotValue, User, Device, Board) => ({
+  ...inheritAuthorizedScalarPropsResolvers(
+    PlotNode,
+    User,
+    ['timestamp', 'value'],
+    plotNodeFound => plotNodeFound.plotId,
+    PlotValue,
+    valueToParents(Device, Board),
+  ),
   user(root, args, context) {
     return logErrorsPromise(
       'PlotNodeResolver user resolver',
       136,
-      authenticated(context, async (resolve, reject) => {
-        const plotNode = await PlotNode.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!plotNode) {
-          reject('The requested resource does not exist')
-        } else if (plotNode.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the user id
-          resolve({ id: plotNode.userId })
+      inheritAuthorized(
+        root.id,
+        PlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        1,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotValueAndParents,
+        ) => {
+          resolve({ id: plotNodeFound.userId })
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   device(root, args, context) {
     return logErrorsPromise(
       'PlotNodeResolver device resolver',
       137,
-      authenticated(context, async (resolve, reject) => {
-        const plotNode = await PlotNode.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!plotNode) {
-          reject('The requested resource does not exist')
-        } else if (plotNode.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the user id
-          resolve({ id: plotNode.deviceId })
+      inheritAuthorized(
+        root.id,
+        PlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        1,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotValueAndParents,
+        ) => {
+          resolve({ id: plotNodeFound.deviceId })
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   plot(root, args, context) {
     return logErrorsPromise(
       'PlotNodeResolver plot resolver',
       138,
-      authenticated(context, async (resolve, reject) => {
-        const plotNode = await PlotNode.find({
-          where: { id: root.id },
-        })
-        /* istanbul ignore if */
-        if (!plotNode) {
-          reject('The requested resource does not exist')
-        } else if (plotNode.userId !== context.auth.userId) {
-          /* istanbul ignore next */
-          reject('You are not allowed to access details about this resource')
-        } else {
-          // the User resolver will take care of loading the other props,
-          // it only needs to know the user id
-          resolve({ id: plotNode.plotId })
+      inheritAuthorized(
+        root.id,
+        PlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        1,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotValueAndParents,
+        ) => {
+          resolve(plotValueFound.dataValues)
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
 })
 
-export default ({
-  BoolValue,
-  FloatValue,
-  StringValue,
-  ColourValue,
-  PlotValue,
-  PlotNode,
-  StringPlotValue,
-  StringPlotNode,
-}) => ({
-  BooleanValue: BooleanValueResolver(BoolValue),
-  FloatValue: FloatValueResolver(FloatValue),
-  StringValue: StringValueResolver(StringValue),
-  ColourValue: ColourValueResolver(ColourValue),
-  PlotValue: PlotValueResolver(PlotValue, PlotNode),
-  PlotNode: PlotNodeResolver(PlotNode),
-  StringPlotValue: StringPlotValueResolver(StringPlotValue, StringPlotNode),
-  StringPlotNode: PlotNodeResolver(StringPlotNode),
+export default (
+  {
+    BoolValue,
+    FloatValue,
+    StringValue,
+    ColourValue,
+    PlotValue,
+    PlotNode,
+    StringPlotValue,
+    StringPlotNode,
+  },
+  User,
+  Device,
+  Board,
+) => ({
+  BooleanValue: BooleanValueResolver(BoolValue, User, Device, Board),
+  FloatValue: FloatValueResolver(FloatValue, User, Device, Board),
+  StringValue: StringValueResolver(StringValue, User, Device, Board),
+  ColourValue: ColourValueResolver(ColourValue, User, Device, Board),
+  PlotValue: PlotValueResolver(PlotValue, PlotNode, User, Device, Board),
+  PlotNode: PlotNodeResolver(PlotNode, PlotValue, User, Device, Board),
+  StringPlotValue: StringPlotValueResolver(
+    StringPlotValue,
+    StringPlotNode,
+    User,
+    Device,
+    Board,
+  ),
+  StringPlotNode: PlotNodeResolver(
+    StringPlotNode,
+    StringPlotValue,
+    User,
+    Device,
+    Board,
+  ),
 })

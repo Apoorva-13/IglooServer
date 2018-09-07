@@ -1,9 +1,16 @@
-import { authenticated, logErrorsPromise, findValue } from './utilities'
+import {
+  authenticated,
+  logErrorsPromise,
+  findValue,
+  authorized,
+  deviceToParents,
+  notificationToParent,
+} from './utilities'
 import bcrypt from 'bcryptjs'
 
 const QUERY_COST = 1
 
-const QueryResolver = (
+const QueryResolver = ({
   User,
   Device,
   Board,
@@ -15,7 +22,7 @@ const QueryResolver = (
   StringPlotValue,
   MapValue,
   Notification,
-) => ({
+}) => ({
   user(root, args, context) {
     return new Promise(authenticated(
       context,
@@ -30,60 +37,36 @@ const QueryResolver = (
     return logErrorsPromise(
       'device query',
       105,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.id },
-        })
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
-          const {
-            id,
-            updatedAt,
-            createdAt,
-            customName,
-            deviceType,
-            userId,
-          } = deviceFound
-          resolve({
-            id,
-            updatedAt,
-            createdAt,
-            customName,
-            deviceType,
-            user: {
-              id: userId,
-            },
-          })
+      authorized(
+        args.id,
+        context,
+        Device,
+        User,
+        1,
+        async (resolve, reject, deviceFound) => {
+          resolve(deviceFound.dataValues)
+
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
   board(root, args, context) {
     return logErrorsPromise(
       'board query',
       912,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({
-          where: { id: args.id },
-        })
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
-          resolve({
-            ...boardFound.dataValues,
-            user: {
-              id: boardFound.userId,
-            },
-          })
+      authorized(
+        args.id,
+        context,
+        Board,
+        User,
+        1,
+        async (resolve, reject, boardFound) => {
+          resolve(boardFound.dataValues)
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+      ),
     )
   },
   value(root, args, context) {
@@ -91,6 +74,9 @@ const QueryResolver = (
       'value query',
       114,
       authenticated(context, async (resolve, reject) => {
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
         const valueFound = await findValue(
           {
             BoolValue,
@@ -101,8 +87,10 @@ const QueryResolver = (
             StringPlotValue,
             MapValue,
           },
+          Device,
+          Board,
           { where: { id: args.id } },
-          context.auth.userId,
+          userFound,
         ).catch(e => reject(e))
 
         resolve(valueFound)
@@ -135,19 +123,20 @@ const QueryResolver = (
     return logErrorsPromise(
       'notificationQuery',
       300,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: args.id },
-        })
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      inheritAuthorized(
+        args.id,
+        Notification,
+        User,
+        notificationFound => notificationFound.deviceId,
+        context,
+        Device,
+        1,
+        async (resolve, reject, notificationFound) => {
           resolve(notificationFound)
           context.billingUpdater.update(QUERY_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
 })

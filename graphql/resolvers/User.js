@@ -1,4 +1,11 @@
-import { authenticated, logErrorsPromise, findAllValues } from './utilities'
+import {
+  authenticated,
+  logErrorsPromise,
+  findAllValues,
+  getAll,
+  mergeIgnoringDuplicates,
+} from './utilities'
+import { Op } from 'sequelize'
 
 const QUERY_COST = 1
 
@@ -13,7 +20,6 @@ const retrieveUserScalarProp = (User, prop, acceptedTokens) => (
     authenticated(
       context,
       async (resolve, reject) => {
-        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
@@ -35,7 +41,29 @@ const scalarProps = (User, props) =>
     return acc
   }, {})
 
-const UserResolver = (
+const retrievePublicUserScalarProp = (User, prop, acceptedTokens) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'retrieveScalarProp',
+    106,
+    authenticated(
+      context,
+      async (resolve, reject) => {
+        const userFound = await User.find({ where: { id: root.id } })
+        if (!userFound) {
+          reject("User doesn't exist. Use `SignupUser` to create one")
+        } else {
+          resolve(userFound[prop])
+        }
+      },
+      acceptedTokens,
+    ),
+  )
+
+const UserResolver = ({
   User,
   PermanentToken,
   Device,
@@ -48,7 +76,7 @@ const UserResolver = (
   StringPlotValue,
   MapValue,
   Notification,
-) => ({
+}) => ({
   ...scalarProps(User, [
     'createdAt',
     'updatedAt',
@@ -60,22 +88,22 @@ const UserResolver = (
     'monthUsage',
     'emailIsVerified',
   ]),
-  email: retrieveUserScalarProp(User, 'email', [
+  email: retrievePublicUserScalarProp(User, 'email', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  displayName: retrieveUserScalarProp(User, 'displayName', [
+  displayName: retrievePublicUserScalarProp(User, 'displayName', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  profileIcon: retrieveUserScalarProp(User, 'profileIcon', [
+  profileIcon: retrievePublicUserScalarProp(User, 'profileIcon', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  profileIconColor: retrieveUserScalarProp(User, 'profileIconColor', [
+  profileIconColor: retrievePublicUserScalarProp(User, 'profileIconColor', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
@@ -99,12 +127,12 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const devices = await Device.findAll({
-            where: { userId: root.id },
-            order: [['index', 'ASC']],
-          })
+          const devices = await getAll(Device, User, root.id)
+          const devicesInheritedByBoards = await getAll(Board, User, root.id, [
+            { model: Device },
+          ])
 
-          resolve(devices)
+          resolve([...devices, ...devicesInheritedByBoards])
           context.billingUpdater.update(QUERY_COST * devices.length)
         }
       }),
@@ -119,9 +147,7 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const boards = await Board.findAll({
-            where: { userId: root.id },
-          })
+          const boards = await getAll(Board, User, root.id)
 
           resolve(boards)
           context.billingUpdater.update(QUERY_COST * boards.length)
@@ -134,15 +160,37 @@ const UserResolver = (
       'User devices resolver',
       119,
       authenticated(context, async (resolve, reject) => {
-        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const notifications = await Notification.findAll({
-            where: { userId: root.id },
-          })
-          resolve(notifications)
-          context.billingUpdater.update(QUERY_COST * notifications.length)
+          const directlyOwnedDevices = await getAll(Device, User, root.id, [
+            { model: Notification },
+          ])
+          const devicesInheritedByBoards = await getAll(Board, User, root.id, [
+            { model: Device, include: [{ model: Notification }] },
+          ])
+
+          const directlyOwnedNotifications = directlyOwnedDevices.reduce(
+            (acc, device) => [...acc, ...device.notifications],
+            [],
+          )
+          const notificationsInheritedByBoards = devicesInheritedByBoards.reduce(
+            (acc, board) => [
+              ...acc,
+              ...board.devices.reduce(
+                (acc, device) => [...acc, ...device.notifications],
+                [],
+              ),
+            ],
+            [],
+          )
+
+          const allNotifications = mergeIgnoringDuplicates(
+            directlyOwnedNotifications,
+            notificationsInheritedByBoards,
+          )
+          resolve(allNotifications)
+          context.billingUpdater.update(QUERY_COST * allNotifications.length)
         }
       }),
     )
@@ -156,24 +204,75 @@ const UserResolver = (
         if (context.auth.userId !== root.id) {
           reject('You are not allowed to access details about this user')
         } else {
-          const values = await findAllValues(
-            {
-              BoolValue,
-              FloatValue,
-              StringValue,
-              ColourValue,
-              PlotValue,
-              StringPlotValue,
-              MapValue,
-            },
-            {
-              where: { userId: root.id },
-            },
-            context.auth.userId,
+          // TODO: fetch all the values (also inherited ones) and tag them with the right __resolveType
+          const valueModels = [
+            FloatValue,
+            StringValue,
+            BoolValue,
+            ColourValue,
+            PlotValue,
+            StringPlotValue,
+            MapValue,
+          ]
+          const directlySharedValues = await Promise.all(valueModels.map(Model => getAll(Model, User, root.id)))
+          const flattenedDirectlySharedValues = directlySharedValues.reduce(
+            (acc, curr) => [...acc, ...curr],
+            [],
+          )
+          const valuesInheritedFromDevices = await getAll(
+            Device,
+            User,
+            root.id,
+            valueModels.map(Model => ({ model: Model })),
+          )
+          const flattenedValuesInheritedFromDevices = valuesInheritedFromDevices.reduce(
+            (acc, device) => [
+              ...acc,
+              ...device.floatValues,
+              ...device.stringValues,
+              ...device.boolValues,
+              ...device.colourValues,
+              ...device.plotValues,
+              ...device.stringPlotValues,
+              ...device.mapValues,
+            ],
+            [],
           )
 
-          resolve(values)
-          context.billingUpdater.update(QUERY_COST * values.length)
+          const valuesInheritedFromBoards = await getAll(Board, User, root.id, [
+            {
+              model: Device,
+              include: valueModels.map(Model => ({ model: Model })),
+            },
+          ])
+          const flattenedValuesInheritedFromBoards = valuesInheritedFromBoards.reduce(
+            (acc, curr) => [
+              ...acc,
+              ...curr.devices.reduce(
+                (acc, device) => [
+                  ...acc,
+                  ...device.floatValues,
+                  ...device.stringValues,
+                  ...device.boolValues,
+                  ...device.colourValues,
+                  ...device.plotValues,
+                  ...device.stringPlotValues,
+                  ...device.mapValues,
+                ],
+                [],
+              ),
+            ],
+            [],
+          )
+
+          const flattenedAllValues = mergeIgnoringDuplicates(
+            flattenedDirectlySharedValues,
+            flattenedValuesInheritedFromDevices,
+            flattenedValuesInheritedFromBoards,
+          )
+
+          resolve(flattenedAllValues)
+          context.billingUpdater.update(QUERY_COST * flattenedAllValues.length)
         }
       }),
     )

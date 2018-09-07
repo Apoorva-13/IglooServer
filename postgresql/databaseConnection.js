@@ -15,6 +15,13 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
     ssl: true,
   },
   logging: false,
+  pool: {
+    max: 20,
+    min: 1,
+    idle: 20000,
+    acquire: 40000,
+    evict: 20000,
+  },
 })
 
 module.exports = { ...require('./databaseDefinition')(sequelize), sequelize }

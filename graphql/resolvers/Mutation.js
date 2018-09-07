@@ -10,14 +10,20 @@ import {
   check2FCode,
   logErrorsPromise,
   getPropsIfDefined,
-  genericDelete,
   sendVerificationEmail,
   sendPasswordRecoveryEmail,
   sendPasswordUpdatedEmail,
   sendTokenCreatedEmail,
+  authorized,
+  deviceToParents,
+  authorizedValue,
+  instancesToSharedIds,
+  inheritAuthorized,
+  valueToParents,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
+import { Op } from 'sequelize'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -35,21 +41,58 @@ const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
+const genericShare = (Model, idField, User, childToParents) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'genericShare',
+    921,
+    authorized(
+      args[idField],
+      context,
+      Model,
+      User,
+      3,
+      async (resolve, reject, found) => {
+        const userFound = await User.find({ where: { email: args.email } })
+
+        // remove old role
+        await Promise.all([
+          userFound[`remove${Model.Admins}`](found),
+          userFound[`remove${Model.Editors}`](found),
+          userFound[`remove${Model.Spectators}`](found),
+        ])
+
+        // add new role
+        const parsedRole = `${args.role[0] + args.role.slice(1).toLowerCase()}s`
+        await userFound[`add${Model[parsedRole]}`](found)
+
+        resolve(found)
+        context.billingUpdater.update(MUTATION_COST)
+      },
+      childToParents,
+    ),
+  )
+
 const MutationResolver = (
-  User,
-  PermanentToken,
-  Device,
-  Board,
-  FloatValue,
-  StringValue,
-  BoolValue,
-  ColourValue,
-  MapValue,
-  PlotValue,
-  PlotNode,
-  StringPlotValue,
-  StringPlotNode,
-  Notification,
+  {
+    User,
+    PermanentToken,
+    Device,
+    Board,
+    FloatValue,
+    StringValue,
+    BoolValue,
+    ColourValue,
+    MapValue,
+    PlotValue,
+    PlotNode,
+    StringPlotValue,
+    StringPlotNode,
+    Notification,
+  },
   WebPushSubscription,
   pubsub,
   JWT_SECRET,
@@ -249,8 +292,7 @@ const MutationResolver = (
       }),
     )
   },
-  // checks that the provided email and password are correct
-  // if so changes the password and returns an access token
+  // changes the password and returns an access token
   ChangePassword(root, args, context) {
     return logErrorsPromise(
       'ChangePassword',
@@ -301,6 +343,49 @@ const MutationResolver = (
       }),
     )
   },
+  shareBoard: genericShare(Board, 'boardId', User),
+  shareDevice: genericShare(Device, 'deviceId', User, deviceToParents(Board)),
+  shareValue: (root, args, context) =>
+    logErrorsPromise(
+      'shareValue',
+      921,
+      authorizedValue(
+        args.valueId,
+        context,
+        {
+          FloatValue,
+          StringValue,
+          BoolValue,
+          ColourValue,
+          MapValue,
+          PlotValue,
+          StringPlotValue,
+        },
+        User,
+        3,
+        async (resolve, reject, valueFound) => {
+          const userFound = await User.find({ where: { email: args.email } })
+
+          // remove old role
+          await Promise.all([
+            userFound[`remove${valueFound.Model.Admins}`](valueFound),
+            userFound[`remove${valueFound.Model.Editors}`](valueFound),
+            userFound[`remove${valueFound.Model.Spectators}`](valueFound),
+          ])
+
+          // add new role
+          const parsedRole = `${args.role[0] +
+            args.role.slice(1).toLowerCase()}s`
+          await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
+
+          resolve(valueFound)
+
+          context.billingUpdater.update(MUTATION_COST)
+        },
+        Device,
+        Board,
+      ),
+    ),
   CreateBoard(root, args, context) {
     return logErrorsPromise(
       'CreateBoard',
@@ -314,13 +399,18 @@ const MutationResolver = (
           index:
             args.index !== null && args.index !== undefined
               ? args.index
-              : await Board.count({ where: { userId: context.auth.userId } }),
-          userId: context.auth.userId,
+              : await Board.count({ where: { ownerId: context.auth.userId } }),
         })
+
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        await userFound.addOwnBoard(newBoard)
+        await newBoard.setOwner(userFound)
 
         const resolveValue = {
           ...newBoard.dataValues,
-          user: { id: newBoard.userId },
+          owner: { id: newBoard.ownerId },
           devices: [],
         }
 
@@ -339,62 +429,37 @@ const MutationResolver = (
     return logErrorsPromise(
       'CreateDevice',
       104,
+      // REPLACE WITH authorized(boardId) also in the subscription
       authenticated(context, async (resolve) => {
         const index =
           args.index !== null && args.index !== undefined
             ? args.index
-            : await Device.count({ where: { userId: context.auth.userId } })
+            : await Device.count({ where: { ownerId: context.auth.userId } })
 
+        // TODO: check that the boardId passed is a board to which the user has access
         const newDevice = await Device.create({
-          customName: args.customName,
-          deviceType: args.deviceType,
-          icon: args.icon,
+          ...args,
           index,
-          userId: context.auth.userId,
-          signalStatus: args.signalStatus,
-          batteryStatus: args.batteryStatus,
-          batteryCharging: args.batteryCharging,
-          boardId: args.boardId,
         })
-        const {
-          id,
-          createdAt,
-          updatedAt,
-          deviceType,
-          customName,
-          userId,
-          icon,
-          signalStatus,
-          batteryStatus,
-          batteryCharging,
-          boardId,
-        } = newDevice.dataValues
-        const values = [] // values cannot be set when creating the device so no need to fetch them
+
+        const userFound = await User.find({
+          where: { id: context.auth.userId },
+        })
+        await userFound.addOwnDevice(newDevice)
+        await newDevice.setOwner(userFound)
 
         const resolveValue = {
-          id,
-          createdAt,
-          updatedAt,
-          deviceType,
-          customName,
-          values,
-          icon,
-          signalStatus,
-          batteryStatus,
-          batteryCharging,
-          user: {
-            id: userId,
-          },
-          board: boardId
+          ...newDevice.dataValues,
+          board: newDevice.boardId
             ? {
-              id: boardId,
+              id: newDevice.boardId,
             }
             : null,
         }
 
         pubsub.publish('deviceCreated', {
           deviceCreated: resolveValue,
-          userId: context.auth.userId,
+          userIds: [context.auth.userId],
         })
 
         resolve(resolveValue)
@@ -404,8 +469,11 @@ const MutationResolver = (
     )
   },
   CreateFloatValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     FloatValue,
+    'FloatValue',
     [
       FloatValue,
       StringValue,
@@ -418,8 +486,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreateStringValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     StringValue,
+    'StringValue',
     [
       FloatValue,
       StringValue,
@@ -432,8 +503,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreateBooleanValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     BoolValue,
+    'BoolValue',
     [
       FloatValue,
       StringValue,
@@ -446,8 +520,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreateColourValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     ColourValue,
+    'ColourValue',
     [
       FloatValue,
       StringValue,
@@ -460,8 +537,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreateMapValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     MapValue,
+    'MapValue',
     [
       FloatValue,
       StringValue,
@@ -474,8 +554,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreatePlotValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     PlotValue,
+    'PlotValue',
     [
       FloatValue,
       StringValue,
@@ -488,8 +571,11 @@ const MutationResolver = (
     pubsub,
   ),
   CreateStringPlotValue: CreateGenericValue(
+    User,
     Device,
+    Board,
     StringPlotValue,
+    'StringPlotValue',
     [
       FloatValue,
       StringValue,
@@ -505,20 +591,22 @@ const MutationResolver = (
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const plot = await PlotValue.find({ where: { id: args.plotId } })
-
-        if (!plot) {
-          reject("This plot doesn't exist")
-        } else if (plot.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
+      authorized(
+        args.plotId,
+        context,
+        PlotValue,
+        User,
+        2,
+        async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await PlotNode.create({
             ...args,
             timestamp: args.timestamp || new Date(),
-            deviceId: plot.deviceId,
+            deviceId: plotValueFound.deviceId,
             userId: context.auth.userId,
           })
+
+          plotNode.setPlot(plotValueFound)
+          plotValueFound.addPlotNode(plotNode)
 
           const resolveObj = {
             ...plotNode.dataValues,
@@ -536,32 +624,35 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeCreated', {
             plotNodeCreated: resolveObj,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   CreateStringPlotNode(root, args, context) {
     return logErrorsPromise(
       'CreateStringPlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const plot = await StringPlotValue.find({ where: { id: args.plotId } })
-
-        if (!plot) {
-          reject("This plot doesn't exist")
-        } else if (plot.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
+      authorized(
+        args.plotId,
+        context,
+        StringPlotValue,
+        User,
+        2,
+        async (resolve, reject, plotValueFound, plotAndParents) => {
           const plotNode = await StringPlotNode.create({
             ...args,
             timestamp: args.timestamp || new Date(),
-            deviceId: plot.deviceId,
+            deviceId: plotValueFound.deviceId,
             userId: context.auth.userId,
           })
+
+          plotNode.setPlot(plotValueFound)
+          plotValueFound.addStringPlotNode(plotNode)
 
           const resolveObj = {
             ...plotNode.dataValues,
@@ -579,11 +670,12 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeCreated', {
             stringPlotNodeCreated: resolveObj,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   user(root, args, context) {
@@ -674,77 +766,125 @@ const MutationResolver = (
     return logErrorsPromise(
       'board mutation',
       911,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({
-          where: { id: args.id },
-        })
-
-        if (!boardFound) {
-          reject("Board doesn't exist. Use `CreateBoard` to create one")
-        } else if (boardFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Board,
+        User,
+        2,
+        async (resolve, reject, boardFound) => {
           const newBoard = await boardFound.update(args)
 
           resolve(newBoard.dataValues)
           pubsub.publish('boardUpdated', {
             boardUpdated: newBoard.dataValues,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds([boardFound]),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+      ),
     )
   },
   device(root, args, context) {
     return logErrorsPromise(
       'device mutation',
       116,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.id },
-        })
-        if (!deviceFound) {
-          reject("Device doesn't exist. Use `CreateDevice` to create one")
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Device,
+        User,
+        2,
+        async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
             deviceUpdated: newDevice.dataValues,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(deviceAndBoard),
           })
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
-  floatValue: genericValueMutation(FloatValue, 'FloatValue', pubsub),
-  stringValue: genericValueMutation(StringValue, 'StringValue', pubsub),
-  booleanValue: genericValueMutation(BoolValue, 'BooleanValue', pubsub),
-  colourValue: genericValueMutation(ColourValue, 'ColourValue', pubsub),
-  mapValue: genericValueMutation(MapValue, 'MapValue', pubsub),
-  plotValue: genericValueMutation(PlotValue, 'PlotValue', pubsub),
+  floatValue: genericValueMutation(
+    FloatValue,
+    'FloatValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
+  stringValue: genericValueMutation(
+    StringValue,
+    'StringValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
+  booleanValue: genericValueMutation(
+    BoolValue,
+    'BooleanValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
+  colourValue: genericValueMutation(
+    ColourValue,
+    'ColourValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
+  mapValue: genericValueMutation(
+    MapValue,
+    'MapValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
+  plotValue: genericValueMutation(
+    PlotValue,
+    'PlotValue',
+    pubsub,
+    User,
+    Device,
+    Board,
+  ),
   stringPlotValue: genericValueMutation(
     StringPlotValue,
     'StringPlotValue',
     pubsub,
+    User,
+    Device,
+    Board,
   ),
   plotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await PlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.update(args)
+      inheritAuthorized(
+        args.id,
+        PlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          const newNode = await plotNodeFound.update(args)
 
           const resolveObj = {
             ...newNode.dataValues,
@@ -761,27 +901,35 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('plotNodeUpdated', {
             plotNodeUpdated: resolveObj,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   stringPlotNode(root, args, context) {
     return logErrorsPromise(
       'stringPlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await StringPlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.update(args)
+      inheritAuthorized(
+        args.id,
+        StringPlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        StringPlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          const newNode = await plotNodeFound.update(args)
 
           const resolveObj = {
             ...newNode.dataValues,
@@ -798,33 +946,26 @@ const MutationResolver = (
           resolve(resolveObj)
           pubsub.publish('stringPlotNodeUpdated', {
             stringPlotNodeUpdated: resolveObj,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   CreateNotification(root, args, context) {
     return logErrorsPromise(
       'create notification mutation',
       122,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.deviceId },
-        })
-        const userFound = await User.find({
-          where: { id: context.auth.userId },
-        })
-
-        if (!userFound) {
-          reject('This user was deleted')
-        } else if (!deviceFound) {
-          reject("Device doesn't exist. Use `CreateDevice` to create one")
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to access details about this resource')
-        } else {
+      authorized(
+        args.deviceId,
+        context,
+        Device,
+        User,
+        2,
+        async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newNotification = await Notification.create({
             ...args,
             visualized: false,
@@ -832,6 +973,9 @@ const MutationResolver = (
             userId: context.auth.userId,
             date: args.date || new Date(),
           })
+
+          deviceFound.addNotification(newNotification)
+          newNotification.setDevice(deviceFound)
 
           const {
             visualized,
@@ -856,15 +1000,43 @@ const MutationResolver = (
           }
 
           resolve(resolveValue)
+
+          const deviceSharedIds = await instancesToSharedIds(deviceAndBoard)
           pubsub.publish('notificationCreated', {
             notificationCreated: resolveValue,
-            userId: context.auth.userId,
+            userIds: deviceSharedIds,
           })
+
+          // the notificationsCount props are updated so send the device and board subscriptions
+          pubsub.publish('deviceUpdated', {
+            deviceUpdated: {
+              id: deviceId,
+            },
+            userIds: deviceSharedIds,
+          })
+          if (deviceFound.boardId) {
+            const boardFound = await Board.find({
+              where: { id: deviceFound.boardId },
+            })
+            pubsub.publish('boardUpdated', {
+              boardUpdated: boardFound.dataValues,
+              userIds: await instancesToSharedIds([boardFound]),
+            })
+          }
           context.billingUpdater.update(MUTATION_COST)
+
+          // TODO: get userFound from callback
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
 
           if (!userFound.quietMode) {
             const notificationSubscriptions = await WebPushSubscription.findAll({
-              where: { userId: context.auth.userId },
+              where: {
+                userId: {
+                  [Op.in]: deviceSharedIds,
+                },
+              },
             })
 
             notificationSubscriptions.map(notificationSubscription =>
@@ -884,121 +1056,166 @@ const MutationResolver = (
                 }),
               ))
           }
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     )
   },
-  notification(root, args, context) {
-    return logErrorsPromise(
-      'notification mutation',
-      123,
-      authenticated(context, async (resolve, reject) => {
-        const notificationFound = await Notification.find({
-          where: { id: args.id },
-        })
+  async notification(root, args, context) {
+    const notificationFound = await Notification.find({
+      where: { id: args.id },
+    })
 
-        if (!notificationFound) {
-          reject('The requested resource does not exist')
-        } else if (notificationFound.userId !== context.auth.userId) {
-          reject('You are not allowed to update this resource')
-        } else {
-          const updateQuery = getPropsIfDefined(args, [
-            'content',
-            'date',
-            'visualized',
-          ])
+    if (!notificationFound) {
+      reject('The requested resource does not exist')
+    } else {
+      return logErrorsPromise(
+        'notification mutation',
+        123,
+        authorized(
+          notificationFound.deviceId,
+          context,
+          Device,
+          User,
+          2,
+          async (resolve, reject, deviceFound, deviceAndParent) => {
+            const updateQuery = getPropsIfDefined(args, [
+              'content',
+              'date',
+              'visualized',
+            ])
 
-          const {
-            date,
-            visualized,
-            content,
-            id,
-            userId,
-            deviceId,
-          } = (await notificationFound.update(updateQuery)).dataValues
+            const {
+              date,
+              visualized,
+              content,
+              id,
+              userId,
+              deviceId,
+            } = (await notificationFound.update(updateQuery)).dataValues
 
-          const resolveValue = {
-            date,
-            visualized,
-            content,
-            id,
-            user: { id: userId },
-            device: { id: deviceId },
-          }
+            const resolveValue = {
+              date,
+              visualized,
+              content,
+              id,
+              user: { id: userId },
+              device: { id: deviceId },
+            }
 
-          resolve(resolveValue)
+            resolve(resolveValue)
 
-          pubsub.publish('notificationUpdated', {
-            notificationUpdated: resolveValue,
-            userId: context.auth.userId,
-          })
-          context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
-    )
+            const deviceSharedIds = await instancesToSharedIds(deviceAndParent)
+            pubsub.publish('notificationUpdated', {
+              notificationUpdated: resolveValue,
+              userIds: deviceSharedIds,
+            })
+
+            context.billingUpdater.update(MUTATION_COST)
+          },
+          deviceToParents(Board),
+        ),
+      )
+    }
   },
-  deleteNotification: genericDelete(
-    Notification,
-    'notificationDeleted',
-    pubsub,
-  ),
+  async deleteNotification(root, args, context) {
+    const notificationFound = await Notification.find({
+      where: { id: args.id },
+    })
+
+    if (!notificationFound) {
+      throw new Error('The requested resource does not exist')
+    } else {
+      return logErrorsPromise(
+        'notification mutation',
+        1001,
+        authorized(
+          notificationFound.deviceId,
+          context,
+          Device,
+          User,
+          2,
+          async (resolve, reject, deviceFound, deviceAndParent) => {
+            await notificationFound.destroy()
+
+            resolve(args.id)
+
+            const deviceSharedIds = await instancesToSharedIds(deviceAndParent)
+            pubsub.publish('notificationDeleted', {
+              notificationDeleted: args.id,
+              userIds: deviceSharedIds,
+            })
+
+            // the notificationsCount props are updated so send the device and board subscriptions
+            pubsub.publish('deviceUpdated', {
+              deviceUpdated: {
+                id: deviceFound.id,
+              },
+              userIds: deviceSharedIds,
+            })
+            if (deviceFound.boardId) {
+              const boardFound = await Board.find({
+                where: { id: deviceFound.boardId },
+              })
+              pubsub.publish('boardUpdated', {
+                boardUpdated: boardFound.dataValues,
+                userIds: await instancesToSharedIds([boardFound]),
+              })
+            }
+            context.billingUpdater.update(MUTATION_COST)
+          },
+          deviceToParents(Board),
+        ),
+      )
+    }
+  },
   deleteValue: (root, args, context) =>
     logErrorsPromise(
-      'delete mutation',
+      'delete value',
       124,
-      authenticated(context, async (resolve, reject) => {
-        // TODO: remove also plotnodes with PlotValues
-        const modelsList = [
+      authorizedValue(
+        args.id,
+        context,
+        {
           FloatValue,
           StringValue,
-          ColourValue,
           BoolValue,
+          ColourValue,
+          MapValue,
           PlotValue,
           StringPlotValue,
-          MapValue,
-        ]
-        for (let i = 0; i < modelsList.length; i++) {
-          const Model = modelsList[i]
-          const entityFound = await Model.find({
-            where: { id: args.id },
+        },
+        User,
+        3,
+        async (resolve, reject, valueFound, valueAndParents) => {
+          const authorizedUsersIds = await instancesToSharedIds(valueAndParents)
+
+          // TODO: if value is plot remove nodes
+          await valueFound.destroy()
+
+          pubsub.publish('valueDeleted', {
+            valueDeleted: args.id,
+            userIds: authorizedUsersIds,
           })
-
-          if (entityFound && entityFound.userId === context.auth.userId) {
-            await entityFound.destroy()
-
-            pubsub.publish('valueDeleted', {
-              valueDeleted: args.id,
-              userId: context.auth.userId,
-            })
-            resolve(args.id)
-            context.billingUpdater.update(MUTATION_COST)
-
-            return
-          } else if (
-            entityFound &&
-            entityFound.userId !== context.auth.userId
-          ) {
-            reject('You are not allowed to update this resource')
-          }
-        }
-
-        reject('The requested resource does not exist')
-      }),
+          resolve(args.id)
+          context.billingUpdater.update(MUTATION_COST)
+        },
+        Device,
+        Board,
+      ),
     ),
   deleteDevice: (root, args, context) =>
     logErrorsPromise(
       'delete device mutation',
       126,
-      authenticated(context, async (resolve, reject) => {
-        const deviceFound = await Device.find({
-          where: { id: args.id },
-        })
-
-        if (!deviceFound) {
-          reject('The requested resource does not exist')
-        } else if (deviceFound.userId !== context.auth.userId) {
-          reject('You are not allowed to update this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Device,
+        User,
+        3,
+        async (resolve, reject, deviceFound, deviceAndParent) => {
+          const authorizedUsersIds = await instancesToSharedIds(deviceAndParent)
           const deleteChild = Model =>
             Model.destroy({
               where: {
@@ -1015,6 +1232,7 @@ const MutationResolver = (
             PlotValue,
             StringPlotValue,
             PlotNode,
+            StringPlotNode,
             Notification,
           ].map(deleteChild))
 
@@ -1022,27 +1240,27 @@ const MutationResolver = (
 
           pubsub.publish('deviceDeleted', {
             deviceDeleted: args.id,
-            userId: context.auth.userId,
+            userIds: authorizedUsersIds,
           })
+
           resolve(args.id)
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        deviceToParents(Board),
+      ),
     ),
   deleteBoard: (root, args, context) =>
     logErrorsPromise(
       'delete board mutation',
       913,
-      authenticated(context, async (resolve, reject) => {
-        const boardFound = await Board.find({
-          where: { id: args.id },
-        })
-
-        if (!boardFound) {
-          reject('The requested resource does not exist')
-        } else if (boardFound.userId !== context.auth.userId) {
-          reject('You are not allowed to update this resource')
-        } else {
+      authorized(
+        args.id,
+        context,
+        Board,
+        User,
+        3,
+        async (resolve, reject, boardFound) => {
+          const authorizedUsersIds = instancesToSharedIds([boardFound])
           const devices = await Device.findAll({
             where: { boardId: boardFound.id },
           })
@@ -1075,62 +1293,78 @@ const MutationResolver = (
 
           pubsub.publish('boardDeleted', {
             boardDeleted: args.id,
-            userId: context.auth.userId,
+            userIds: authorizedUsersIds,
           })
           resolve(args.id)
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+      ),
     ),
   deletePlotNode(root, args, context) {
     return logErrorsPromise(
-      'CreatePlotNode mutation',
+      'deletePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await PlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.destroy()
+      inheritAuthorized(
+        args.id,
+        PlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        PlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          await plotNodeFound.destroy()
 
           resolve(args.id)
           pubsub.publish('plotNodeDeleted', {
             plotNodeDeleted: args.id,
-            userId: context.auth.userId,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   deleteStringPlotNode(root, args, context) {
     return logErrorsPromise(
       'CreatePlotNode mutation',
       139,
-      authenticated(context, async (resolve, reject) => {
-        const node = await StringPlotNode.find({ where: { id: args.id } })
-
-        if (!node) {
-          reject("This node doesn't exist")
-        } else if (node.userId !== context.auth.userId) {
-          reject('You are not authorized to edit this plot')
-        } else {
-          const newNode = await node.destroy()
+      inheritAuthorized(
+        args.id,
+        StringPlotNode,
+        User,
+        plotNodeFound => plotNodeFound.plotId,
+        context,
+        StringPlotValue,
+        2,
+        async (
+          resolve,
+          reject,
+          plotNodeFound,
+          plotValueFound,
+          plotAndParents,
+        ) => {
+          await plotNodeFound.destroy()
 
           resolve(args.id)
-          pubsub.publish('stringPlotNodeDeleted', {
-            stringPlotNodeDeleted: args.id,
-            userId: context.auth.userId,
+          pubsub.publish('plotNodeDeleted', {
+            plotNodeDeleted: args.id,
+            userIds: await instancesToSharedIds(plotAndParents),
           })
 
           context.billingUpdater.update(MUTATION_COST)
-        }
-      }),
+        },
+        valueToParents(Device, Board),
+      ),
     )
   },
   // TODO: implement this
