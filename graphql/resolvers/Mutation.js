@@ -809,6 +809,29 @@ const MutationResolver = (
       ),
     )
   },
+  resetOnlineState(root, args, context) {
+    return logErrorsPromise(
+      'resetOnlineState mutation',
+      4000,
+      authorized(
+        args.deviceId,
+        context,
+        Device,
+        User,
+        2,
+        async (resolve, reject, deviceFound, deviceAndBoard) => {
+          const newDevice = await deviceFound.update({ online: null })
+          resolve(newDevice.dataValues)
+          pubsub.publish('deviceUpdated', {
+            deviceUpdated: newDevice.dataValues,
+            userIds: await instancesToSharedIds(deviceAndBoard),
+          })
+          context.billingUpdater.update(MUTATION_COST)
+        },
+        deviceToParents(Board),
+      ),
+    )
+  },
   floatValue: genericValueMutation(
     FloatValue,
     'FloatValue',

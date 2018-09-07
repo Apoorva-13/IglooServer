@@ -316,6 +316,8 @@ type Mutation {
     firmware: String
   ): Device
 
+  resetOnlineState(deviceId: ID!): Device
+
   # changes floatValue's data
   floatValue(
     # value id
