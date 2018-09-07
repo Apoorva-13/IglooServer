@@ -81,14 +81,6 @@ const databaseDefinition = (sequelize) => {
     },
   })
 
-  // TODO: could use a junction table instead, should we?
-  const othersIds = (fieldName, model, allowNull = false) => ({
-    [fieldName]: {
-      type: Sequelize.ARRAY(Sequelize.UUID),
-      allowNull,
-    },
-  })
-
   const Board = sequelize.define('board', {
     ...selfId,
     customName: {
@@ -169,7 +161,6 @@ const databaseDefinition = (sequelize) => {
   const Notification = sequelize.define('notification', {
     ...selfId,
     ...otherId('userId', User),
-    ...otherId('deviceId', Device),
     content: {
       type: Sequelize.STRING,
     },
@@ -313,8 +304,15 @@ const databaseDefinition = (sequelize) => {
 
   Board.hasMany(Device)
   Device.belongsTo(Board)
+
   Device.hasMany(Notification)
   Notification.belongsTo(Device)
+
+  PlotValue.hasMany(PlotNode)
+  PlotNode.belongsTo(PlotValue, { as: 'plot' })
+
+  StringPlotValue.hasMany(StringPlotNode)
+  StringPlotNode.belongsTo(StringPlotValue, { as: 'plot' })
 
   const values = [
     BoolValue,

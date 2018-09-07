@@ -605,6 +605,9 @@ const MutationResolver = (
             userId: context.auth.userId,
           })
 
+          plotNode.setPlot(plotValueFound)
+          plotValueFound.addPlotNode(plotNode)
+
           const resolveObj = {
             ...plotNode.dataValues,
             user: {
@@ -647,6 +650,9 @@ const MutationResolver = (
             deviceId: plotValueFound.deviceId,
             userId: context.auth.userId,
           })
+
+          plotNode.setPlot(plotValueFound)
+          plotValueFound.addStringPlotNode(plotNode)
 
           const resolveObj = {
             ...plotNode.dataValues,

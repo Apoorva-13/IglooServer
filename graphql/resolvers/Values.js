@@ -103,7 +103,7 @@ const PlotValueResolver = (PlotValue, PlotNode, User, Device, Board) => ({
         User,
         1,
         async (resolve, reject, plotFound) => {
-          const nodes = await PlotNode.findAll({ where: { plotId: root.id } })
+          const nodes = await plotFound.getPlotNodes()
           resolve(nodes)
           context.billingUpdater.update(QUERY_COST * nodes.length)
         },
@@ -137,9 +137,8 @@ const StringPlotValueResolver = (
         User,
         1,
         async (resolve, reject, plotFound) => {
-          const nodes = await StringPlotNode.findAll({
-            where: { plotId: root.id },
-          })
+          const nodes = await plotFound.getStringPlotNodes()
+
           resolve(nodes)
           context.billingUpdater.update(QUERY_COST * nodes.length)
         },

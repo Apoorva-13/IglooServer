@@ -510,6 +510,7 @@ const findValue = (
     colourValue,
     mapValue,
     plotValue,
+    stringPlotValue,
   ])
     .then(values => values.reduce((acc, val) => val || acc, null))
     .then(async (value) => {
