@@ -93,6 +93,7 @@ type Mutation {
     batteryStatus: Float
     batteryCharging: Boolean
     boardId: ID
+    firmware: String
   ): Device
 
   # Creates a new notification
@@ -312,6 +313,7 @@ type Mutation {
     batteryStatus: Float
     batteryCharging: Boolean
     boardId: ID
+    firmware: String
   ): Device
 
   # changes floatValue's data
@@ -679,6 +681,7 @@ type Device {
   signalStatus: Float
   batteryStatus: Float
   batteryCharging: Boolean
+  firmware: String
 }
 
 enum ValuePermission {

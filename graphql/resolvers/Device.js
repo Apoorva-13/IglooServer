@@ -38,6 +38,7 @@ const DeviceResolver = ({
       'signalStatus',
       'batteryStatus',
       'batteryCharging',
+      'firmware',
     ],
     deviceToParents(Board),
   ),

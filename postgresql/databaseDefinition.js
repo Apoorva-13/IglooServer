@@ -156,6 +156,9 @@ const databaseDefinition = (sequelize) => {
     signalStatus: {
       type: Sequelize.FLOAT,
     },
+    firmware: {
+      type: Sequelize.STRING,
+    },
   })
 
   const Notification = sequelize.define('notification', {
