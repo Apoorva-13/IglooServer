@@ -594,7 +594,7 @@ const sendPasswordRecoveryEmail = (email, userId) => {
   )
 
   // TODO: update this with the real link
-  const emailRecoverylink = `https://igloocloud.github.io/IglooAurora/recovery/${recoveryToken}`
+  const emailRecoverylink = `https://igloo.ooo/recovery?token=${recoveryToken}`
 
   // TODO: create a template for the email verification
   ses.sendEmail(
