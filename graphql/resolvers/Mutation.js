@@ -225,8 +225,8 @@ const MutationResolver = (
   // if not it creates one and returnes an access token
   SignupUser(root, args) {
     return logErrorsPromise('SignupUser', 102, async (resolve, reject) => {
-      const user = await User.find({ where: { email: args.email } })
-      if (user) {
+      const userFound = await User.find({ where: { email: args.email } })
+      if (userFound) {
         reject('A user with this email already exists')
       } else {
         const encryptedPass = bcrypt.hashSync(args.password, SALT_ROUNDS)
@@ -334,12 +334,14 @@ const MutationResolver = (
     return logErrorsPromise(
       'ResendVerificationEmail',
       900,
-      authenticated(context, async (resolve) => {
+      authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
           where: { id: context.auth.userId },
         })
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
+        } else if (userFound.emailIsVerified) {
+          reject('This user has already verified their email')
         } else {
           resolve(true)
           sendVerificationEmail(userFound.email, userFound.id)
