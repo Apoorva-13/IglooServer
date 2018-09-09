@@ -847,6 +847,27 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      if (
+        args.value !== undefined &&
+        args.value !== null &&
+        (args.maxChars || valueFound.maxChars) &&
+        args.value.length > (args.maxChars || valueFound.maxChars)
+      ) {
+        reject('The value provided exceeds the maxChars')
+        return false
+      } else if (
+        args.value !== undefined &&
+        args.value !== null &&
+        (args.allowedValues || valueFound.allowedValues) &&
+        (args.allowedValues || valueFound.allowedValues).indexOf(args.value) ===
+          -1
+      ) {
+        reject('The value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   booleanValue: genericValueMutation(
     BoolValue,

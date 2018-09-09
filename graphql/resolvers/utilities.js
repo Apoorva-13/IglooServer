@@ -233,6 +233,7 @@ const genericValueMutation = (
   User,
   Device,
   Board,
+  checkArgs = (args, valueFound, reject) => true,
 ) => (root, args, context) =>
   logErrorsPromise(
     'genericValue mutation',
@@ -244,6 +245,8 @@ const genericValueMutation = (
       User,
       2,
       async (resolve, reject, valueFound, valueAndParents) => {
+        if (!checkArgs(args, valueFound, reject)) return
+
         const newValue = await valueFound.update(args)
         const resolveObj = {
           ...newValue.dataValues,
