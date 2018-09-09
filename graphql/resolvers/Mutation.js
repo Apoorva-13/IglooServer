@@ -832,11 +832,8 @@ const MutationResolver = (
           ) {
             reject('signalStatus is out of boundaries [0,100]')
             return
-          } else if (
-            isNotNullNorUndefined(args.customName) &&
-            args.customName === ''
-          ) {
-            reject('customName cannot be an empty string')
+          } else if (args.customName === null || args.customName === '') {
+            reject('customName cannot be null or an empty string')
             return
           }
 
