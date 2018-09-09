@@ -41,6 +41,8 @@ const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
+const isNotNullNorUndefined = value => value !== undefined && value !== null
+
 const genericShare = (Model, idField, User, childToParents) => (
   root,
   args,
@@ -848,22 +850,41 @@ const MutationResolver = (
     Device,
     Board,
     (args, valueFound, reject) => {
+      // Current or new value should respect maxChars and allowedValue
+
       if (
-        args.value !== undefined &&
-        args.value !== null &&
-        (args.maxChars || valueFound.maxChars) &&
-        args.value.length > (args.maxChars || valueFound.maxChars)
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.maxChars) ||
+          isNotNullNorUndefined(valueFound.maxChars)) &&
+        (isNotNullNorUndefined(args.maxChars)
+          ? args.value.length > args.maxChars
+          : args.value.length > valueFound.maxChars)
       ) {
         reject('The value provided exceeds the maxChars')
         return false
       } else if (
-        args.value !== undefined &&
-        args.value !== null &&
-        (args.allowedValues || valueFound.allowedValues) &&
-        (args.allowedValues || valueFound.allowedValues).indexOf(args.value) ===
-          -1
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.allowedValues) ||
+          isNotNullNorUndefined(valueFound.allowedValues)) &&
+        (isNotNullNorUndefined(args.allowedValues)
+          ? args.allowedValues.indexOf(args.value) === -1
+          : valueFound.allowedValues.indexOf(args.value) === -1)
       ) {
         reject('The value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(valueFound.value) === -1
+      ) {
+        reject('Current value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.maxChars) &&
+        valueFound.value.length > args.maxChars
+      ) {
+        reject('Current value exceeds maxChars')
         return false
       }
       return true
