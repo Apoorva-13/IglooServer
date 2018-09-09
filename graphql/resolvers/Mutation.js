@@ -434,7 +434,22 @@ const MutationResolver = (
       'CreateDevice',
       104,
       // REPLACE WITH authorized(boardId) also in the subscription
-      authenticated(context, async (resolve) => {
+      authenticated(context, async (resolve, reject) => {
+        // checks that batteryStatus and signalStatus are within boundaries [0,100]
+        if (
+          isNotNullNorUndefined(args.batteryStatus) &&
+          isOutOfBoundaries([0, 100], args.batteryStatus)
+        ) {
+          reject('batteryStatus is out of boundaries [0,100]')
+          return
+        } else if (
+          isNotNullNorUndefined(args.signalStatus) &&
+          isOutOfBoundaries([0, 100], args.signalStatus)
+        ) {
+          reject('signalStatus is out of boundaries [0,100]')
+          return
+        }
+
         const index =
           args.index !== null && args.index !== undefined
             ? args.index
@@ -801,6 +816,21 @@ const MutationResolver = (
         User,
         2,
         async (resolve, reject, deviceFound, deviceAndBoard) => {
+          // checks that batteryStatus and signalStatus are within boundaries [0,100]
+          if (
+            isNotNullNorUndefined(args.batteryStatus) &&
+            isOutOfBoundaries([0, 100], args.batteryStatus)
+          ) {
+            reject('batteryStatus is out of boundaries [0,100]')
+            return
+          } else if (
+            isNotNullNorUndefined(args.signalStatus) &&
+            isOutOfBoundaries([0, 100], args.signalStatus)
+          ) {
+            reject('signalStatus is out of boundaries [0,100]')
+            return
+          }
+
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
