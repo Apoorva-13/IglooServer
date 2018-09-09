@@ -159,7 +159,7 @@ const MutationResolver = (
       'GeneratePermanentAccessToken',
       125,
       authenticated(context, async (resolve, reject) => {
-        if (args.name === '') {
+        if (args.customName === '') {
           reject('Empty name is not allowed')
         } else {
           const databaseToken = await PermanentToken.create({
