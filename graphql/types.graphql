@@ -84,7 +84,7 @@ type Mutation {
     # Product name, for example Igloo Thermostat
     deviceType: String
     # Custom name gave by the end-user to the device
-    customName: String
+    customName: String!
     # device icon, shown in Igloo Aurora
     icon: String
     # used to sort the devices in Igloo Aurora

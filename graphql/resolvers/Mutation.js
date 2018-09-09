@@ -448,6 +448,9 @@ const MutationResolver = (
         ) {
           reject('signalStatus is out of boundaries [0,100]')
           return
+        } else if (args.customName === '') {
+          reject('Custom name cannot be an empty string')
+          return
         }
 
         const index =
@@ -828,6 +831,12 @@ const MutationResolver = (
             isOutOfBoundaries([0, 100], args.signalStatus)
           ) {
             reject('signalStatus is out of boundaries [0,100]')
+            return
+          } else if (
+            isNotNullNorUndefined(args.customName) &&
+            args.customName === ''
+          ) {
+            reject('customName cannot be an empty string')
             return
           }
 
