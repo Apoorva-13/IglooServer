@@ -120,7 +120,7 @@ type Mutation {
     # [min, max]
     boundaries: [Float!]
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     index: Int
@@ -140,7 +140,7 @@ type Mutation {
     # max length of the string
     maxChars: Int
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     # allowed values for the string
@@ -160,7 +160,7 @@ type Mutation {
     valueDetails: String
     value: Boolean!
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     index: Int
@@ -179,7 +179,7 @@ type Mutation {
     # hex code
     value: String!
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     # allowed colours
@@ -198,7 +198,7 @@ type Mutation {
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     # GEOJson string
@@ -224,7 +224,7 @@ type Mutation {
     # [min, max]
     boundaries: [Float!]
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     # alert threshold, values above the threshold will be displayed in red in Igloo Aurora
@@ -252,7 +252,7 @@ type Mutation {
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
-    customName: String
+    customName: String!
     # tile size in Igloo Aurora
     tileSize: TileSize
     # allowed labels

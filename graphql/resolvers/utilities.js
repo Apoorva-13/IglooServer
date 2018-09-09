@@ -167,6 +167,11 @@ const CreateGenericValue = (
       User,
       2,
       async (resolve, reject, deviceFound, deviceAndParent, userFound) => {
+        if (args.customName === '') {
+          reject('customName cannot be an empty string')
+          return
+        }
+
         async function calculateIndex() {
           const valuesCountPromises = ValueModels.map(async model =>
             await model.count({ where: { deviceId: args.deviceId } }))
@@ -246,6 +251,10 @@ const genericValueMutation = (
       2,
       async (resolve, reject, valueFound, valueAndParents) => {
         if (!checkArgs(args, valueFound, reject)) return
+        if (args.customName === null || args.customName === '') {
+          reject('customName cannot be null or an empty string')
+          return
+        }
 
         const newValue = await valueFound.update(args)
         const resolveObj = {
