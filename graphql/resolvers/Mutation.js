@@ -42,6 +42,8 @@ const MUTATION_COST = 2
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
 
 const isNotNullNorUndefined = value => value !== undefined && value !== null
+const isOutOfBoundaries = (boundaries, value) =>
+  value < boundaries[0] || value > boundaries[1]
 
 const genericShare = (Model, idField, User, childToParents) => (
   root,
@@ -841,6 +843,39 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      if (
+        isNotNullNorUndefined(args.boundaries) &&
+        args.boundaries.length !== 2
+      ) {
+        reject('Boundaries should be an array containing min and max ([min, max])')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.boundaries) &&
+        args.boundaries[0] >= args.boundaries[1]
+      ) {
+        reject('The min value should be less than the max value, boundaries should be an array [min, max]')
+      } else if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.boundaries) ||
+          isNotNullNorUndefined(valueFound.boundaries)) &&
+        (isNotNullNorUndefined(args.boundaries)
+          ? isOutOfBoundaries(args.boundaries, args.value)
+          : isOutOfBoundaries(valueFound.boundaries, args.value))
+      ) {
+        reject('Value is out of boundaries')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.boundaries) &&
+        isOutOfBoundaries(args.boundaries, valueFound.value)
+      ) {
+        reject('Current value is out of boundaries')
+        return false
+      } else {
+        return true
+      }
+    },
   ),
   stringValue: genericValueMutation(
     StringValue,
@@ -905,6 +940,27 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.allowedValues) ||
+          isNotNullNorUndefined(valueFound.allowedValues)) &&
+        (isNotNullNorUndefined(args.allowedValues)
+          ? args.allowedValues.indexOf(args.value) === -1
+          : valueFound.allowedValues.indexOf(args.value) === -1)
+      ) {
+        reject('The value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(valueFound.value) === -1
+      ) {
+        reject('Current value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   mapValue: genericValueMutation(
     MapValue,
