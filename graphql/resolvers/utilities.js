@@ -156,6 +156,7 @@ const CreateGenericValue = (
   ModelName,
   ValueModels,
   pubsub,
+  argsChecks = (args, reject) => true,
 ) => (root, args, context) =>
   logErrorsPromise(
     'CreateGenericValue',
@@ -167,6 +168,15 @@ const CreateGenericValue = (
       User,
       2,
       async (resolve, reject, deviceFound, deviceAndParent, userFound) => {
+        if (!argsChecks(args, reject)) {
+          return
+        }
+
+        if (args.customName === '') {
+          reject('customName cannot be an empty string')
+          return
+        }
+
         async function calculateIndex() {
           const valuesCountPromises = ValueModels.map(async model =>
             await model.count({ where: { deviceId: args.deviceId } }))
@@ -233,6 +243,7 @@ const genericValueMutation = (
   User,
   Device,
   Board,
+  checkArgs = (args, valueFound, reject) => true,
 ) => (root, args, context) =>
   logErrorsPromise(
     'genericValue mutation',
@@ -244,6 +255,12 @@ const genericValueMutation = (
       User,
       2,
       async (resolve, reject, valueFound, valueAndParents) => {
+        if (!checkArgs(args, valueFound, reject)) return
+        if (args.customName === null || args.customName === '') {
+          reject('customName cannot be null or an empty string')
+          return
+        }
+
         const newValue = await valueFound.update(args)
         const resolveObj = {
           ...newValue.dataValues,

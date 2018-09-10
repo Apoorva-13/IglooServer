@@ -264,7 +264,7 @@ app.get('/verifyEmail/:verificationToken', async (req, res) => {
     if (decodedToken.tokenType !== 'EMAIL_VERIFICATION') {
       res.send('Malformed token')
     } else {
-      const foundUser = await User.find({ userId: decodedToken.userId })
+      const foundUser = await User.find({ where: { id: decodedToken.userId } })
 
       if (!foundUser) {
         res.send("User doesn't exist anymore")

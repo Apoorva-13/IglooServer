@@ -24,6 +24,7 @@ import {
 import webpush from 'web-push'
 import Stripe from 'stripe'
 import { Op } from 'sequelize'
+import zxcvbn from 'zxcvbn'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -40,6 +41,10 @@ const SALT_ROUNDS = 10
 const MUTATION_COST = 2
 
 const stripe = Stripe('sk_test_pku6xMd2Tjlv5EU4GkZHw7aS')
+
+const isNotNullNorUndefined = value => value !== undefined && value !== null
+const isOutOfBoundaries = (boundaries, value) =>
+  value < boundaries[0] || value > boundaries[1]
 
 const genericShare = (Model, idField, User, childToParents) => (
   root,
@@ -155,7 +160,7 @@ const MutationResolver = (
       'GeneratePermanentAccessToken',
       125,
       authenticated(context, async (resolve, reject) => {
-        if (args.name === '') {
+        if (args.customName === '') {
           reject('Empty name is not allowed')
         } else {
           const databaseToken = await PermanentToken.create({
@@ -221,8 +226,14 @@ const MutationResolver = (
   // if not it creates one and returnes an access token
   SignupUser(root, args) {
     return logErrorsPromise('SignupUser', 102, async (resolve, reject) => {
-      const user = await User.find({ where: { email: args.email } })
-      if (user) {
+      // check password strength
+      if (zxcvbn(args.password).score < 2) {
+        reject('Password too weak, avoid easily guessable password or short ones')
+        return
+      }
+
+      const userFound = await User.find({ where: { email: args.email } })
+      if (userFound) {
         reject('A user with this email already exists')
       } else {
         const encryptedPass = bcrypt.hashSync(args.password, SALT_ROUNDS)
@@ -330,12 +341,14 @@ const MutationResolver = (
     return logErrorsPromise(
       'ResendVerificationEmail',
       900,
-      authenticated(context, async (resolve) => {
+      authenticated(context, async (resolve, reject) => {
         const userFound = await User.find({
           where: { id: context.auth.userId },
         })
         if (!userFound) {
           reject("User doesn't exist. Use `SignupUser` to create one")
+        } else if (userFound.emailIsVerified) {
+          reject('This user has already verified their email')
         } else {
           resolve(true)
           sendVerificationEmail(userFound.email, userFound.id)
@@ -430,7 +443,25 @@ const MutationResolver = (
       'CreateDevice',
       104,
       // REPLACE WITH authorized(boardId) also in the subscription
-      authenticated(context, async (resolve) => {
+      authenticated(context, async (resolve, reject) => {
+        // checks that batteryStatus and signalStatus are within boundaries [0,100]
+        if (
+          isNotNullNorUndefined(args.batteryStatus) &&
+          isOutOfBoundaries([0, 100], args.batteryStatus)
+        ) {
+          reject('batteryStatus is out of boundaries [0,100]')
+          return
+        } else if (
+          isNotNullNorUndefined(args.signalStatus) &&
+          isOutOfBoundaries([0, 100], args.signalStatus)
+        ) {
+          reject('signalStatus is out of boundaries [0,100]')
+          return
+        } else if (args.customName === '') {
+          reject('Custom name cannot be an empty string')
+          return
+        }
+
         const index =
           args.index !== null && args.index !== undefined
             ? args.index
@@ -484,6 +515,23 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (
+        isNotNullNorUndefined(args.boundaries) &&
+        (args.boundaries.length !== 2 ||
+          args.boundaries[0] >= args.boundaries[1])
+      ) {
+        reject('Boundaries should be a [min, max] array')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.boundaries) &&
+        isOutOfBoundaries(args.boundaries, args.value)
+      ) {
+        reject('Value is out of boundaries')
+        return false
+      }
+      return true
+    },
   ),
   CreateStringValue: CreateGenericValue(
     User,
@@ -501,6 +549,25 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (isNotNullNorUndefined(args.maxChars) && args.maxChars <= 0) {
+        reject('maxChars must be greater than 0')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.maxChars) &&
+        args.value.length > args.maxChars
+      ) {
+        reject('Value exceeds the maxChars')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(args.value) === -1
+      ) {
+        reject('Value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   CreateBooleanValue: CreateGenericValue(
     User,
@@ -535,6 +602,16 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(args.value) === -1
+      ) {
+        reject('Value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   CreateMapValue: CreateGenericValue(
     User,
@@ -797,6 +874,24 @@ const MutationResolver = (
         User,
         2,
         async (resolve, reject, deviceFound, deviceAndBoard) => {
+          // checks that batteryStatus and signalStatus are within boundaries [0,100]
+          if (
+            isNotNullNorUndefined(args.batteryStatus) &&
+            isOutOfBoundaries([0, 100], args.batteryStatus)
+          ) {
+            reject('batteryStatus is out of boundaries [0,100]')
+            return
+          } else if (
+            isNotNullNorUndefined(args.signalStatus) &&
+            isOutOfBoundaries([0, 100], args.signalStatus)
+          ) {
+            reject('signalStatus is out of boundaries [0,100]')
+            return
+          } else if (args.customName === null || args.customName === '') {
+            reject('customName cannot be null or an empty string')
+            return
+          }
+
           const newDevice = await deviceFound.update(args)
           resolve(newDevice.dataValues)
           pubsub.publish('deviceUpdated', {
@@ -839,6 +934,39 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      if (
+        isNotNullNorUndefined(args.boundaries) &&
+        args.boundaries.length !== 2
+      ) {
+        reject('Boundaries should be an array containing min and max ([min, max])')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.boundaries) &&
+        args.boundaries[0] >= args.boundaries[1]
+      ) {
+        reject('The min value should be less than the max value, boundaries should be an array [min, max]')
+      } else if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.boundaries) ||
+          isNotNullNorUndefined(valueFound.boundaries)) &&
+        (isNotNullNorUndefined(args.boundaries)
+          ? isOutOfBoundaries(args.boundaries, args.value)
+          : isOutOfBoundaries(valueFound.boundaries, args.value))
+      ) {
+        reject('Value is out of boundaries')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.boundaries) &&
+        isOutOfBoundaries(args.boundaries, valueFound.value)
+      ) {
+        reject('Current value is out of boundaries')
+        return false
+      } else {
+        return true
+      }
+    },
   ),
   stringValue: genericValueMutation(
     StringValue,
@@ -847,6 +975,49 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      // Current or new value should respect maxChars and allowedValue
+
+      if (isNotNullNorUndefined(args.maxChars) && args.maxChars <= 0) {
+        reject('maxChars must be greater than 0')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.maxChars) ||
+          isNotNullNorUndefined(valueFound.maxChars)) &&
+        (isNotNullNorUndefined(args.maxChars)
+          ? args.value.length > args.maxChars
+          : args.value.length > valueFound.maxChars)
+      ) {
+        reject('The value provided exceeds the maxChars')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.allowedValues) ||
+          isNotNullNorUndefined(valueFound.allowedValues)) &&
+        (isNotNullNorUndefined(args.allowedValues)
+          ? args.allowedValues.indexOf(args.value) === -1
+          : valueFound.allowedValues.indexOf(args.value) === -1)
+      ) {
+        reject('The value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(valueFound.value) === -1
+      ) {
+        reject('Current value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.maxChars) &&
+        valueFound.value.length > args.maxChars
+      ) {
+        reject('Current value exceeds maxChars')
+        return false
+      }
+      return true
+    },
   ),
   booleanValue: genericValueMutation(
     BoolValue,
@@ -863,6 +1034,27 @@ const MutationResolver = (
     User,
     Device,
     Board,
+    (args, valueFound, reject) => {
+      if (
+        isNotNullNorUndefined(args.value) &&
+        (isNotNullNorUndefined(args.allowedValues) ||
+          isNotNullNorUndefined(valueFound.allowedValues)) &&
+        (isNotNullNorUndefined(args.allowedValues)
+          ? args.allowedValues.indexOf(args.value) === -1
+          : valueFound.allowedValues.indexOf(args.value) === -1)
+      ) {
+        reject('The value is not among the allowedValues')
+        return false
+      } else if (
+        !isNotNullNorUndefined(args.value) &&
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(valueFound.value) === -1
+      ) {
+        reject('Current value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   mapValue: genericValueMutation(
     MapValue,
