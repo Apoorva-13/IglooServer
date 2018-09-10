@@ -156,6 +156,7 @@ const CreateGenericValue = (
   ModelName,
   ValueModels,
   pubsub,
+  argsChecks = (args, reject) => true,
 ) => (root, args, context) =>
   logErrorsPromise(
     'CreateGenericValue',
@@ -167,6 +168,10 @@ const CreateGenericValue = (
       User,
       2,
       async (resolve, reject, deviceFound, deviceAndParent, userFound) => {
+        if (!argsChecks(args, reject)) {
+          return
+        }
+
         if (args.customName === '') {
           reject('customName cannot be an empty string')
           return

@@ -24,6 +24,7 @@ import {
 import webpush from 'web-push'
 import Stripe from 'stripe'
 import { Op } from 'sequelize'
+import zxcvbn from 'zxcvbn'
 
 require('dotenv').config()
 /* istanbul ignore if */
@@ -225,6 +226,12 @@ const MutationResolver = (
   // if not it creates one and returnes an access token
   SignupUser(root, args) {
     return logErrorsPromise('SignupUser', 102, async (resolve, reject) => {
+      // check password strength
+      if (zxcvbn(args.password).score < 2) {
+        reject('Password too weak, avoid easily guessable password or short ones')
+        return
+      }
+
       const userFound = await User.find({ where: { email: args.email } })
       if (userFound) {
         reject('A user with this email already exists')
@@ -508,6 +515,23 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (
+        isNotNullNorUndefined(args.boundaries) &&
+        (args.boundaries.length !== 2 ||
+          args.boundaries[0] >= args.boundaries[1])
+      ) {
+        reject('Boundaries should be a [min, max] array')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.boundaries) &&
+        isOutOfBoundaries(args.boundaries, args.value)
+      ) {
+        reject('Value is out of boundaries')
+        return false
+      }
+      return true
+    },
   ),
   CreateStringValue: CreateGenericValue(
     User,
@@ -525,6 +549,25 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (isNotNullNorUndefined(args.maxChars) && args.maxChars <= 0) {
+        reject('maxChars must be greater than 0')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.maxChars) &&
+        args.value.length > args.maxChars
+      ) {
+        reject('Value exceeds the maxChars')
+        return false
+      } else if (
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(args.value) === -1
+      ) {
+        reject('Value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   CreateBooleanValue: CreateGenericValue(
     User,
@@ -559,6 +602,16 @@ const MutationResolver = (
       StringPlotValue,
     ],
     pubsub,
+    (args, reject) => {
+      if (
+        isNotNullNorUndefined(args.allowedValues) &&
+        args.allowedValues.indexOf(args.value) === -1
+      ) {
+        reject('Value is not among the allowedValues')
+        return false
+      }
+      return true
+    },
   ),
   CreateMapValue: CreateGenericValue(
     User,
@@ -925,7 +978,10 @@ const MutationResolver = (
     (args, valueFound, reject) => {
       // Current or new value should respect maxChars and allowedValue
 
-      if (
+      if (isNotNullNorUndefined(args.maxChars) && args.maxChars <= 0) {
+        reject('maxChars must be greater than 0')
+        return false
+      } else if (
         isNotNullNorUndefined(args.value) &&
         (isNotNullNorUndefined(args.maxChars) ||
           isNotNullNorUndefined(valueFound.maxChars)) &&
