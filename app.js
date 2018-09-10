@@ -75,6 +75,16 @@ app.use(expressJwt({
   },
 }))
 
+// handle the errors thrown by expressJwt
+app.use((err, req, res, next) => {
+  if (err.code === 'invalid_token') {
+    res.status(401).send({
+      data: null,
+      errors: [{ message: 'The token is invalid, expired or malformed' }],
+    })
+  }
+})
+
 const updateUserBilling = auth => async (bill) => {
   const userFound = await User.find({ where: { id: auth.userId } })
 

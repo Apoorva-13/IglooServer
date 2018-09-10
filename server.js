@@ -31,9 +31,9 @@ httpServer.listen(GRAPHQL_PORT, () => {
       schema,
       onConnect: (connectionParams, websocket) => {
         if (!connectionParams.Authorization) {
-          return false
+          throw new Error('You should pass an authorization token')
         } else if (!connectionParams.Authorization.startsWith('Bearer ')) {
-          return false
+          throw new Error("Bearer should be prefixed with 'Bearer '")
         }
         try {
           // FIXME: does this check that the token was not forged?
@@ -43,8 +43,11 @@ httpServer.listen(GRAPHQL_PORT, () => {
           )
           return { auth: decodedJwt, websocket }
         } catch (e) /* istanbul ignore next */ {
-          logger.error(e, { label: 'subscriptionServer', code: 119 })
-          return false
+          if (e.message === 'Token expired') {
+            throw new Error('Token expired')
+          } else {
+            throw new Error('Malformed JWT')
+          }
         }
       },
       onOperationComplete: async (websocket) => {
