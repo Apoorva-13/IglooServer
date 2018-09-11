@@ -252,6 +252,17 @@ const MutationResolver = (
             displayName: args.displayName,
           })
 
+          const newBoard = await Board.create({
+            customName: 'Home',
+            avatar: null, // TODO: choose an avatar
+            favorite: true,
+            quietMode: false,
+            index: 0,
+          })
+
+          await newUser.addOwnBoard(newBoard)
+          await newBoard.setOwner(newUser)
+
           resolve({
             id: newUser.dataValues.id,
             token: generateAuthenticationToken(
@@ -439,65 +450,89 @@ const MutationResolver = (
     )
   },
   CreateDevice(root, args, context) {
-    return logErrorsPromise(
-      'CreateDevice',
-      104,
-      // REPLACE WITH authorized(boardId) also in the subscription
-      authenticated(context, async (resolve, reject) => {
-        // checks that batteryStatus and signalStatus are within boundaries [0,100]
-        if (
-          isNotNullNorUndefined(args.batteryStatus) &&
-          isOutOfBoundaries([0, 100], args.batteryStatus)
-        ) {
-          reject('batteryStatus is out of boundaries [0,100]')
-          return
-        } else if (
-          isNotNullNorUndefined(args.signalStatus) &&
-          isOutOfBoundaries([0, 100], args.signalStatus)
-        ) {
-          reject('signalStatus is out of boundaries [0,100]')
-          return
-        } else if (args.customName === '') {
-          reject('Custom name cannot be an empty string')
-          return
-        }
-
-        const index =
-          args.index !== null && args.index !== undefined
-            ? args.index
-            : await Device.count({ where: { ownerId: context.auth.userId } })
-
-        // TODO: check that the boardId passed is a board to which the user has access
-        const newDevice = await Device.create({
-          ...args,
-          index,
-        })
-
+    return logErrorsPromise('CreateDevice', 104, async (resolve, reject) => {
+      let boardId
+      if (args.boardId) {
+        boardId = args.boardId
+      } else {
         const userFound = await User.find({
           where: { id: context.auth.userId },
         })
-        await userFound.addOwnDevice(newDevice)
-        await newDevice.setOwner(userFound)
 
-        const resolveValue = {
-          ...newDevice.dataValues,
-          board: newDevice.boardId
-            ? {
-              id: newDevice.boardId,
-            }
-            : null,
-        }
+        const boards = await userFound.getOwnBoards()
+        const board =
+          boards.length === 1
+            ? boards[0]
+            : boards.reduce((acc, curr) =>
+              (new Date(acc.createdAt) < new Date(curr.createdAt)
+                ? acc
+                : curr))
 
-        pubsub.publish('deviceCreated', {
-          deviceCreated: resolveValue,
-          userIds: [context.auth.userId],
-        })
+        boardId = board.id
+      }
 
-        resolve(resolveValue)
+      return authorized(
+        boardId,
+        context,
+        Board,
+        User,
+        2,
+        async (resolve, reject, boardFound) => {
+          // checks that batteryStatus and signalStatus are within boundaries [0,100]
+          if (
+            isNotNullNorUndefined(args.batteryStatus) &&
+            isOutOfBoundaries([0, 100], args.batteryStatus)
+          ) {
+            reject('batteryStatus is out of boundaries [0,100]')
+            return
+          } else if (
+            isNotNullNorUndefined(args.signalStatus) &&
+            isOutOfBoundaries([0, 100], args.signalStatus)
+          ) {
+            reject('signalStatus is out of boundaries [0,100]')
+            return
+          } else if (args.customName === '') {
+            reject('Custom name cannot be an empty string')
+            return
+          }
 
-        context.billingUpdater.update(MUTATION_COST)
-      }),
-    )
+          const index =
+            args.index !== null && args.index !== undefined
+              ? args.index
+              : await Device.count({ where: { ownerId: context.auth.userId } })
+
+          const newDevice = await Device.create({
+            ...args,
+            boardId,
+            index,
+          })
+
+          const userFound = await User.find({
+            where: { id: context.auth.userId },
+          })
+          await userFound.addOwnDevice(newDevice)
+          await newDevice.setOwner(userFound)
+
+          const resolveValue = {
+            ...newDevice.dataValues,
+            board: newDevice.boardId
+              ? {
+                id: newDevice.boardId,
+              }
+              : null,
+          }
+
+          pubsub.publish('deviceCreated', {
+            deviceCreated: resolveValue,
+            userIds: instancesToSharedIds([boardFound]),
+          })
+
+          resolve(resolveValue)
+
+          context.billingUpdater.update(MUTATION_COST)
+        },
+      )(resolve, reject)
+    })
   },
   CreateFloatValue: CreateGenericValue(
     User,
@@ -1474,7 +1509,13 @@ const MutationResolver = (
         Board,
         User,
         3,
-        async (resolve, reject, boardFound) => {
+        async (resolve, reject, boardFound, boardAndParents, userFound) => {
+          const userBoards = await userFound.getOwnBoards()
+          if (userBoards.length === 1 && userBoards[0].id === boardFound.id) {
+            reject('Every user must have at least one owned board')
+            return
+          }
+
           const authorizedUsersIds = instancesToSharedIds([boardFound])
           const devices = await Device.findAll({
             where: { boardId: boardFound.id },
