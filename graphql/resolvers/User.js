@@ -132,7 +132,13 @@ const UserResolver = ({
             { model: Device },
           ])
 
-          resolve([...devices, ...devicesInheritedByBoards])
+          resolve([
+            ...devices,
+            ...devicesInheritedByBoards.reduce(
+              (acc, curr) => [...acc, ...curr.devices],
+              [],
+            ),
+          ])
           context.billingUpdater.update(QUERY_COST * devices.length)
         }
       }),
