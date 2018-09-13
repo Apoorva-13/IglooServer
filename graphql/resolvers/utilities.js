@@ -1125,6 +1125,18 @@ const mergeIgnoringDuplicates = (...args) => {
   return flattenedAllValues
 }
 
+const randomChoice = (...args) => {
+  let chooseAmong = args
+  if (args.length === 1) chooseAmong = args[0]
+
+  const randomIndex = Math.floor(Math.random() * chooseAmong.length)
+
+  return chooseAmong[randomIndex]
+}
+
+const randomBoardAvatar = () =>
+  randomChoice(['NORTHERN_LIGHTS', 'DENALI', 'FOX', 'PUFFIN', 'TREETOPS'])
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -1162,4 +1174,6 @@ module.exports = {
   inheritAuthorizedScalarPropsResolvers,
   getAll,
   mergeIgnoringDuplicates,
+  randomChoice,
+  randomBoardAvatar,
 }

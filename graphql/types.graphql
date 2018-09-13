@@ -2,6 +2,14 @@ scalar DateTime
 
 scalar Json
 
+enum BoardAvatar {
+  NORTHERN_LIGHTS
+  DENALI
+  FOX
+  PUFFIN
+  TREETOPS
+}
+
 # Payload returned after signing up
 type SignupUserPayload {
   # user id
@@ -73,7 +81,7 @@ type Mutation {
   # Creates a Board
   CreateBoard(
     customName: String!
-    avatar: String
+    avatar: BoardAvatar
     favorite: Boolean
     index: Int
     quietMode: Boolean
@@ -291,7 +299,7 @@ type Mutation {
   board(
     id: ID!
     customName: String
-    avatar: String
+    avatar: BoardAvatar
     favorite: Boolean
     index: Int
     quietMode: Boolean
@@ -643,7 +651,7 @@ type Board {
   editors: [User!]!
   spectators: [User!]!
   customName: String!
-  avatar: String
+  avatar: BoardAvatar!
   devices: [Device!]!
   favorite: Boolean!
   notificationsCount: Int!

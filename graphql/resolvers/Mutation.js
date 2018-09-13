@@ -20,6 +20,7 @@ import {
   instancesToSharedIds,
   inheritAuthorized,
   valueToParents,
+  randomBoardAvatar,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -254,7 +255,7 @@ const MutationResolver = (
 
           const newBoard = await Board.create({
             customName: 'Home',
-            avatar: null, // TODO: choose an avatar
+            avatar: randomBoardAvatar(),
             favorite: true,
             quietMode: false,
             index: 0,
@@ -417,6 +418,7 @@ const MutationResolver = (
       authenticated(context, async (resolve, reject) => {
         const newBoard = await Board.create({
           ...args,
+          avatar: args.avatar || randomBoardAvatar(),
           // if favorite or quietMode are not passed then set them to false
           favorite: !!args.favorite,
           quietMode: !!args.quietMode,
