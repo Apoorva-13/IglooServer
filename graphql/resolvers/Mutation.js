@@ -21,6 +21,7 @@ import {
   inheritAuthorized,
   valueToParents,
   randomBoardAvatar,
+  randomUserIconColor,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -251,6 +252,7 @@ const MutationResolver = (
             paymentPlan: 'FREE',
             emailIsVerified: false,
             displayName: args.displayName,
+            profileIconColor: randomUserIconColor(),
           })
 
           const newBoard = await Board.create({

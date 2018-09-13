@@ -1137,6 +1137,8 @@ const randomChoice = (...args) => {
 const randomBoardAvatar = () =>
   randomChoice(['NORTHERN_LIGHTS', 'DENALI', 'FOX', 'PUFFIN', 'TREETOPS'])
 
+const randomUserIconColor = () => randomChoice(['blue', 'red', 'green'])
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -1176,4 +1178,5 @@ module.exports = {
   mergeIgnoringDuplicates,
   randomChoice,
   randomBoardAvatar,
+  randomUserIconColor,
 }
