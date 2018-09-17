@@ -721,9 +721,8 @@ async function instanceAuthorizationLevel(instance, userFound) {
   return 0
 }
 
-function authorizationLevel(instances, userFound) {
-  const authorizations = instances.map(instance =>
-    instanceAuthorizationLevel(instance, userFound))
+async function authorizationLevel(instances, userFound) {
+  const authorizations = await Promise.all(instances.map(instance => instanceAuthorizationLevel(instance, userFound)))
   const maxAuthorization = Math.max(...authorizations)
 
   return maxAuthorization
@@ -925,8 +924,8 @@ const authorizedValue = (
     return callbackFunc(resolve, reject, ...resourcesFound, userFound)
   })
 
-const instanceToRole = (instances, userFound) => {
-  const roleLevel = authorizationLevel(instances, userFound)
+const instanceToRole = async (instances, userFound) => {
+  const roleLevel = await authorizationLevel(instances, userFound)
 
   switch (roleLevel) {
     case 4:

@@ -54,8 +54,8 @@ const ValueResolver = (Values, User, Device, Board) => ({
       Values,
       User,
       1,
-      (resolve, reject, valueFound, valueAndParents, userFound) => {
-        const myRole = instanceToRole(valueAndParents, userFound)
+      async (resolve, reject, valueFound, valueAndParents, userFound) => {
+        const myRole = await instanceToRole(valueAndParents, userFound)
         resolve(myRole)
       },
       Device,

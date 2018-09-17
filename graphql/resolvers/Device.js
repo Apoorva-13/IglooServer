@@ -93,7 +93,7 @@ const DeviceResolver = ({
           deviceAndParentFound,
           userFound,
         ) => {
-          const myRole = instanceToRole(deviceAndParentFound, userFound)
+          const myRole = await instanceToRole(deviceAndParentFound, userFound)
 
           resolve(myRole)
         },

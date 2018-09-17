@@ -99,7 +99,7 @@ const BoardResolver = ({
         User,
         1,
         async (resolve, reject, boardFound, boardAndParents, userFound) => {
-          const myRole = instanceToRole([boardFound], userFound)
+          const myRole = await instanceToRole([boardFound], userFound)
 
           resolve(myRole)
         },

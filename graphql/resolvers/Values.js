@@ -46,7 +46,7 @@ const GenericResolver = (Model, User, Device, Board) => ({
           valueAndParentsFound,
           userFound,
         ) => {
-          const myRole = instanceToRole(valueAndParentsFound, userFound)
+          const myRole = await instanceToRole(valueAndParentsFound, userFound)
           resolve(myRole)
         },
         valueToParents(Device, Board),
