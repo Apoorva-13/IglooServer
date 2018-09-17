@@ -543,12 +543,12 @@ const findValue = (
           : null
 
         if (
-          authorizationLevel(
+          (await authorizationLevel(
             boardFound
               ? [value, deviceFound, boardFound]
               : [value, deviceFound],
             userFound,
-          ) < 1
+          )) < 1
         ) {
           throw new Error('You are not allowed to access details about this resource')
         } else return value
@@ -752,7 +752,7 @@ function authorized(
         })
 
         if (
-          authorizationLevel([found, ...others], userFound) <
+          (await authorizationLevel([found, ...others], userFound)) <
           authorizationRequired
         ) {
           /* istanbul ignore next */
@@ -896,7 +896,8 @@ const authorizedValue = (
           ? [resourceFound, deviceFound, boardFound]
           : [resourceFound, deviceFound]
         if (
-          authorizationLevel(valueAndParents, userFound) < authorizationRequired
+          (await authorizationLevel(valueAndParents, userFound)) <
+          authorizationRequired
         ) {
           throw new Error(NOT_ALLOWED)
         } else {

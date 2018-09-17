@@ -104,12 +104,12 @@ const ValueResolver = (Values, User, Device, Board) => ({
                 : null
 
               if (
-                authorizationLevel(
+                (await authorizationLevel(
                   boardFound
                     ? [resourceFound, deviceFound, boardFound]
                     : [resourceFound, deviceFound],
                   userFound,
-                ) < 1
+                )) < 1
               ) {
                 /* istanbul ignore next */
                 rejectInner(NOT_ALLOWED)
