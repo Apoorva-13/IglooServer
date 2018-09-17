@@ -528,7 +528,7 @@ const MutationResolver = (
 
           pubsub.publish('deviceCreated', {
             deviceCreated: resolveValue,
-            userIds: instancesToSharedIds([boardFound]),
+            userIds: await instancesToSharedIds([boardFound]),
           })
 
           resolve(resolveValue)
@@ -1520,7 +1520,7 @@ const MutationResolver = (
             return
           }
 
-          const authorizedUsersIds = instancesToSharedIds([boardFound])
+          const authorizedUsersIds = await instancesToSharedIds([boardFound])
           const devices = await Device.findAll({
             where: { boardId: boardFound.id },
           })
