@@ -22,6 +22,7 @@ import {
   valueToParents,
   randomBoardAvatar,
   randomUserIconColor,
+  instanceToRole,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -83,6 +84,40 @@ const genericShare = (Model, idField, User, childToParents) => (
     ),
   )
 
+const genericStopSharing = (Model, idField, User, childToParents) => (
+  root,
+  args,
+  context,
+) =>
+  logErrorsPromise(
+    'genericShare',
+    921,
+    authorized(
+      args[idField],
+      context,
+      Model,
+      User,
+      3,
+      async (resolve, reject, found, foundAndParents) => {
+        const userFound = await User.find({ where: { email: args.email } })
+
+        if (!await instanceToRole(foundAndParents, userFound)) {
+          reject("This resource isn't shared with that user")
+        }
+
+        // remove old role
+        await Promise.all([
+          userFound[`remove${Model.Admins}`](found),
+          userFound[`remove${Model.Editors}`](found),
+          userFound[`remove${Model.Spectators}`](found),
+        ])
+
+        resolve(found)
+        context.billingUpdater.update(MUTATION_COST)
+      },
+      childToParents,
+    ),
+  )
 const MutationResolver = (
   {
     User,
@@ -371,7 +406,14 @@ const MutationResolver = (
     )
   },
   shareBoard: genericShare(Board, 'boardId', User),
+  stopSharingBoard: genericStopSharing(Board, 'boardId', User),
   shareDevice: genericShare(Device, 'deviceId', User, deviceToParents(Board)),
+  stopSharingDevice: genericStopSharing(
+    Device,
+    'deviceId',
+    User,
+    deviceToParents(Board),
+  ),
   shareValue: (root, args, context) =>
     logErrorsPromise(
       'shareValue',
@@ -404,6 +446,46 @@ const MutationResolver = (
           const parsedRole = `${args.role[0] +
             args.role.slice(1).toLowerCase()}s`
           await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
+
+          resolve(valueFound)
+
+          context.billingUpdater.update(MUTATION_COST)
+        },
+        Device,
+        Board,
+      ),
+    ),
+  stopSharingValue: (root, args, context) =>
+    logErrorsPromise(
+      'shareValue',
+      921,
+      authorizedValue(
+        args.valueId,
+        context,
+        {
+          FloatValue,
+          StringValue,
+          BoolValue,
+          ColourValue,
+          MapValue,
+          PlotValue,
+          StringPlotValue,
+        },
+        User,
+        3,
+        async (resolve, reject, valueFound, valueAndParents) => {
+          const userFound = await User.find({ where: { email: args.email } })
+
+          if (!await instanceToRole(valueAndParents, userFound)) {
+            reject("This resource isn't shared with that user")
+          }
+
+          // remove old role
+          await Promise.all([
+            userFound[`remove${valueFound.Model.Admins}`](valueFound),
+            userFound[`remove${valueFound.Model.Editors}`](valueFound),
+            userFound[`remove${valueFound.Model.Spectators}`](valueFound),
+          ])
 
           resolve(valueFound)
 

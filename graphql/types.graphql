@@ -76,8 +76,14 @@ type Mutation {
   ResendVerificationEmail: Boolean
 
   shareBoard(boardId: ID!, email: String!, role: Role!): Board
+  stopSharingBoard(boardId: ID!, email: String!): Board
+
   shareDevice(deviceId: ID!, email: String!, role: Role!): Device
+  stopSharingDevice(deviceId: ID!, email: String!): Device
+
   shareValue(valueId: ID!, email: String!, role: Role!): Value
+  stopSharingValue(valueId: ID!, email: String!): Value
+
   # Creates a Board
   CreateBoard(
     customName: String!
