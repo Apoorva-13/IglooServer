@@ -122,30 +122,9 @@ const DeviceResolver = ({
       ),
     )
   },
-  admins: rolesResolver(
-    'Admin',
-    'deviceId',
-    'Device',
-    User,
-    joinTables,
-    deviceToParents(Board),
-  ),
-  editors: rolesResolver(
-    'Editor',
-    'deviceId',
-    'Device',
-    User,
-    joinTables,
-    deviceToParents(Board),
-  ),
-  spectators: rolesResolver(
-    'Spectator',
-    'deviceId',
-    'Device',
-    User,
-    joinTables,
-    deviceToParents(Board),
-  ),
+  admins: rolesResolver('admin', Device, User, deviceToParents(Board)),
+  editors: rolesResolver('editor', Device, User, deviceToParents(Board)),
+  spectators: rolesResolver('spectator', Device, User, deviceToParents(Board)),
   board(root, args, context) {
     return logErrorsPromise(
       'Device board resolver',

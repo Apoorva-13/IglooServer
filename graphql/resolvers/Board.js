@@ -40,9 +40,9 @@ const BoardResolver = ({
       ),
     )
   },
-  admins: rolesResolver('Admin', 'boardId', 'Board', User, joinTables),
-  editors: rolesResolver('Editor', 'boardId', 'Board', User, joinTables),
-  spectators: rolesResolver('Spectator', 'boardId', 'Board', User, joinTables),
+  admins: rolesResolver('admin', Board, User),
+  editors: rolesResolver('editor', Board, User),
+  spectators: rolesResolver('spectator', Board, User),
   devices(root, args, context) {
     return logErrorsPromise(
       'devices BoardResolver',

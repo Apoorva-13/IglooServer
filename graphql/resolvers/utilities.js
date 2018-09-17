@@ -810,14 +810,11 @@ const authorizedScalarPropsResolvers = (
   }, {})
 
 const QUERY_COST = 1
-const rolesResolver = (
-  roleName,
-  modelIdField,
-  ModelName,
-  User,
-  joinTables,
-  childToParents,
-) => (root, args, context) =>
+const rolesResolver = (roleName, Model, User, childToParents) => (
+  root,
+  args,
+  context,
+) =>
   logErrorsPromise(
     'rolesIds resolver',
     922,
@@ -828,20 +825,14 @@ const rolesResolver = (
       User,
       1,
       async (resolve, reject, found) => {
-        const usersFound = await joinTables[`${ModelName}${roleName}s`]
-          .findAll({
-            where: { [modelIdField]: found.id },
-          })
-          .then(joinTables =>
-            joinTables.map(joinTable => joinTable.dataValues.userId))
+        const modelFound = await Model.find({
+          where: { id: root.id },
+          include: [{ model: User, as: roleName }],
+        })
 
-        const users = usersFound.map(id => ({
-          id,
-        }))
+        resolve(modelFound[roleName])
 
-        resolve(users)
-
-        context.billingUpdater.update(QUERY_COST * users.length)
+        context.billingUpdater.update(QUERY_COST * modelFound[roleName].length)
       },
       childToParents,
     ),
