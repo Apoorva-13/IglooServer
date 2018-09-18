@@ -69,6 +69,9 @@ const genericShare = (
       async (resolve, reject, found) => {
         const userFound = await User.find({ where: { email: args.email } })
 
+        if (!userFound) {
+          reject("This account doesn't exist, check the email passed")
+        }
         // remove old role
         await Promise.all([
           userFound[`remove${Model.Admins}`](found),
@@ -111,6 +114,10 @@ const genericStopSharing = (
       3,
       async (resolve, reject, found, foundAndParents) => {
         const userFound = await User.find({ where: { email: args.email } })
+
+        if (!userFound) {
+          reject("This account doesn't exist, check the email passed")
+        }
 
         if (!await instanceToRole(foundAndParents, userFound)) {
           reject("This resource isn't shared with that user")
@@ -466,6 +473,9 @@ const MutationResolver = (
         async (resolve, reject, valueFound) => {
           const userFound = await User.find({ where: { email: args.email } })
 
+          if (!userFound) {
+            reject("This account doesn't exist, check the email passed")
+          }
           // remove old role
           await Promise.all([
             userFound[`remove${valueFound.Model.Admins}`](valueFound),
@@ -512,6 +522,9 @@ const MutationResolver = (
         async (resolve, reject, valueFound, valueAndParents) => {
           const userFound = await User.find({ where: { email: args.email } })
 
+          if (!userFound) {
+            reject("This account doesn't exist, check the email passed")
+          }
           if (!await instanceToRole(valueAndParents, userFound)) {
             reject("This resource isn't shared with that user")
           }
