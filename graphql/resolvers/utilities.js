@@ -197,8 +197,10 @@ const CreateGenericValue = (
           ownerId: context.auth.userId,
           index,
         })
-        await userFound[`addOwn${ModelName}`](newValue)
-        await newValue.setOwner(userFound)
+
+        const ownerFound = await deviceFound.getOwner()
+        await ownerFound[`addOwn${ModelName}`](newValue)
+        await newValue.setOwner(ownerFound)
 
         const resolveObj = {
           ...newValue.dataValues,

@@ -634,9 +634,7 @@ const MutationResolver = (
             index,
           })
 
-          const userFound = await User.find({
-            where: { id: context.auth.userId },
-          })
+          const userFound = await boardFound.getOwner()
           await userFound.addOwnDevice(newDevice)
           await newDevice.setOwner(userFound)
 
