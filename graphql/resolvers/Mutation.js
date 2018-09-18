@@ -49,11 +49,14 @@ const isNotNullNorUndefined = value => value !== undefined && value !== null
 const isOutOfBoundaries = (boundaries, value) =>
   value < boundaries[0] || value > boundaries[1]
 
-const genericShare = (Model, idField, User, childToParents) => (
-  root,
-  args,
-  context,
-) =>
+const genericShare = (
+  Model,
+  idField,
+  User,
+  pubsub,
+  subscription,
+  childToParents,
+) => (root, args, context) =>
   logErrorsPromise(
     'genericShare',
     921,
@@ -79,16 +82,24 @@ const genericShare = (Model, idField, User, childToParents) => (
 
         resolve(found)
         context.billingUpdater.update(MUTATION_COST)
+
+        pubsub.publish(subscription, {
+          [subscription]: found,
+          userId: userFound.id,
+        })
       },
       childToParents,
     ),
   )
 
-const genericStopSharing = (Model, idField, User, childToParents) => (
-  root,
-  args,
-  context,
-) =>
+const genericStopSharing = (
+  Model,
+  idField,
+  User,
+  pubsub,
+  subscription,
+  childToParents,
+) => (root, args, context) =>
   logErrorsPromise(
     'genericShare',
     921,
@@ -114,6 +125,11 @@ const genericStopSharing = (Model, idField, User, childToParents) => (
 
         resolve(found)
         context.billingUpdater.update(MUTATION_COST)
+
+        pubsub.publish(subscription, {
+          [subscription]: args[idField],
+          userId: userFound.id,
+        })
       },
       childToParents,
     ),
@@ -405,13 +421,28 @@ const MutationResolver = (
       }),
     )
   },
-  shareBoard: genericShare(Board, 'boardId', User),
-  stopSharingBoard: genericStopSharing(Board, 'boardId', User),
-  shareDevice: genericShare(Device, 'deviceId', User, deviceToParents(Board)),
+  shareBoard: genericShare(Board, 'boardId', User, pubsub, 'boardShared'),
+  stopSharingBoard: genericStopSharing(
+    Board,
+    'boardId',
+    User,
+    pubsub,
+    'boardStoppedSharing',
+  ),
+  shareDevice: genericShare(
+    Device,
+    'deviceId',
+    User,
+    pubsub,
+    'deviceShared',
+    deviceToParents(Board),
+  ),
   stopSharingDevice: genericStopSharing(
     Device,
     'deviceId',
     User,
+    pubsub,
+    'deviceStoppedSharing',
     deviceToParents(Board),
   ),
   shareValue: (root, args, context) =>
@@ -448,6 +479,11 @@ const MutationResolver = (
           await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
 
           resolve(valueFound)
+
+          pubsub.publish('valueShared', {
+            valueShared: valueFound,
+            userId: userFound.id,
+          })
 
           context.billingUpdater.update(MUTATION_COST)
         },
@@ -488,6 +524,11 @@ const MutationResolver = (
           ])
 
           resolve(valueFound)
+
+          pubsub.publish('valueStoppedSharing', {
+            valueStoppedSharing: args.id,
+            userId: userFound.id,
+          })
 
           context.billingUpdater.update(MUTATION_COST)
         },
