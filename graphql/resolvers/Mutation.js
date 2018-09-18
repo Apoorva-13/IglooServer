@@ -1637,12 +1637,6 @@ const MutationResolver = (
         User,
         3,
         async (resolve, reject, boardFound, boardAndParents, userFound) => {
-          const userBoards = await userFound.getOwnBoards()
-          if (userBoards.length === 1 && userBoards[0].id === boardFound.id) {
-            reject('Every user must have at least one owned board')
-            return
-          }
-
           const authorizedUsersIds = await instancesToSharedIds([boardFound])
           const devices = await Device.findAll({
             where: { boardId: boardFound.id },
