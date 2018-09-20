@@ -5,6 +5,7 @@ import {
   authorized,
   deviceToParents,
   notificationToParent,
+  inheritAuthorized,
 } from './utilities'
 import bcrypt from 'bcryptjs'
 

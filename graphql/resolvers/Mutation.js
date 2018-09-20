@@ -1356,8 +1356,8 @@ const MutationResolver = (
         async (resolve, reject, deviceFound, deviceAndBoard) => {
           const newNotification = await Notification.create({
             ...args,
-            visualized: false,
-            snackbarVisualized: false,
+            visualized: [],
+            snackbarVisualized: [],
             userId: context.auth.userId,
             date: args.date || new Date(),
           })
@@ -1455,6 +1455,7 @@ const MutationResolver = (
     })
 
     if (!notificationFound) {
+      // FIXME: reject not defined
       reject('The requested resource does not exist')
     } else {
       return logErrorsPromise(
@@ -1467,11 +1468,28 @@ const MutationResolver = (
           User,
           2,
           async (resolve, reject, deviceFound, deviceAndParent) => {
-            const updateQuery = getPropsIfDefined(args, [
-              'content',
-              'date',
-              'visualized',
-            ])
+            const updateQuery = args
+
+            if (updateQuery.visualized === true) {
+              updateQuery.visualized =
+                notificationFound.visualized.indexOf(context.auth.userId) === -1
+                  ? [...notificationFound.visualized, context.auth.userId]
+                  : notificationFound.visualized
+            } else if (updateQuery.visualized === false) {
+              updateQuery.visualized = notificationFound.visualized.filter(id => id !== context.auth.userId)
+            }
+
+            if (updateQuery.snackbarVisualized === true) {
+              updateQuery.snackbarVisualized =
+                notificationFound.snackbarVisualized.indexOf(context.auth.userId) === -1
+                  ? [
+                    ...notificationFound.snackbarVisualized,
+                    context.auth.userId,
+                  ]
+                  : notificationFound.snackbarVisualized
+            } else if (updateQuery.snackbarVisualized === false) {
+              updateQuery.snackbarVisualized = notificationFound.snackbarVisualized.filter(id => id !== context.auth.userId)
+            }
 
             const {
               date,

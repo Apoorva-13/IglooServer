@@ -15,7 +15,7 @@ const UserResolver = ({
   ...inheritAuthorizedScalarPropsResolvers(
     Notification,
     User,
-    ['content', 'date', 'visualized', 'snackbarVisualized'],
+    ['content', 'date'],
     notificationToParent,
     Device,
     deviceToParents(Board),
@@ -54,6 +54,46 @@ const UserResolver = ({
         1,
         async (resolve, reject, notificationFound) => {
           resolve({ id: notificationFound.deviceId })
+          context.billingUpdater.update(QUERY_COST)
+        },
+        deviceToParents(Board),
+      ),
+    )
+  },
+  visualized(root, args, context) {
+    return logErrorsPromise(
+      'Notification device resolver',
+      121,
+      inheritAuthorized(
+        root.id,
+        Notification,
+        User,
+        notificationToParent,
+        context,
+        Device,
+        1,
+        async (resolve, reject, notificationFound) => {
+          resolve(notificationFound.visualized.indexOf(context.auth.userId) !== -1)
+          context.billingUpdater.update(QUERY_COST)
+        },
+        deviceToParents(Board),
+      ),
+    )
+  },
+  snackbarVisualized(root, args, context) {
+    return logErrorsPromise(
+      'Notification device resolver',
+      121,
+      inheritAuthorized(
+        root.id,
+        Notification,
+        User,
+        notificationToParent,
+        context,
+        Device,
+        1,
+        async (resolve, reject, notificationFound) => {
+          resolve(notificationFound.snackbarVisualized.indexOf(context.auth.userId) !== -1)
           context.billingUpdater.update(QUERY_COST)
         },
         deviceToParents(Board),

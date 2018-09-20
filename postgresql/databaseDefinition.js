@@ -172,10 +172,10 @@ const databaseDefinition = (sequelize) => {
       defaultValue: Sequelize.NOW,
     },
     visualized: {
-      type: Sequelize.BOOLEAN,
+      type: Sequelize.ARRAY(Sequelize.UUID),
     },
     snackbarVisualized: {
-      type: Sequelize.BOOLEAN,
+      type: Sequelize.ARRAY(Sequelize.UUID),
     },
   })
 
