@@ -292,6 +292,11 @@ const MutationResolver = (
         return
       }
 
+      if (!args.displayName) {
+        reject('displayName required')
+        return
+      }
+
       const userFound = await User.find({ where: { email: args.email } })
       if (userFound) {
         reject('A user with this email already exists')

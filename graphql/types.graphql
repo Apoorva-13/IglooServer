@@ -61,7 +61,7 @@ type Mutation {
   SignupUser(
     email: String!
     password: String!
-    displayName: String
+    displayName: String!
   ): SignupUserPayload
 
   # Sends an email with a llink to change the password
