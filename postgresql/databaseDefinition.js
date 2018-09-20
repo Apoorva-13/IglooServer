@@ -91,7 +91,7 @@ const databaseDefinition = (sequelize) => {
       type: Sequelize.STRING,
     },
     favorite: {
-      type: Sequelize.BOOLEAN,
+      type: Sequelize.ARRAY(Sequelize.UUID),
     },
     index: {
       type: Sequelize.INTEGER,

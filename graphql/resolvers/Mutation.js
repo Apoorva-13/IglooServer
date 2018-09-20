@@ -316,7 +316,7 @@ const MutationResolver = (
           const newBoard = await Board.create({
             customName: 'Home',
             avatar: randomBoardAvatar(),
-            favorite: true,
+            favorite: [newUser.id],
             quietMode: false,
             index: 0,
           })
@@ -558,7 +558,7 @@ const MutationResolver = (
           ...args,
           avatar: args.avatar || randomBoardAvatar(),
           // if favorite or quietMode are not passed then set them to false
-          favorite: !!args.favorite,
+          favorite: args.favorite ? [context.auth.userId] : [],
           quietMode: !!args.quietMode,
           index:
             args.index !== null && args.index !== undefined
@@ -1023,7 +1023,18 @@ const MutationResolver = (
         User,
         2,
         async (resolve, reject, boardFound) => {
-          const newBoard = await boardFound.update(args)
+          const updateQuery = args
+
+          if (updateQuery.favorite === true) {
+            updateQuery.favorite =
+              boardFound.favorite.indexOf(context.auth.userId) === -1
+                ? [...boardFound.favorite, context.auth.userId]
+                : boardFound.favorite
+          } else if (updateQuery.favorite === false) {
+            updateQuery.favorite = boardFound.favorite.filter(id => id !== context.auth.userId)
+          }
+
+          const newBoard = await boardFound.update(updateQuery)
 
           resolve(newBoard.dataValues)
           pubsub.publish('boardUpdated', {
