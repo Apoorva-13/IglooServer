@@ -316,6 +316,10 @@ const MutationResolver = (
             emailIsVerified: false,
             displayName: args.displayName,
             profileIconColor: randomUserIconColor(),
+            settings_lengthAndMass: 'SI',
+            settings_temperature: 'CELSIUS',
+            settings_dateFormat: 'DMY',
+            settings_timeFormat: 'H24',
           })
 
           const newBoard = await Board.create({
@@ -958,6 +962,17 @@ const MutationResolver = (
           if (!userFound) {
             reject("User doesn't exist. Use `SignupUser` to create one")
           } else {
+            if (
+              (args.email === null ||
+                args.settings_lengthAndMass === null ||
+                args.settings_temperature === null ||
+                args.settings_dateFormat === null,
+                args.settings_timeFormat === null)
+            ) {
+              reject('You passed null to a parameter that cannot be null')
+              return
+            }
+
             const updateObj = args.email
               ? { ...args, emailIsVerified: false }
               : args

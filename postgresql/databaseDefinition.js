@@ -79,6 +79,18 @@ const databaseDefinition = (sequelize) => {
     emailIsVerified: {
       type: Sequelize.BOOLEAN,
     },
+    settings_lengthAndMass: {
+      type: Sequelize.STRING,
+    },
+    settings_temperature: {
+      type: Sequelize.STRING,
+    },
+    settings_dateFormat: {
+      type: Sequelize.STRING,
+    },
+    settings_timeFormat: {
+      type: Sequelize.STRING,
+    },
   })
 
   const Board = sequelize.define('board', {

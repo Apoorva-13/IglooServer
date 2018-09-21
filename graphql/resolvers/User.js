@@ -87,6 +87,10 @@ const UserResolver = ({
     'nightMode',
     'monthUsage',
     'emailIsVerified',
+    'settings_lengthAndMass',
+    'settings_temperature',
+    'settings_dateFormat',
+    'settings_timeFormat',
   ]),
   email: retrievePublicUserScalarProp(User, 'email', [
     'TEMPORARY',

@@ -40,6 +40,29 @@ enum Role {
   SPECTATOR
 }
 
+enum LengthAndMass {
+  SI
+  IMPERIAL
+}
+
+enum Temperature {
+  CELSIUS
+  FARENHEIT
+  KELVIN
+}
+
+enum DateFormat {
+  DMY
+  MDY
+  YMD
+  YDM
+}
+
+enum TimeFormat {
+  H24
+  H12
+}
+
 # All available mutations
 type Mutation {
   # Gets an authentication token
@@ -297,6 +320,10 @@ type Mutation {
     displayName: String
     profileIcon: String
     profileIconColor: String
+    settings_lengthAndMass: LengthAndMass
+    settings_temperature: Temperature
+    settings_dateFormat: DateFormat
+    settings_timeFormat: TimeFormat
   ): User
 
   updatePaymentInfo(stripeToken: String!): Boolean
@@ -650,6 +677,10 @@ type User {
   profileIcon: String
   profileIconColor: String
   emailIsVerified: Boolean
+  settings_lengthAndMass: LengthAndMass!
+  settings_temperature: Temperature!
+  settings_timeFormat: TimeFormat!
+  settings_dateFormat: DateFormat!
 }
 
 enum RoleExtended {
