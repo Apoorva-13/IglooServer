@@ -643,6 +643,9 @@ const MutationResolver = (
           } else if (args.customName === '') {
             reject('Custom name cannot be an empty string')
             return
+          } else if (args.quietMode === null) {
+            reject('quietMode cannot be null')
+            return
           }
 
           const index =
@@ -652,6 +655,7 @@ const MutationResolver = (
 
           const newDevice = await Device.create({
             ...args,
+            quietMode: !!args.quietMode,
             boardId,
             index,
           })
@@ -1093,6 +1097,9 @@ const MutationResolver = (
             return
           } else if (args.customName === null || args.customName === '') {
             reject('customName cannot be null or an empty string')
+            return
+          } else if (args.quietMode === null) {
+            reject('quietMode cannot be null')
             return
           }
 

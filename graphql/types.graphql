@@ -131,6 +131,7 @@ type Mutation {
     batteryCharging: Boolean
     boardId: ID
     firmware: String
+    quietMode: Boolean
   ): Device
 
   # Creates a new notification
@@ -355,6 +356,7 @@ type Mutation {
     batteryCharging: Boolean
     boardId: ID
     firmware: String
+    quietMode: Boolean
   ): Device
 
   resetOnlineState(deviceId: ID!): Device
@@ -741,6 +743,7 @@ type Device {
   batteryStatus: Float
   batteryCharging: Boolean
   firmware: String
+  quietMode: Boolean!
 }
 
 enum ValuePermission {

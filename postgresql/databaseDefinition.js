@@ -171,6 +171,9 @@ const databaseDefinition = (sequelize) => {
     firmware: {
       type: Sequelize.STRING,
     },
+    quietMode: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   const Notification = sequelize.define('notification', {
