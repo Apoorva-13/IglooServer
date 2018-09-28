@@ -23,6 +23,7 @@ import {
   randomBoardAvatar,
   randomUserIconColor,
   instanceToRole,
+  GenerateUserBillingBatcher,
 } from './utilities'
 import webpush from 'web-push'
 import Stripe from 'stripe'
@@ -165,7 +166,7 @@ const MutationResolver = (
   // checks if the user exists, if so
   // compares the given password with the hash
   // and returns an access token
-  AuthenticateUser(root, args) {
+  AuthenticateUser(root, args, context) {
     return logErrorsPromise(
       'AuthenticateUser',
       103,
@@ -178,20 +179,44 @@ const MutationResolver = (
         ) {
           reject('Wrong password')
         } else if (!userFound.twoFactorSecret) {
+          // setting context so that the resolvers for user know that the user is authenticated
+          context.auth = {
+            userId: userFound.id,
+            accessLevel: 'OWNER',
+            tokenType: 'TEMPORARY',
+          }
+          context.billingUpdater = GenerateUserBillingBatcher(
+            User,
+            context.auth,
+          )
+
           resolve({
             id: userFound.dataValues.id,
             token: generateAuthenticationToken(
               userFound.dataValues.id,
               JWT_SECRET,
             ),
+            user: userFound,
           })
         } else if (check2FCode(args.twoFactorCode, userFound.twoFactorSecret)) {
+          // setting context so that the resolvers for user know that the user is authenticated
+          context.auth = {
+            userId: userFound.id,
+            accessLevel: 'OWNER',
+            tokenType: 'TEMPORARY',
+          }
+          context.billingUpdater = GenerateUserBillingBatcher(
+            User,
+            context.auth,
+          )
+
           resolve({
             id: userFound.dataValues.id,
             token: generateAuthenticationToken(
               userFound.dataValues.id,
               JWT_SECRET,
             ),
+            user: userFound,
           })
         } else {
           reject('Wrong or missing 2-Factor Authentication Code')
@@ -284,7 +309,7 @@ const MutationResolver = (
   },
   // checks if a user with that email already exists
   // if not it creates one and returnes an access token
-  SignupUser(root, args) {
+  SignupUser(root, args, context) {
     return logErrorsPromise('SignupUser', 102, async (resolve, reject) => {
       // check password strength
       if (zxcvbn(args.password).score < 2) {
@@ -333,12 +358,24 @@ const MutationResolver = (
           await newUser.addOwnBoard(newBoard)
           await newBoard.setOwner(newUser)
 
+          // setting context so that the resolvers for user know that the user is authenticated
+          context.auth = {
+            userId: newUser.id,
+            accessLevel: 'OWNER',
+            tokenType: 'TEMPORARY',
+          }
+          context.billingUpdater = GenerateUserBillingBatcher(
+            User,
+            context.auth,
+          )
+
           resolve({
             id: newUser.dataValues.id,
             token: generateAuthenticationToken(
               newUser.dataValues.id,
               JWT_SECRET,
             ),
+            user: newUser,
           })
 
           sendVerificationEmail(args.email, newUser.id)

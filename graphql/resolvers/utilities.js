@@ -6,6 +6,7 @@ import fortuna from 'javascript-fortuna'
 import { withFilter } from 'graphql-subscriptions'
 import winston from 'winston'
 import AWS from 'aws-sdk'
+import UpdateBatcher from 'update-batcher'
 
 require('dotenv').config()
 
@@ -1132,6 +1133,21 @@ const randomBoardAvatar = () =>
 
 const randomUserIconColor = () => randomChoice(['blue', 'red', 'green'])
 
+const updateUserBilling = (User, auth) => async (bill) => {
+  const userFound = await User.find({ where: { id: auth.userId } })
+
+  // TODO: handle this failure gracefully
+  if (!userFound) {
+    throw new Error("User doesn't exist. Use `SignupUser` to create one")
+  } else {
+    const newUser = await userFound.increment('monthUsage', { by: bill })
+    return newUser.monthUsage
+  }
+}
+
+const GenerateUserBillingBatcher = (User, auth) =>
+  new UpdateBatcher(updateUserBilling(User, auth))
+
 module.exports = {
   authenticated,
   generateAuthenticationToken,
@@ -1172,4 +1188,6 @@ module.exports = {
   randomChoice,
   randomBoardAvatar,
   randomUserIconColor,
+  updateUserBilling,
+  GenerateUserBillingBatcher,
 }

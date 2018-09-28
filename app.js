@@ -14,13 +14,13 @@ import { pipeStreamToS3, getObjectOwner } from './s3helpers'
 import Busboy from 'connect-busboy'
 import AWS from 'aws-sdk'
 import path from 'path'
-import UpdateBatcher from 'update-batcher'
 import {
   PermanentToken,
   WebPushSubscription,
   User,
 } from './postgresql/databaseConnection'
 import jwt from 'jwt-simple'
+import { GenerateUserBillingBatcher } from './graphql/resolvers/utilities'
 
 webpush.setVapidDetails(
   'http://igloo.witlab.io/',
@@ -85,18 +85,6 @@ app.use((err, req, res, next) => {
   }
 })
 
-const updateUserBilling = auth => async (bill) => {
-  const userFound = await User.find({ where: { id: auth.userId } })
-
-  // TODO: handle this failure gracefully
-  if (!userFound) {
-    throw new Error("User doesn't exist. Use `SignupUser` to create one")
-  } else {
-    const newUser = await userFound.increment('monthUsage', { by: bill })
-    return newUser.monthUsage
-  }
-}
-
 // TODO: replace with real free usage quota
 const FREE_USAGE_QUOTA = 100 * 1000
 
@@ -134,7 +122,7 @@ app.use(
     context: {
       auth: req.user,
       billingUpdater: req.user
-        ? new UpdateBatcher(updateUserBilling(req.user))
+        ? GenerateUserBillingBatcher(User, req.user)
         : undefined,
     },
   })),

@@ -148,6 +148,23 @@ const UserResolver = ({
       }),
     )
   },
+  boardsCount(root, args, context) {
+    return logErrorsPromise(
+      'User boards resolver',
+      904,
+      authenticated(context, async (resolve, reject) => {
+        /* istanbul ignore if - this should never be the case, so the error is not reproducible */
+        if (context.auth.userId !== root.id) {
+          reject('You are not allowed to access details about this user')
+        } else {
+          const boards = await getAll(Board, User, root.id)
+
+          resolve(boards.length)
+          context.billingUpdater.update(QUERY_COST)
+        }
+      }),
+    )
+  },
   boards(root, args, context) {
     return logErrorsPromise(
       'User boards resolver',

@@ -16,6 +16,7 @@ type SignupUserPayload {
   id: ID!
   # token used to authenticate, pass it as a bearer in the authentication header
   token: String!
+  user: User!
 }
 
 # Payload returned when authenticating
@@ -24,6 +25,7 @@ type AuthenticateUserPayload {
   id: ID!
   # token used to authenticate, pass it as a bearer in the authentication header
   token: String!
+  user: User!
 }
 
 # Data needed to display the QR code when upgrading to 2-Factor Authentication
@@ -662,6 +664,7 @@ type User {
   createdAt: DateTime!
   updatedAt: DateTime!
   email: String! @isUnique
+  boardsCount: Int
   boards: [Board!]!
   devices: [Device!]!
   values: [Value!]!
