@@ -72,25 +72,29 @@ const genericShare = (
 
         if (!userFound) {
           reject("This account doesn't exist, check the email passed")
+        } else if (userFound.id === context.auth.userId) {
+          reject("You can't share a resource with yourself")
+        } else {
+          // remove old role
+          await Promise.all([
+            userFound[`remove${Model.Admins}`](found),
+            userFound[`remove${Model.Editors}`](found),
+            userFound[`remove${Model.Spectators}`](found),
+          ])
+
+          // add new role
+          const parsedRole = `${args.role[0] +
+            args.role.slice(1).toLowerCase()}s`
+          await userFound[`add${Model[parsedRole]}`](found)
+
+          resolve(found)
+          context.billingUpdater.update(MUTATION_COST)
+
+          pubsub.publish(subscription, {
+            [subscription]: found,
+            userId: userFound.id,
+          })
         }
-        // remove old role
-        await Promise.all([
-          userFound[`remove${Model.Admins}`](found),
-          userFound[`remove${Model.Editors}`](found),
-          userFound[`remove${Model.Spectators}`](found),
-        ])
-
-        // add new role
-        const parsedRole = `${args.role[0] + args.role.slice(1).toLowerCase()}s`
-        await userFound[`add${Model[parsedRole]}`](found)
-
-        resolve(found)
-        context.billingUpdater.update(MUTATION_COST)
-
-        pubsub.publish(subscription, {
-          [subscription]: found,
-          userId: userFound.id,
-        })
       },
       childToParents,
     ),
@@ -118,26 +122,24 @@ const genericStopSharing = (
 
         if (!userFound) {
           reject("This account doesn't exist, check the email passed")
-        }
-
-        if (!await instanceToRole(foundAndParents, userFound)) {
+        } else if (!await instanceToRole(foundAndParents, userFound)) {
           reject("This resource isn't shared with that user")
+        } else {
+          // remove old role
+          await Promise.all([
+            userFound[`remove${Model.Admins}`](found),
+            userFound[`remove${Model.Editors}`](found),
+            userFound[`remove${Model.Spectators}`](found),
+          ])
+
+          resolve(found)
+          context.billingUpdater.update(MUTATION_COST)
+
+          pubsub.publish(subscription, {
+            [subscription]: args[idField],
+            userId: userFound.id,
+          })
         }
-
-        // remove old role
-        await Promise.all([
-          userFound[`remove${Model.Admins}`](found),
-          userFound[`remove${Model.Editors}`](found),
-          userFound[`remove${Model.Spectators}`](found),
-        ])
-
-        resolve(found)
-        context.billingUpdater.update(MUTATION_COST)
-
-        pubsub.publish(subscription, {
-          [subscription]: args[idField],
-          userId: userFound.id,
-        })
       },
       childToParents,
     ),
@@ -521,27 +523,30 @@ const MutationResolver = (
 
           if (!userFound) {
             reject("This account doesn't exist, check the email passed")
+          } else if (userFound.id === context.auth.userId) {
+            reject("You can't share a resource with yourself")
+          } else {
+            // remove old role
+            await Promise.all([
+              userFound[`remove${valueFound.Model.Admins}`](valueFound),
+              userFound[`remove${valueFound.Model.Editors}`](valueFound),
+              userFound[`remove${valueFound.Model.Spectators}`](valueFound),
+            ])
+
+            // add new role
+            const parsedRole = `${args.role[0] +
+              args.role.slice(1).toLowerCase()}s`
+            await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
+
+            resolve(valueFound)
+
+            pubsub.publish('valueShared', {
+              valueShared: valueFound,
+              userId: userFound.id,
+            })
+
+            context.billingUpdater.update(MUTATION_COST)
           }
-          // remove old role
-          await Promise.all([
-            userFound[`remove${valueFound.Model.Admins}`](valueFound),
-            userFound[`remove${valueFound.Model.Editors}`](valueFound),
-            userFound[`remove${valueFound.Model.Spectators}`](valueFound),
-          ])
-
-          // add new role
-          const parsedRole = `${args.role[0] +
-            args.role.slice(1).toLowerCase()}s`
-          await userFound[`add${valueFound.Model[parsedRole]}`](valueFound)
-
-          resolve(valueFound)
-
-          pubsub.publish('valueShared', {
-            valueShared: valueFound,
-            userId: userFound.id,
-          })
-
-          context.billingUpdater.update(MUTATION_COST)
         },
         Device,
         Board,
@@ -570,26 +575,25 @@ const MutationResolver = (
 
           if (!userFound) {
             reject("This account doesn't exist, check the email passed")
-          }
-          if (!await instanceToRole(valueAndParents, userFound)) {
+          } else if (!await instanceToRole(valueAndParents, userFound)) {
             reject("This resource isn't shared with that user")
+          } else {
+            // remove old role
+            await Promise.all([
+              userFound[`remove${valueFound.Model.Admins}`](valueFound),
+              userFound[`remove${valueFound.Model.Editors}`](valueFound),
+              userFound[`remove${valueFound.Model.Spectators}`](valueFound),
+            ])
+
+            resolve(valueFound)
+
+            pubsub.publish('valueStoppedSharing', {
+              valueStoppedSharing: args.id,
+              userId: userFound.id,
+            })
+
+            context.billingUpdater.update(MUTATION_COST)
           }
-
-          // remove old role
-          await Promise.all([
-            userFound[`remove${valueFound.Model.Admins}`](valueFound),
-            userFound[`remove${valueFound.Model.Editors}`](valueFound),
-            userFound[`remove${valueFound.Model.Spectators}`](valueFound),
-          ])
-
-          resolve(valueFound)
-
-          pubsub.publish('valueStoppedSharing', {
-            valueStoppedSharing: args.id,
-            userId: userFound.id,
-          })
-
-          context.billingUpdater.update(MUTATION_COST)
         },
         Device,
         Board,
