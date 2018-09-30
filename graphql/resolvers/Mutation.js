@@ -1443,6 +1443,11 @@ const MutationResolver = (
         User,
         2,
         async (resolve, reject, deviceFound, deviceAndBoard) => {
+          if (args.content === '' || args.content === null) {
+            reject('content cannot be null or an empty string')
+            return
+          }
+
           const newNotification = await Notification.create({
             ...args,
             visualized: [],
@@ -1557,6 +1562,11 @@ const MutationResolver = (
           User,
           2,
           async (resolve, reject, deviceFound, deviceAndParent) => {
+            if (args.content === '' || args.content === null) {
+              reject('content cannot be null or an empty string')
+              return
+            }
+
             const updateQuery = args
 
             if (updateQuery.visualized === true) {
