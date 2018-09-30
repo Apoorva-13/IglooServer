@@ -669,6 +669,7 @@ type User {
   devices: [Device!]!
   values: [Value!]!
   notifications: [Notification!]!
+  notificationsCount: Int!
   permanentTokens: [PermanentToken!]!
   quietMode: Boolean
   devMode: Boolean

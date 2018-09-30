@@ -7,6 +7,7 @@ import {
   deviceToParents,
   instanceToRole,
 } from './utilities'
+import { Op } from 'sequelize'
 
 const QUERY_COST = 1
 
@@ -178,7 +179,12 @@ const DeviceResolver = ({
         1,
         async (resolve, reject, deviceFound) => {
           const count = await Notification.count({
-            where: { deviceId: root.id },
+            where: {
+              deviceId: root.id,
+              [Op.not]: {
+                visualized: { [Op.contains]: [context.auth.userId] },
+              },
+            },
           })
 
           resolve(count)

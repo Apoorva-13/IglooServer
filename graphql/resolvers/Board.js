@@ -5,6 +5,7 @@ import {
   rolesResolver,
   instanceToRole,
 } from './utilities'
+import { Op } from 'sequelize'
 
 const QUERY_COST = 1
 
@@ -73,10 +74,20 @@ const BoardResolver = ({
         User,
         1,
         async (resolve, reject, boardFound) => {
-          const devices = await Device.findAll({ where: { boardId: root.id } })
+          const devices = await Device.findAll({
+            where: { boardId: root.id },
+            attributes: ['id'],
+          })
 
           const notificationsCountsPromises = devices.map(device =>
-            Notification.count({ where: { deviceId: device.id } }))
+            Notification.count({
+              where: {
+                deviceId: device.id,
+                [Op.not]: {
+                  visualized: { [Op.contains]: [context.auth.userId] },
+                },
+              },
+            }))
 
           const notificationsCounts = await Promise.all(notificationsCountsPromises)
           const totalCount = notificationsCounts.reduce((a, b) => a + b, 0)

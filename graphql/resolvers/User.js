@@ -182,6 +182,34 @@ const UserResolver = ({
       }),
     )
   },
+  notificationsCount(root, args, context) {
+    return logErrorsPromise(
+      'notificationsCount UserResolver',
+      925,
+      authenticated(context, async (resolve, reject, boardFound) => {
+        const devices = await Device.findAll({
+          where: { userId: root.id },
+          attributes: ['id'],
+        })
+
+        const notificationsCountsPromises = devices.map(device =>
+          Notification.count({
+            where: {
+              deviceId: device.id,
+              [Op.not]: {
+                visualized: { [Op.contains]: [context.auth.userId] },
+              },
+            },
+          }))
+
+        const notificationsCounts = await Promise.all(notificationsCountsPromises)
+        const totalCount = notificationsCounts.reduce((a, b) => a + b, 0)
+
+        resolve(totalCount)
+        context.billingUpdater.update(QUERY_COST)
+      }),
+    )
+  },
   notifications(root, args, context) {
     return logErrorsPromise(
       'User devices resolver',
