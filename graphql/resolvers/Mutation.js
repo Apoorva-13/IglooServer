@@ -604,6 +604,11 @@ const MutationResolver = (
       'CreateBoard',
       910,
       authenticated(context, async (resolve, reject) => {
+        if (args.customName === '' || args.customName === null) {
+          reject('customName cannot be null or an empty string')
+          return
+        }
+
         const newBoard = await Board.create({
           ...args,
           avatar: args.avatar || randomBoardAvatar(),
@@ -1088,6 +1093,11 @@ const MutationResolver = (
         User,
         2,
         async (resolve, reject, boardFound) => {
+          if (args.customName === '' || args.customName === null) {
+            reject('customName cannot be null or an empty string')
+            return
+          }
+
           const updateQuery = args
 
           if (updateQuery.favorite === true) {
