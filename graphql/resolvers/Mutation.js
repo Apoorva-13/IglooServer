@@ -119,11 +119,14 @@ const genericStopSharing = (
       3,
       async (resolve, reject, found, foundAndParents) => {
         const userFound = await User.find({ where: { email: args.email } })
+        const role = await instanceToRole(foundAndParents, userFound)
 
         if (!userFound) {
           reject("This account doesn't exist, check the email passed")
-        } else if (!await instanceToRole(foundAndParents, userFound)) {
+        } else if (!role) {
           reject("This resource isn't shared with that user")
+        } else if (role === 'OWNER') {
+          reject('You cannot stop sharing a resource with its owner')
         } else {
           // remove old role
           await Promise.all([
@@ -572,11 +575,14 @@ const MutationResolver = (
         3,
         async (resolve, reject, valueFound, valueAndParents) => {
           const userFound = await User.find({ where: { email: args.email } })
+          const role = await instanceToRole(valueAndParents, userFound)
 
           if (!userFound) {
             reject("This account doesn't exist, check the email passed")
-          } else if (!await instanceToRole(valueAndParents, userFound)) {
+          } else if (!role) {
             reject("This resource isn't shared with that user")
+          } else if (role === 'OWNER') {
+            reject('You cannot stop sharing a resource with its owner')
           } else {
             // remove old role
             await Promise.all([
