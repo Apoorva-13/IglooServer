@@ -322,8 +322,8 @@ const MutationResolver = (
         return
       }
 
-      if (!args.displayName) {
-        reject('displayName required')
+      if (!args.fullName) {
+        reject('fullName required')
         return
       }
 
@@ -344,7 +344,7 @@ const MutationResolver = (
             monthUsage: 0,
             paymentPlan: 'FREE',
             emailIsVerified: false,
-            displayName: args.displayName,
+            fullName: args.fullName,
             profileIconColor: randomUserIconColor(),
             settings_lengthAndMass: 'SI',
             settings_temperature: 'CELSIUS',
