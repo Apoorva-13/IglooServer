@@ -82,7 +82,7 @@ const UserResolver = ({
     'updatedAt',
     'quietMode',
     'language',
-    'timezone',
+    'timeZone',
     'devMode',
     'nightMode',
     'monthUsage',

@@ -43,7 +43,7 @@ const databaseDefinition = (sequelize) => {
     language: {
       type: Sequelize.STRING,
     },
-    timezone: {
+    timeZone: {
       type: Sequelize.STRING,
     },
     quietMode: {
