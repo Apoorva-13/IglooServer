@@ -304,8 +304,8 @@ const MutationResolver = (
           await databaseToken.destroy()
 
           resolve(args.id)
-          pubsub.publish('tokenDeleted', {
-            tokenDeleted: args.id,
+          pubsub.publish('permanentTokenDeleted', {
+            permanentTokenDeleted: args.id,
             userId: context.auth.userId,
           })
         }
