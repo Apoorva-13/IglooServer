@@ -102,8 +102,8 @@ module.exports = (GraphQLServer) => {
               newValue: 6,
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -136,8 +136,8 @@ module.exports = (GraphQLServer) => {
               newValue: 7,
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -158,8 +158,8 @@ module.exports = (GraphQLServer) => {
               newValue: 'bbbb',
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -186,8 +186,8 @@ module.exports = (GraphQLServer) => {
               newValue: 'cccc',
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -208,8 +208,8 @@ module.exports = (GraphQLServer) => {
               newValue: false,
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -230,8 +230,8 @@ module.exports = (GraphQLServer) => {
               newValue: true,
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -252,8 +252,8 @@ module.exports = (GraphQLServer) => {
               newValue: '#00ff00',
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -274,8 +274,8 @@ module.exports = (GraphQLServer) => {
               newValue: '#ff00ff',
             },
             {
-              name: 'relevance',
-              type: 'ValueRelevance!',
+              name: 'visibility',
+              type: 'ValueVisibility!',
               value: 'VISIBLE',
               newValue: 'HIDDEN',
             },
@@ -302,7 +302,7 @@ module.exports = (GraphQLServer) => {
           const queryVariables = {
             deviceId,
             permission: 'READ_WRITE',
-            relevance: 'VISIBLE',
+            visibility: 'VISIBLE',
             valueDetails: '',
             customName: 'TestName',
             tileSize: 'WIDE',
@@ -347,7 +347,7 @@ module.exports = (GraphQLServer) => {
                                     email
                                 }
                                 permission
-                                relevance
+                                visibility
                                 valueDetails
                                 customName
                                 tileSize
@@ -366,7 +366,7 @@ module.exports = (GraphQLServer) => {
           expect(parsedRes.data[mutationName].device.id).toBe(deviceId)
           expect(parsedRes.data[mutationName].user.email).toBe(email)
           expect(parsedRes.data[mutationName].permission).toBe('READ_WRITE')
-          expect(parsedRes.data[mutationName].relevance).toBe('VISIBLE')
+          expect(parsedRes.data[mutationName].visibility).toBe('VISIBLE')
           expect(parsedRes.data[mutationName].customName).toBe('TestName')
           expect(parsedRes.data[mutationName].tileSize).toBe('WIDE')
           expect(parsedRes.data[mutationName].valueDetails).toBe('')
@@ -395,14 +395,14 @@ module.exports = (GraphQLServer) => {
           query: `mutation CreateFloatValue(
                             $deviceId: ID!
                             $permission: ValuePermission!
-                            $relevance: ValueRelevance!
+                            $visibility: ValueVisibility!
                             $value: Float!
                         ){
                             CreateFloatValue(
                                 deviceId: $deviceId,
                                 value: $value,
                                 permission:$permission,
-                                relevance:$relevance
+                                visibility:$visibility
                             ){
                                 id
                             }
@@ -411,7 +411,7 @@ module.exports = (GraphQLServer) => {
             deviceId: self.deviceId2,
             value: 5,
             permission: 'READ_ONLY',
-            relevance: 'VISIBLE',
+            visibility: 'VISIBLE',
           },
         })
       const parsedRes = JSON.parse(res.text)
@@ -430,14 +430,14 @@ module.exports = (GraphQLServer) => {
           query: `mutation CreateFloatValue(
                             $deviceId: ID!
                             $permission: ValuePermission!
-                            $relevance: ValueRelevance!
+                            $visibility: ValueVisibility!
                             $value: Float!
                         ){
                             CreateFloatValue(
                                 deviceId: $deviceId,
                                 value: $value,
                                 permission:$permission,
-                                relevance:$relevance
+                                visibility:$visibility
                             ){
                                 id
                             }
@@ -446,7 +446,7 @@ module.exports = (GraphQLServer) => {
             deviceId: '88b2fb06-be2f-482a-8c88-59d90566992d', // fake id
             value: 5,
             permission: 'READ_ONLY',
-            relevance: 'VISIBLE',
+            visibility: 'VISIBLE',
           },
         })
       const parsedRes = JSON.parse(res.text)
@@ -590,7 +590,7 @@ module.exports = (GraphQLServer) => {
                                                 email
                                             }
                                             permission
-                                            relevance
+                                            visibility
                                             valueDetails
                                             customName
                                             tileSize
@@ -624,7 +624,7 @@ module.exports = (GraphQLServer) => {
           expect(parsedRes.data.value.device.id).toBe(deviceId)
           expect(parsedRes.data.value.user.email).toBe(email)
           expect(parsedRes.data.value.permission).toBe('READ_WRITE')
-          expect(parsedRes.data.value.relevance).toBe('VISIBLE')
+          expect(parsedRes.data.value.visibility).toBe('VISIBLE')
           expect(parsedRes.data.value.customName).toBe('TestName')
           expect(parsedRes.data.value.tileSize).toBe('WIDE')
           expect(parsedRes.data.value.valueDetails).toBe('')
@@ -743,7 +743,7 @@ module.exports = (GraphQLServer) => {
                                 email
                             }
                             permission
-                            relevance
+                            visibility
                             valueDetails
                             customName
                             tileSize
@@ -763,7 +763,7 @@ module.exports = (GraphQLServer) => {
           expect(parsedRes.data[updateMutationName].device.id).toBe(deviceId)
           expect(parsedRes.data[updateMutationName].user.email).toBe(email)
           expect(parsedRes.data[updateMutationName].permission).toBe('READ_WRITE')
-          expect(parsedRes.data[updateMutationName].relevance).toBe('HIDDEN')
+          expect(parsedRes.data[updateMutationName].visibility).toBe('HIDDEN')
           expect(parsedRes.data[updateMutationName].customName).toBe('TestName')
           expect(parsedRes.data[updateMutationName].tileSize).toBe('WIDE')
           expect(parsedRes.data[updateMutationName].valueDetails).toBe('')

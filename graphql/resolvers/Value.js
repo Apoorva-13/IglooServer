@@ -38,7 +38,7 @@ const ValueResolver = (Values, User, Device, Board) => ({
       'createdAt',
       'updatedAt',
       'permission',
-      'relevance',
+      'visibility',
       'valueDetails',
       'tileSize',
       'customName',

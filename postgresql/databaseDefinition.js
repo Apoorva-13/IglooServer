@@ -2,7 +2,7 @@ const Sequelize = require('sequelize')
 
 const databaseDefinition = (sequelize) => {
   const ValuePermission = Sequelize.ENUM('READ_ONLY', 'READ_WRITE')
-  const ValueRelevance = Sequelize.ENUM('VISIBLE', 'HIDDEN', 'INVISIBLE')
+  const ValueVisibility = Sequelize.ENUM('VISIBLE', 'HIDDEN', 'INVISIBLE')
   const TileSize = Sequelize.ENUM('NORMAL', 'WIDE', 'TALL', 'LARGE')
   const PaymentPlan = Sequelize.ENUM('FREE', 'PAYING')
   const selfId = {
@@ -202,8 +202,8 @@ const databaseDefinition = (sequelize) => {
     permission: {
       type: ValuePermission,
     },
-    relevance: {
-      type: ValueRelevance,
+    visibility: {
+      type: ValueVisibility,
     },
     tileSize: {
       type: TileSize,

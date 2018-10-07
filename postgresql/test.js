@@ -83,7 +83,7 @@ async function instanceAuthorizationLevel(userFound, instance) {
     customName: 'test',
     index: 0,
     permission: 'READ_WRITE',
-    relevance: 'VISIBLE',
+    visibility: 'VISIBLE',
     ownerId: userFound.id,
   })
 
@@ -94,7 +94,7 @@ async function instanceAuthorizationLevel(userFound, instance) {
     customName: 'test',
     index: 0,
     permission: 'READ_WRITE',
-    relevance: 'VISIBLE',
+    visibility: 'VISIBLE',
     ownerId: userFound.id,
   })
 
@@ -120,7 +120,7 @@ async function instanceAuthorizationLevel(userFound, instance) {
     index: 0,
     value: 44,
     permission: 'READ_WRITE',
-    relevance: 'VISIBLE',
+    visibility: 'VISIBLE',
     ownerId: userFound.id,
     adminsIds: [],
     editorsIds: [],
