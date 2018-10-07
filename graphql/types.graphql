@@ -86,7 +86,7 @@ type Mutation {
   SignupUser(
     email: String!
     password: String!
-    displayName: String!
+    fullName: String!
   ): SignupUserPayload
 
   # Sends an email with a llink to change the password
@@ -320,7 +320,7 @@ type Mutation {
     nightMode: Boolean
     usageCap: Int
     paymentPlan: PaymentPlan
-    displayName: String
+    fullName: String
     profileIcon: String
     profileIconColor: String
     settings_lengthAndMass: LengthAndMass
@@ -679,7 +679,7 @@ type User {
   monthUsage: Int
   paymentPlan: PaymentPlan
   usageCap: Int
-  displayName: String
+  fullName: String
   profileIcon: String
   profileIconColor: String
   emailIsVerified: Boolean

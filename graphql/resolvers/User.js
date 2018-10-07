@@ -97,7 +97,7 @@ const UserResolver = ({
     'PERMANENT',
     'PASSWORD_RECOVERY',
   ]),
-  displayName: retrievePublicUserScalarProp(User, 'displayName', [
+  fullName: retrievePublicUserScalarProp(User, 'fullName', [
     'TEMPORARY',
     'PERMANENT',
     'PASSWORD_RECOVERY',
