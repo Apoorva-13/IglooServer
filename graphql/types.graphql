@@ -2,7 +2,7 @@ scalar DateTime
 
 scalar Json
 
-enum BoardAvatar {
+enum BoardPicture {
   NORTHERN_LIGHTS
   DENALI
   FOX
@@ -112,7 +112,7 @@ type Mutation {
   # Creates a Board
   CreateBoard(
     customName: String!
-    avatar: BoardAvatar
+    avatar: BoardPicture
     favorite: Boolean
     index: Int
     quietMode: Boolean
@@ -335,7 +335,7 @@ type Mutation {
   board(
     id: ID!
     customName: String
-    avatar: BoardAvatar
+    avatar: BoardPicture
     favorite: Boolean
     index: Int
     quietMode: Boolean
@@ -706,7 +706,7 @@ type Board {
   editors: [User!]!
   spectators: [User!]!
   customName: String!
-  avatar: BoardAvatar!
+  avatar: BoardPicture!
   devices: [Device!]!
   favorite: Boolean!
   notificationsCount: Int!
