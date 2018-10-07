@@ -62,7 +62,7 @@ const subscriptionResolver = (pubsub, { User, Device, Board }) => ({
     'stringPlotNodeDeleted',
     pubsub,
   ),
-  tokenDeleted: subscriptionFilterOnlyMine('tokenDeleted', pubsub),
+  permanentTokenDeleted: subscriptionFilterOnlyMine('permanentTokenDeleted', pubsub),
   keepOnline: {
     subscribe: (root, args, context) =>
       logErrorsPromise(
