@@ -579,20 +579,6 @@ type Query {
   notification(id: ID!): Notification
 
   verifyPassword(password: String!): Boolean
-
-  allDevices: [Device]
-  allBoard: [Board]
-  allValues: [Value]
-  allNotifications: [Notification]
-  allPlotNodes: [PlotNode]
-  allMaps: [Map]
-  allMapPositions: [MapPosition]
-  allFloatValues: [FloatValue]
-  allStringValues: [StringValue]
-  allPlotValues: [PlotValue]
-  allBooleanValues: [BooleanValue]
-  allColourValues: [ColourValue]
-  allMapValues: [MapValue]
 }
 
 type Subscription {
