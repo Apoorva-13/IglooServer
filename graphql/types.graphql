@@ -647,7 +647,7 @@ type Subscription {
   # subscribes to board deleted
   boardDeleted: ID
   # subscribes to token deletes
-  tokenDeleted: ID
+  permanentTokenDeleted: ID
   # subscribes to notification deletes
   notificationDeleted: ID
   # keeps the device's status set as online
