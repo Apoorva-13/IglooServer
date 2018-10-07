@@ -27,7 +27,7 @@ const subscriptionResolver = (pubsub, { User, Device, Board }) => ({
   boardCreated: subscriptionFilterOnlyMine('boardCreated', pubsub),
   deviceCreated: subscriptionFilterOwnedOrShared('deviceCreated', pubsub),
   valueCreated: subscriptionFilterOwnedOrShared('valueCreated', pubsub),
-  tokenCreated: subscriptionFilterOnlyMine('tokenCreated', pubsub),
+  permanentTokenCreated: subscriptionFilterOnlyMine('permanentTokenCreated', pubsub),
   plotNodeCreated: subscriptionFilterOwnedOrShared('plotNodeCreated', pubsub),
   stringPlotNodeCreated: subscriptionFilterOwnedOrShared(
     'stringPlotNodeCreated',
