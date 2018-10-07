@@ -996,6 +996,10 @@ const MutationResolver = (
   user(root, args, context) {
     let permissionRequired
     const mutationFields = Object.keys(args)
+    if(args.displayName===null || args.displayName===""){
+         reject('displayName cannot be null or empty')
+         return
+    }
     if (mutationFields.length === 1 && mutationFields[0] === 'usageCap') {
       permissionRequired = ['TEMPORARY', 'PERMANENT', 'CHANGE_USAGE_CAP']
     } else if (
