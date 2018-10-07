@@ -312,7 +312,7 @@ type Mutation {
   # Change user's data
   user(
     email: String
-    timezone: String
+    timeZone: String
     language: String
     # If active push notifications aren't sent
     quietMode: Boolean
@@ -675,7 +675,7 @@ type User {
   devMode: Boolean
   nightMode: Boolean
   language: String
-  timezone: String
+  timeZone: String
   monthUsage: Int
   paymentPlan: PaymentPlan
   usageCap: Int
