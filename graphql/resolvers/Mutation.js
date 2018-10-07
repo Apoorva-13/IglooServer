@@ -273,8 +273,8 @@ const MutationResolver = (
             customName: databaseToken.customName,
             user: { id: context.auth.userId },
           }
-          pubsub.publish('tokenCreated', {
-            tokenCreated: resolveObj,
+          pubsub.publish('permanentTokenCreated', {
+            permanentTokenCreated: resolveObj,
             userId: context.auth.userId,
           })
 

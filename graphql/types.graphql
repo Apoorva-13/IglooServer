@@ -607,7 +607,7 @@ type Subscription {
   # subscribes to string plot node creations
   stringPlotNodeCreated: StringPlotNode
   #subscribes to token creations
-  tokenCreated: PermanentToken
+  permanentTokenCreated: PermanentToken
   # subscribes to notification creations
   notificationCreated: Notification
   # subscribes to board shares
