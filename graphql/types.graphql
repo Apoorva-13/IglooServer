@@ -151,7 +151,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     value: Float!
@@ -173,7 +173,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     value: String!
@@ -195,7 +195,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     value: Boolean!
@@ -213,7 +213,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     # hex code
@@ -234,7 +234,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
@@ -256,7 +256,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     # used when the end-user reads or modifies the value
@@ -288,7 +288,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission!
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance!
+    visibility: ValueVisibility!
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
@@ -370,7 +370,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     value: Float
@@ -392,7 +392,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     value: String
@@ -414,7 +414,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     value: Boolean
@@ -432,7 +432,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     # hex code
@@ -453,7 +453,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
@@ -475,7 +475,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     # used when the end-user reads or modifies the value
@@ -508,7 +508,7 @@ type Mutation {
     # whether the value should be READ_ONLY or READ_WRITE in Igloo Aurora
     permission: ValuePermission
     # whether the value should be VISIBLE, HIDDEN or INVISIBLE in Igloo Aurora
-    relevance: ValueRelevance
+    visibility: ValueVisibility
     # additional details about the value
     valueDetails: String
     # name of the value, displayed in Igloo Aurora
@@ -755,7 +755,7 @@ enum ValuePermission {
   READ_WRITE
 }
 
-enum ValueRelevance {
+enum ValueVisibility {
   VISIBLE
   HIDDEN
   INVISIBLE
@@ -822,7 +822,7 @@ interface Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   tileSize: TileSize!
   customName: String
@@ -840,7 +840,7 @@ type FloatValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: Float!
   # used when the end-user reads or modifies the value
@@ -863,7 +863,7 @@ type StringValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: String!
   maxChars: Int
@@ -884,7 +884,7 @@ type PlotValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: [PlotNode!]!
   # used when the end-user reads or modifies the value
@@ -909,7 +909,7 @@ type StringPlotValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: [StringPlotNode!]!
   tileSize: TileSize!
@@ -929,7 +929,7 @@ type BooleanValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: Boolean!
   tileSize: TileSize!
@@ -948,7 +948,7 @@ type ColourValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   # hex value prefixed with #
   value: String!
@@ -969,7 +969,7 @@ type MapValue implements Value {
   editors: [User!]!
   spectators: [User!]!
   permission: ValuePermission! @defaultValue(value: READ_WRITE)
-  relevance: ValueRelevance! @defaultValue(value: NORMAL)
+  visibility: ValueVisibility! @defaultValue(value: NORMAL)
   valueDetails: String
   value: String
   latitude: Float
